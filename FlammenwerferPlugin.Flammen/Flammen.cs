@@ -129,10 +129,6 @@ namespace FlammenwerferPlugin.Flammen
 
             uint insertedStart = dataOffSize - 1;
 
-            App.Logger.LogError("1");
-            App.Logger.Log(section.Count().ToString());
-
-
             List<char> shiftNums = Enumerable
                 .Range(2, (int)section[shiftNumsIndex] + 1)
                 .Select(num => ((char)num))
@@ -279,8 +275,6 @@ namespace FlammenwerferPlugin.Flammen
                     histogramSection.Add(reader.ReadUShort());
                 }
             }
-
-            App.Logger.LogError(histogramSection.Count().ToString());
 
             // Read strings binary chunk
             uint stringMagic;
