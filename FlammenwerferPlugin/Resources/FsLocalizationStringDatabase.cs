@@ -1,4 +1,5 @@
-﻿using Frosty.Core;
+﻿using FlammenwerferPlugin.Windows;
+using Frosty.Core;
 using FrostySdk.Ebx;
 using FrostySdk.IO;
 using FrostySdk.Managers;
@@ -259,16 +260,16 @@ namespace FlammenwerferPlugin.Resources
 
         public void AddStringWindow()
         {
-            //AddStringWindow win = new AddStringWindow();
-            //win.ShowDialog();
-            //return;
+            AddStringWindow win = new AddStringWindow();
+            win.ShowDialog();
+            return;
         }
 
         public void BulkReplaceWindow()
         {
-            //ReplaceMultipleStringWindow win = new ReplaceMultipleStringWindow();
-            //win.ShowDialog();
-            //return;
+            ReplaceMultipleStringWindow win = new ReplaceMultipleStringWindow();
+            win.ShowDialog();
+            return;
         }
 
         public bool isStringEdited(uint id)
