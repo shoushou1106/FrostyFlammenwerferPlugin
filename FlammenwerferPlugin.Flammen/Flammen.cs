@@ -1,17 +1,11 @@
-﻿
-using Frosty.Controls;
-using Frosty.Core;
-using Frosty.Core.Controls;
-using Frosty.Core.Sdk.AnthemDemo;
+﻿using Frosty.Core;
 using FrostySdk.IO;
 using FrostySdk.Managers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.ConstrainedExecution;
 using System.Text;
-using System.Windows.Input;
 
 namespace FlammenwerferPlugin.Flammen
 {

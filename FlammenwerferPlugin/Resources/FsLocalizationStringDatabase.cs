@@ -5,17 +5,7 @@ using FrostySdk.Managers;
 using FrostySdk.Resources;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Frosty.Core.Controls;
-using Frosty.Core.Windows;
-using FrostySdk.Interfaces;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Diagnostics.Contracts;
-using System.Text;
-using Frosty.Controls;
 
 namespace FlammenwerferPlugin.Resources
 {
