@@ -1,4 +1,5 @@
 ﻿using FlammenwerferPlugin.Resources;
+using Frosty.Core;
 using Frosty.Core.IO;
 using Frosty.Core.Mod;
 using Frosty.Hash;
@@ -6,8 +7,10 @@ using FrostySdk;
 using FrostySdk.IO;
 using FrostySdk.Managers;
 using FrostySdk.Resources;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace FlammenwerferPlugin.Handlers
 {
