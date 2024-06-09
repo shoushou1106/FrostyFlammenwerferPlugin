@@ -4,9 +4,6 @@
 # Frosty Flammenwerfer Plugin
 > 🔥 ***Flammenwerfer Plugin***, where ❄️ ***Frosty*** meets the dance of inferno.
 
-`Flammenwerfer Plugin` is a [Frosty v1](https://github.com/CadeEvs/FrostyToolsuite) plugin version of [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/). Modified from `FsLocalizationPlugin`. Designed to automatically modify the histogram, that can allow game to display characters that are not supported.  
-This plugin support projects that use `FsLocalizationPlugin`, and `FsLocalizationPlugin` can also support projects that use this plugin.
-
 `Flammenwerfer Plugin` is a [Frosty v1](https://github.com/CadeEvs/FrostyToolsuite) plugin adaptation of [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/). It is modified from the `FsLocalizationPlugin` and designed to automatically modify the histogram, allowing the game to display unsupported characters.
 This plugin supports projects that use `FsLocalizationPlugin`, and `FsLocalizationPlugin` can also support projects that use this plugin.
 
