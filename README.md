@@ -11,6 +11,14 @@ This plugin supports projects that use `FsLocalizationPlugin`, and `FsLocalizati
 - Delete or disable `FsLocalizationPlugin.dll` from your `Plugins` folder under **Frosty**.
 - Download the plugin from [GitHub Release](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases) and place `all` the .dll files in the `Plugins` folder under **Frosty**.
 
+## Build
+For easy installation, [ILRepack](https://github.com/gluck/il-repack) will be used after building. The following are sample steps (for myself)
+- Put the two built dlls and Frosty and ILRepack exe in the same directory
+- Run this code
+```shell
+ILRepack /out:FlammenwerferPlugin_ILRepack.dll FlammenwerferPlugin.dll FlammenwerferPlugin.Flammen.dll
+```
+
 ## License
 This repository contains code from two different repositories with different licenses, so it has two csproj files and two licenses:
 - [FlammenwerferPlugin](/FlammenwerferPlugin/LICENSE.md) (Code edit from FrostyToolsuite)
