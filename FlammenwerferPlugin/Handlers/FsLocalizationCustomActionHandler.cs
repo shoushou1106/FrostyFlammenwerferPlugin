@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
+using System.Security.Policy;
 using System.Text;
 
 namespace FlammenwerferPlugin.Handlers
@@ -145,11 +146,20 @@ namespace FlammenwerferPlugin.Handlers
             }
             catch (Exception ex)
             {
-                App.Logger.LogError(ex.Message);
-                App.Logger.LogError(ex.Source);
-                App.Logger.LogError(ex.StackTrace);
-                App.Logger.LogError(ex.ToString());
-                App.Logger.LogError(ex.HResult.ToString("X"));
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("An unhandled exception has occurred");
+                sb.Append("Type=");
+                sb.AppendLine(ex.GetType().ToString());
+                sb.Append("HResult=");
+                sb.AppendLine("0x" + ex.HResult.ToString("X"));
+                sb.Append("Message=");
+                sb.AppendLine(ex.Message);
+                sb.Append("Source=");
+                sb.AppendLine(ex.Source);
+                sb.AppendLine("StackTrace:");
+                sb.AppendLine(ex.StackTrace);
+                App.Logger.LogError(sb.ToString());
+
                 outData = null;
             }
 #endif
