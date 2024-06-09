@@ -138,15 +138,18 @@ namespace FlammenwerferPlugin.Flammen
             while (true)
             {
                 // calculate_byte_positions
-                List<int> bytePositions = chars
-                    .Select(c => ((int)insertedStart + shiftNumsCount + (shiftNumsIndex - 0x80) + c))
-                    .ToList();
+                List<int> bytePositions = new List<int>();
+                for (int i = 0; i < chars.Count; i++)
+                {
+                    bytePositions.Add((int)insertedStart + shiftNumsCount + (shiftNumsIndex - 0x80) + i);
+                }
 
                 // calculate_shift_nums_and_mappings
                 HashSet<char> shiftNumsSet = new HashSet<char>();
                 foreach (int @byte in bytePositions)
                 {
                     char shiftNum = (char)(@byte / 0x80);
+
                     if ((int)shiftNum >= 0x80)
                     {
                         throw new ArgumentException("Too many characters");
@@ -403,7 +406,7 @@ namespace FlammenwerferPlugin.Flammen
 
                 // Padding stuff
                 while (writer.Position < stringDataOffset + 8)
-                    writer.Write(0x00);
+                    writer.Write((byte)0x00);
 
                 // Get the shifts of the histogram
                 List<int> histogramShifts = new List<int>();
@@ -419,10 +422,8 @@ namespace FlammenwerferPlugin.Flammen
                 byte[] stringBytes = null;
                 using (NativeWriter stringBuffer = new NativeWriter(new MemoryStream()))
                 {
-                    List<Tuple<uint, uint>> hashPairList = new List<Tuple<uint, uint>>();
                     foreach (KeyValuePair<uint, string> keyValuePair in stringList)
                     {
-                        hashPairList.Add(new Tuple<uint, uint>(keyValuePair.Key, (uint)stringBuffer.Position));
                         writer.Write(keyValuePair.Key);
                         writer.Write((uint)stringBuffer.Position);
                         stringBuffer.Write(EncodeString(keyValuePair.Value, histogramShifts, histogramSection.Select(c => (char)c).ToList()));

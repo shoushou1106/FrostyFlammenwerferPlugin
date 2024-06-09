@@ -79,69 +79,64 @@ namespace FlammenwerferPlugin.Handlers
             try
             {
 #endif
-            ModifiedFsLocalizationAsset modFs = data as ModifiedFsLocalizationAsset;
+                ModifiedFsLocalizationAsset modFs = data as ModifiedFsLocalizationAsset;
 
-            EbxAsset ebxAsset = am.GetEbx(am.GetEbxEntry(origEntry.Name));
-            dynamic localizedText = ebxAsset.RootObject;
+                EbxAsset ebxAsset = am.GetEbx(am.GetEbxEntry(origEntry.Name));
+                dynamic localizedText = ebxAsset.RootObject;
 
-            ChunkAssetEntry histogramEntry = am.GetChunkEntry(localizedText.HistogramChunk);
-            ChunkAssetEntry stringChunkEntry = am.GetChunkEntry(localizedText.BinaryChunk);
+                ChunkAssetEntry histogramEntry = am.GetChunkEntry(localizedText.HistogramChunk);
+                ChunkAssetEntry stringChunkEntry = am.GetChunkEntry(localizedText.BinaryChunk);
 
-            if (stringChunkEntry != null && histogramEntry != null)
-            {
-                ChunkAssetEntry newHistogramChunkEntry = new ChunkAssetEntry();
-                ChunkAssetEntry newStringChunkEntry = new ChunkAssetEntry();
-
-                byte[] newHistogramData = null;
-                byte[] newStringData = null;
+                if (stringChunkEntry != null && histogramEntry != null)
+                {
+                    ChunkAssetEntry newHistogramChunkEntry = new ChunkAssetEntry();
+                    ChunkAssetEntry newStringChunkEntry = new ChunkAssetEntry();
 
                     // Modify Chunks
                     Flammen.Flammen.WriteAll(histogramEntry, stringChunkEntry, modFs.strings,
-                    out newHistogramData,
-                    out newStringData);
+                    out byte[] newHistogramData,
+                    out byte[] newStringData);
 
+                    // Process Histogram Chunk
+                    localizedText.HistogramChunkSize = (uint)newHistogramData.Length;
 
-                // Process Histogram Chunk
-                localizedText.HistogramChunkSize = (uint)newHistogramData.Length;
+                    newHistogramChunkEntry.LogicalSize = (uint)newHistogramData.Length;
+                    newHistogramData = Utils.CompressFile(newHistogramData);
 
-                newHistogramChunkEntry.LogicalSize = (uint)newHistogramData.Length;
-                newHistogramData = Utils.CompressFile(newHistogramData);
+                    newHistogramChunkEntry.Id = histogramEntry.Id;
+                    newHistogramChunkEntry.Sha1 = Utils.GenerateSha1(newHistogramData);
+                    newHistogramChunkEntry.Size = newHistogramData.Length;
+                    newHistogramChunkEntry.H32 = Fnv1.HashString(origEntry.Name.ToLower());
+                    newHistogramChunkEntry.FirstMip = -1;
+                    newHistogramChunkEntry.IsTocChunk = true;
 
-                newHistogramChunkEntry.Id = histogramEntry.Id;
-                newHistogramChunkEntry.Sha1 = Utils.GenerateSha1(newHistogramData);
-                newHistogramChunkEntry.Size = newHistogramData.Length;
-                newHistogramChunkEntry.H32 = Fnv1.HashString(origEntry.Name.ToLower());
-                newHistogramChunkEntry.FirstMip = -1;
-                newHistogramChunkEntry.IsTocChunk = true;
+                    runtimeResources.AddResource(new RuntimeChunkResource(newHistogramChunkEntry), newHistogramData);
 
-                runtimeResources.AddResource(new RuntimeChunkResource(newHistogramChunkEntry), newHistogramData);
+                    // Process String Chunk
+                    localizedText.BinaryChunkSize = (uint)newStringData.Length;
 
-                // Process String Chunk
-                localizedText.BinaryChunkSize = (uint)newStringData.Length;
+                    newStringChunkEntry.LogicalSize = (uint)newStringData.Length;
+                    newStringData = Utils.CompressFile(newStringData);
 
-                newStringChunkEntry.LogicalSize = (uint)newStringData.Length;
-                newStringData = Utils.CompressFile(newStringData);
+                    newStringChunkEntry.Id = stringChunkEntry.Id;
+                    newStringChunkEntry.Sha1 = Utils.GenerateSha1(newStringData);
+                    newStringChunkEntry.Size = newStringData.Length;
+                    newStringChunkEntry.H32 = Fnv1.HashString(origEntry.Name.ToLower());
+                    newStringChunkEntry.FirstMip = -1;
+                    newStringChunkEntry.IsTocChunk = true;
 
-                newStringChunkEntry.Id = stringChunkEntry.Id;
-                newStringChunkEntry.Sha1 = Utils.GenerateSha1(newStringData);
-                newStringChunkEntry.Size = newStringData.Length;
-                newStringChunkEntry.H32 = Fnv1.HashString(origEntry.Name.ToLower());
-                newStringChunkEntry.FirstMip = -1;
-                newStringChunkEntry.IsTocChunk = true;
+                    runtimeResources.AddResource(new RuntimeChunkResource(newStringChunkEntry), newStringData);
+                }
 
-                runtimeResources.AddResource(new RuntimeChunkResource(newStringChunkEntry), newStringData);
-            }
+                using (EbxBaseWriter writer = EbxBaseWriter.CreateWriter(new MemoryStream()))
+                {
+                    writer.WriteAsset(ebxAsset);
+                    origEntry.OriginalSize = writer.Length;
+                    outData = Utils.CompressFile(writer.ToByteArray());
+                }
 
-            using (EbxBaseWriter writer = EbxBaseWriter.CreateWriter(new MemoryStream()))
-            {
-                writer.WriteAsset(ebxAsset);
-                origEntry.OriginalSize = writer.Length;
-                outData = Utils.CompressFile(writer.ToByteArray());
-            }
-
-            origEntry.Size = outData.Length;
-            origEntry.Sha1 = Utils.GenerateSha1(outData);
-
+                origEntry.Size = outData.Length;
+                origEntry.Sha1 = Utils.GenerateSha1(outData);
 #if DEVELOPER___DEBUG
             }
             catch (Exception ex)
