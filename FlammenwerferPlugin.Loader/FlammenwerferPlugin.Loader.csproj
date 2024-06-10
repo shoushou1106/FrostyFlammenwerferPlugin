@@ -7,7 +7,7 @@
     <Product>FlammenwerferPlugin.Loader</Product>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <UseWpf>true</UseWpf>
+    <UseWPF>true</UseWPF>
     <OutputType>Library</OutputType>
   </PropertyGroup>
   
