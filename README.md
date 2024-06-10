@@ -17,12 +17,12 @@
 ### FlammenwerferPlugin.Loader
 - Delete or disable `FsLocalizationPlugin.dll` from your `Plugins` folder under **Frosty**.
 - Download `FlammenwerferPlugin.Loader.dll` from [GitHub Release](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
-- Place the .dll file in the `Plugins` folder under **Frosty**.
+- Place the downloaded file in the `Plugins` folder under **Frosty**.
 ### FlammenwerferPlugin.Editor
-- (Optional) Delete or disable `LocalizedStringPlugin.dll` from your `Plugins` folder under **Frosty Editor**.
+- **(Optional)** Delete or disable `LocalizedStringPlugin.dll` from your `Plugins` folder under **Frosty Editor**.
 - Download `FlammenwerferPlugin.Editor.zip` from [GitHub Release](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
-- Extract the ZIP file.
-- Place **all** the .dll files in the `Plugins` folder under **Frosty Editor**.
+- Extract **all** the files from the downloaded ZIP file.
+- Place **all** the extracted files in the `Plugins` folder under **Frosty Editor**.
 
 ## Build
 For easy installation, [ILRepack](https://github.com/gluck/il-repack) will be used after building. The following are sample steps (for myself):
