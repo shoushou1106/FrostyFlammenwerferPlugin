@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrostyControls", "..\Frosty
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrostyHash", "..\FrostyToolsuite\FrostyHash\FrostyHash.vcxproj", "{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlammenwerferPlugin.Editor", "FlammenwerferPlugin.Editor\FlammenwerferPlugin.Editor.csproj", "{DC73FD01-A38C-40AA-B098-71E143371F8B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Developer - Debug|x64 = Developer - Debug|x64
@@ -124,6 +126,22 @@ Global
 		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - Final|x64.Build.0 = Release - Final|x64
 		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - Final|x86.ActiveCfg = Release - Final|Win32
 		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - Final|x86.Build.0 = Release - Final|Win32
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Developer - Debug|x64.ActiveCfg = Developer - Debug|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Developer - Debug|x64.Build.0 = Developer - Debug|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Developer - Debug|x86.ActiveCfg = Developer - Debug|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Developer - Debug|x86.Build.0 = Developer - Debug|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Alpha|x64.ActiveCfg = Release - Alpha|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Alpha|x64.Build.0 = Release - Alpha|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Alpha|x86.ActiveCfg = Release - Alpha|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Alpha|x86.Build.0 = Release - Alpha|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Beta|x64.ActiveCfg = Release - Beta|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Beta|x64.Build.0 = Release - Beta|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Beta|x86.ActiveCfg = Release - Beta|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Beta|x86.Build.0 = Release - Beta|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Final|x64.ActiveCfg = Release - Final|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Final|x64.Build.0 = Release - Final|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Final|x86.ActiveCfg = Release - Final|x64
+		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Final|x86.Build.0 = Release - Final|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
