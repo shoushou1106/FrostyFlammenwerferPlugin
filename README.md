@@ -1,5 +1,5 @@
 > [!NOTE]
-> # This plugin is still under development.  
+> This plugin is still under development.  
   
   
 # Frosty Flammenwerfer Plugin
