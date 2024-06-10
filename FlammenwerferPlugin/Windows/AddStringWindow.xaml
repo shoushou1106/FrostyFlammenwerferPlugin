@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:FlammenwerferPlugin.Windows"
         xmlns:ctrl="clr-namespace:Frosty.Controls;assembly=FrostyControls"
         mc:Ignorable="d"
-        Title="Add String" Height="297.088" Width="650"
-        ResizeMode="NoResize" WindowStartupLocation="CenterOwner">
+        Title="Add String" Height="275" Width="650"
+        WindowStartupLocation="CenterOwner">
 
     <Window.Resources>
         <ResourceDictionary>
