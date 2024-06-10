@@ -1,4 +1,4 @@
-﻿using FlammenwerferPlugin.Resources;
+﻿using FlammenwerferPlugin.Loader.Resources;
 using Frosty.Core;
 using Frosty.Core.IO;
 using Frosty.Core.Mod;
@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace FlammenwerferPlugin.Handlers
+namespace FlammenwerferPlugin.Loader.Handlers
 {
     public class FsLocalizationCustomActionHandler : ICustomActionHandler
     {

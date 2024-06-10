@@ -3,8 +3,8 @@
     <Configurations>Developer - Debug;Release - Alpha;Release - Beta;Release - Final</Configurations>
     <Platforms>x64</Platforms>
     <TargetFrameworks>net48</TargetFrameworks>
-    <AssemblyTitle>FlammenwerferPlugin</AssemblyTitle>
-    <Product>FlammenwerferPlugin</Product>
+    <AssemblyTitle>FlammenwerferPlugin.Loader</AssemblyTitle>
+    <Product>FlammenwerferPlugin.Loader</Product>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <UseWpf>true</UseWpf>
@@ -39,7 +39,7 @@
     <ProjectReference Include="..\..\FrostyToolsuite\FrostyHash\FrostyHash.vcxproj">
       <Private>false</Private>
       <PrivateAssets>all</PrivateAssets>
-	  </ProjectReference>
+    </ProjectReference>
     <ProjectReference Include="..\..\FrostyToolsuite\FrostyControls\FrostyControls.csproj">
       <Private>false</Private>
       <PrivateAssets>all</PrivateAssets>
@@ -63,11 +63,6 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Handlers\" />
-    <Folder Include="Resources\" />
   </ItemGroup>
   
 </Project>

@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34902.65
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlammenwerferPlugin", "FlammenwerferPlugin\FlammenwerferPlugin.csproj", "{1D548733-ED97-483F-9FEC-31049C97D4D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlammenwerferPlugin.Loader", "FlammenwerferPlugin.Loader\FlammenwerferPlugin.Loader.csproj", "{1D548733-ED97-483F-9FEC-31049C97D4D7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlammenwerferPlugin.Flammen", "FlammenwerferPlugin.Flammen\FlammenwerferPlugin.Flammen.csproj", "{FD53C371-010B-450C-9E61-E442BCEE66ED}"
 EndProject
