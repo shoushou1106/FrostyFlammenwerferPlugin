@@ -39,7 +39,7 @@
     <ProjectReference Include="..\..\FrostyToolsuite\FrostyHash\FrostyHash.vcxproj">
       <Private>false</Private>
       <PrivateAssets>all</PrivateAssets>
-	  </ProjectReference>
+      </ProjectReference>
     <ProjectReference Include="..\..\FrostyToolsuite\FrostyControls\FrostyControls.csproj">
       <Private>false</Private>
       <PrivateAssets>all</PrivateAssets>
