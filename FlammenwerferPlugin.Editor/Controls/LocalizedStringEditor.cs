@@ -248,7 +248,7 @@ namespace FlammenwerferPlugin.Editor.Controls
         {
             Config.Add("Language", ComboBox_Language.SelectedItem.ToString(), ConfigScope.Game);
             Config.Save();
-            LocalizedStringDatabase.Current.Initialize();
+            db.Initialize();
             Refresh_Click(sender, e);
         }
 
