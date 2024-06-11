@@ -1,4 +1,5 @@
-﻿using Frosty.Core.Attributes;
+﻿using FlammenwerferPlugin.Editor.Extensions;
+using Frosty.Core.Attributes;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -24,4 +25,4 @@ using System.Windows;
 [assembly: PluginAuthor("shoushou1106")]
 [assembly: PluginVersion("0.1.9.0")]
 
-[assembly: RegisterMenuExtension(typeof(LocalizedStringEditorMenuExtension))]
+[assembly: RegisterMenuExtension(typeof(LocalizedStringViewerMenuExtension))]

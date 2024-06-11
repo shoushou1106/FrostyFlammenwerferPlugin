@@ -62,8 +62,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Remove="Images\Refresh.png" />
-    <Resource Include="Images\Refresh.png" />
+    <None Remove="Images\LocalizedStringEditor.png" />
+    <Resource Include="Images\LocalizedStringEditor.png" />
   </ItemGroup>
   
 </Project>
