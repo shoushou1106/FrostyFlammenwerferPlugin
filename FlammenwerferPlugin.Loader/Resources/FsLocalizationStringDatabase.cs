@@ -146,7 +146,6 @@ namespace FlammenwerferPlugin.Loader.Resources
         public void Initialize()
         {
             string language = "LanguageFormat_" + Config.Get("Language", "English", ConfigScope.Game);
-            App.Logger.Log(language);
 
             Guid stringChunk = Guid.Empty;
             Guid histogramChunk = Guid.Empty;
@@ -192,7 +191,7 @@ namespace FlammenwerferPlugin.Loader.Resources
                 if (chunkEntry != null && histogramEntry != null)
                 {
                     // only load if chunk exists
-                    AddResource(chunkEntry, histogramEntry);
+                    strings = strings.Concat(Flammen.Flammen.ReadStrings(histogramEntry, chunkEntry)).ToDictionary(k => k.Key, v => v.Value);
                 }
             }
         }
@@ -283,11 +282,6 @@ namespace FlammenwerferPlugin.Loader.Resources
             for (int i = 0; i < stringId.Length; i++)
                 result = stringId[i] + 33 * result;
             return result;
-        }
-
-        private void AddResource(ChunkAssetEntry stringsBinaryChunk, ChunkAssetEntry histogramChunk)
-        {
-            strings = strings.Concat(Flammen.Flammen.ReadStrings(histogramChunk, stringsBinaryChunk)).ToDictionary(k => k.Key, v => v.Value);
         }
     }
 }
