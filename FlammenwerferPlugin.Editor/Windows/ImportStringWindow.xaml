@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:FlammenwerferPlugin.Editor.Windows"
         xmlns:ctrl="clr-namespace:Frosty.Controls;assembly=FrostyControls"
         mc:Ignorable="d"
-        Title="Import Strings" MinHeight="450" Height="Auto" Width="800" SizeToContent="Height"
+        Title="Import Strings" MinHeight="450" Height="Auto" Width="500" SizeToContent="Height"
         WindowStartupLocation="CenterOwner">
 
     <Window.Resources>
@@ -18,11 +18,32 @@
     </Window.Resources>
 
     <Grid Background="{StaticResource WindowBackground}">
-        <Grid x:Name="SelectFilePage" Visibility="Visible">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0" Background="{StaticResource ListBackground}"/>
+        <StackPanel Grid.Row="0" Margin="2">
+            <WrapPanel Orientation="Horizontal" Margin="2">
+                <Label Width="Auto" Content="File: "/>
+                <Button Padding="5, 0, 5, 0" Width="Auto" Margin="2" Content="Browse" Click="FileBrowseButton_Click"/>
+                <Label MaxWidth="400" Width="Auto" x:Name="FileNameLabel" Content="Or drag a file here" ToolTip=""/> <!-- Show file name if user choose a file -->
+            </WrapPanel>
 
-        </Grid>
-        <Grid x:Name="ConfigPage" Visibility="Collapsed">
+            <WrapPanel Orientation="Horizontal" Margin="2">
+                <Label Width="Auto" Content="File Type: "/>
+                <ComboBox x:Name="FileTypeComboBox" MinWidth="100" Width="Auto" Margin="2">
+                    <ComboBoxItem Name="Auto" Tag="Auto" IsSelected="True"/>
+                    <ComboBoxItem Name="CSV" Tag="CSV"/>
+                    <ComboBoxItem Name="Json" Tag="Json"/>
+                    <ComboBoxItem Name="Excel" Tag="Excel"/>
+                </ComboBox>
+            </WrapPanel>
+            
+        </StackPanel>
 
+        <Grid Grid.Row="1" Height="38">
+            
         </Grid>
     </Grid>
 </ctrl:FrostyDockableWindow>

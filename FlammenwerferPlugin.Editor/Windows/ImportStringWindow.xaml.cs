@@ -21,5 +21,10 @@ namespace FlammenwerferPlugin.Editor.Windows
         {
             InitializeComponent();
         }
+
+        private void FileBrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
