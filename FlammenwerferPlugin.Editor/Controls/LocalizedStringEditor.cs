@@ -90,16 +90,14 @@ namespace FlammenwerferPlugin.Editor.Controls
         private List<string> stringIDListUnfiltered = new List<string>();
         private int currentIndex = 0;
         private bool firstTimeLoad = true;
-        private ILogger logger;
 
         static LocalizedStringEditor()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(LocalizedStringEditor), new FrameworkPropertyMetadata(typeof(LocalizedStringEditor)));
         }
 
-        public LocalizedStringEditor(ILogger inLogger)
+        public LocalizedStringEditor()
         {
-            logger = inLogger;
         }
 
         public override void OnApplyTemplate()

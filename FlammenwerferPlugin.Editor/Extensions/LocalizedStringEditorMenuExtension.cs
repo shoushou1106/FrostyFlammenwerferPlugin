@@ -16,7 +16,7 @@ namespace FlammenwerferPlugin.Editor.Extensions
 
         public override RelayCommand MenuItemClicked => new RelayCommand((o) =>
         {
-            App.EditorWindow.OpenEditor("Localized String Editor", new LocalizedStringEditor(App.Logger));
+            App.EditorWindow.OpenEditor("Localized String Editor", new LocalizedStringEditor());
         });
     }
 }
