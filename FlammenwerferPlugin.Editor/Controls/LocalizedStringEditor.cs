@@ -1,4 +1,5 @@
 ﻿using FlammenwerferPlugin.Editor.Extensions;
+using FlammenwerferPlugin.Editor.Windows;
 using Frosty.Controls;
 using Frosty.Core;
 using Frosty.Core.Controls;
@@ -276,6 +277,10 @@ namespace FlammenwerferPlugin.Editor.Controls
 
         private void ImportButton_Click(object sender, RoutedEventArgs e)
         {
+            ImportStringWindow importWindow = new ImportStringWindow();
+            if (importWindow.ShowDialog() == true)
+                Refresh_Click(sender, e);
+
             //FrostyOpenFileDialog ofd = new FrostyOpenFileDialog("Import Localized Strings", "*.csv (CSV File)|*.csv", "LocalizedStrings");
             //if (ofd.ShowDialog())
             //{
