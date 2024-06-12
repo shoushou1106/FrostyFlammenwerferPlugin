@@ -26,11 +26,11 @@
         <Grid Background="{StaticResource ListBackground}">
             <StackPanel>
                 <DockPanel Margin="5,0,5,5" LastChildFill="True">
-                    <Label Content="Current Value" Width="100"/>
+                    <Label Content="Current Value: " Width="100"/>
                     <TextBox x:Name="CurrentValueTextBox" Text="" Margin="1" BorderThickness="1" Height="64" AcceptsReturn="True" TextWrapping="Wrap" MaxLines="999999" VerticalScrollBarVisibility="Auto"/>
                 </DockPanel>
                 <DockPanel Margin="5,0,5,5" LastChildFill="True">
-                    <Label Content="New Value" Width="100"/>
+                    <Label Content="New Value: " Width="100"/>
                     <TextBox x:Name="NewValueTextBox" Text="" Margin="1" BorderThickness="1" Height="64" AcceptsReturn="True" TextWrapping="Wrap" MaxLines="999999" VerticalScrollBarVisibility="Auto"/>
                 </DockPanel>
                 <DockPanel Margin="5,0,5,5" LastChildFill="True">
