@@ -58,11 +58,4 @@
     <ProjectReference Include="..\FlammenwerferPlugin.Flammen\FlammenwerferPlugin.Flammen.csproj" />
   </ItemGroup>
   
-  <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
-  
 </Project>
