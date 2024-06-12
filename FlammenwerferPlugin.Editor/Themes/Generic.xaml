@@ -24,9 +24,9 @@
                             </Grid.RowDefinitions>
                             <Border Grid.Row="0" MinHeight="26" Height="Auto" Background="{StaticResource ControlBackground}">
                                 <WrapPanel VerticalAlignment="Center" Orientation="Horizontal">
-                                    <ComboBox  x:Name="PART_FilterType" ToolTip="Show only strings of a certain type" Width="150"/>
-                                    <ComboBox x:Name="PART_Language" ToolTip="Switch the language" Width="200"/>
-                                    <Button x:Name="PART_AddStringButton" ToolTip="Add a new string value" Margin="6,0,0,0">
+                                    <ComboBox  x:Name="PART_FilterType" ToolTip="Show only strings of a certain type" Width="150" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
+                                    <ComboBox x:Name="PART_Language" ToolTip="Switch the language" Width="200" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
+                                    <Button x:Name="PART_AddStringButton" ToolTip="Add a new string value" Margin="6,0,0,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface">
                                         <Button.Content>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -34,11 +34,11 @@
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
                                                 <Image Grid.Column="0" Width="14" Source="/FrostyEditor;component/Images/Add.png"/>
-                                                <TextBlock Grid.Column="1" Text="Add String" Margin="0,0,4,0"/>
+                                                <TextBlock Grid.Column="1" Text="Add String" Margin="0,0,4,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                             </Grid>
                                         </Button.Content>
                                     </Button>
-                                    <Button x:Name="PART_BulkReplaceButton" ToolTip="Replace multiple strings at once with new values" Margin="6,0,0,0">
+                                    <Button x:Name="PART_BulkReplaceButton" ToolTip="Replace multiple strings at once with new values" Margin="6,0,0,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface">
                                         <Button.Content>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -46,11 +46,11 @@
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
                                                 <Image Grid.Column="0" Width="14" Source="/FrostyEditor;component/Images/ClassRef.png"/>
-                                                <TextBlock Grid.Column="1" Text="Replace Multiple Strings" Margin="0,0,4,0"/>
+                                                <TextBlock Grid.Column="1" Text="Replace Multiple Strings" Margin="0,0,4,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                             </Grid>
                                         </Button.Content>
                                     </Button>
-                                    <Button x:Name="PART_ImportButton" ToolTip="Import Strings" Margin="6,0,0,0">
+                                    <Button x:Name="PART_ImportButton" ToolTip="Import Strings" Margin="6,0,0,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface">
                                         <Button.Content>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -58,11 +58,11 @@
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
                                                 <Image Grid.Column="0" Width="14" Source="/FrostyEditor;component/Images/Import.png"/>
-                                                <TextBlock Grid.Column="1" Text="Import String List" Margin="0,0,4,0"/>
+                                                <TextBlock Grid.Column="1" Text="Import String List" Margin="0,0,4,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                             </Grid>
                                         </Button.Content>
                                     </Button>
-                                    <Button x:Name="PART_ExportButton" ToolTip="Export Strings" Margin="6,0,0,0">
+                                    <Button x:Name="PART_ExportButton" ToolTip="Export Strings" Margin="6,0,0,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface">
                                         <Button.Content>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -70,13 +70,13 @@
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
                                                 <Image Grid.Column="0" Width="14" Source="/FrostyEditor;component/Images/Export.png"/>
-                                                <TextBlock Grid.Column="1" Text="Export String List" Margin="0,0,4,0"/>
+                                                <TextBlock Grid.Column="1" Text="Export String List" Margin="0,0,4,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                             </Grid>
                                         </Button.Content>
                                     </Button>
-                                    <Button x:Name="PART_Refresh" ToolTip="Refresh the current LocalizedStringDb" Margin="6,0,0,0">
+                                    <Button x:Name="PART_Refresh" ToolTip="Refresh the current LocalizedStringDb" Margin="6,0,0,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface">
                                         <TextBlock Text="&#xE72C;" 
-                                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14" />
+                                            FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14" />
                                     </Button>
                                 </WrapPanel>
                             </Border>
@@ -99,11 +99,11 @@
                                             <ColumnDefinition Width="2"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBox Grid.Column ="0" x:Name="PART_FilterHash" TextWrapping="NoWrap" Padding="4" AutoWordSelection="False" IsReadOnly="False" VerticalScrollBarVisibility="Disabled"/>
+                                        <TextBox Grid.Column ="0" x:Name="PART_FilterHash" TextWrapping="NoWrap" Padding="4" AutoWordSelection="False" IsReadOnly="False" VerticalScrollBarVisibility="Disabled" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                         <Border Grid.Column="1" Background="{StaticResource ControlBackground}"/>
-                                        <TextBox Grid.Column ="2" x:Name="PART_FilterText" TextWrapping="NoWrap" Padding="4" IsReadOnly="False" VerticalScrollBarVisibility="Disabled"/>
+                                        <TextBox Grid.Column ="2" x:Name="PART_FilterText" TextWrapping="NoWrap" Padding="4" IsReadOnly="False" VerticalScrollBarVisibility="Disabled" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                     </Grid>
-                                    <ListBox Grid.Row ="1" x:Name="PART_StringIdList" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+                                    <ListBox Grid.Row ="1" x:Name="PART_StringIdList" ScrollViewer.HorizontalScrollBarVisibility="Disabled" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                 </Grid>
                                 <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="{StaticResource ControlBackground}"/>
                                 <Grid Grid.Column="2" Background="{StaticResource WindowBackground}">
@@ -112,10 +112,10 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
-                                    <TextBox Grid.Row="0" x:Name="PART_LocalizedStringHash" TextWrapping="NoWrap" Padding="4" IsReadOnly="True" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled"/>
+                                    <TextBox Grid.Row="0" x:Name="PART_LocalizedStringHash" TextWrapping="NoWrap" Padding="4" IsReadOnly="True" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                     <Border Grid.Row="1" Background="{StaticResource ControlBackground}" Margin="1" CornerRadius="2" MinHeight="26" Height="Auto">
                                         <WrapPanel VerticalAlignment="Center" Orientation="Horizontal" Margin="0,0,6,0">
-                                            <Button x:Name="PART_UpdateCurrentStringButton" ToolTip="Update Currently Selected String" Margin="6,0,0,0">
+                                            <Button x:Name="PART_UpdateCurrentStringButton" ToolTip="Update Currently Selected String" Margin="6,0,0,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface">
                                                 <Button.Content>
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
@@ -123,11 +123,11 @@
                                                             <ColumnDefinition Width="*"/>
                                                         </Grid.ColumnDefinitions>
                                                         <Image Grid.Column="0" Width="14" Source="/FrostyEditor;component/Images/Save.png"/>
-                                                        <TextBlock Grid.Column="1" Text="Update" Margin="0,0,4,0"/>
+                                                        <TextBlock Grid.Column="1" Text="Update" Margin="0,0,4,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                                     </Grid>
                                                 </Button.Content>
                                             </Button>
-                                            <Button x:Name="PART_CopyCurrentStringButton" ToolTip="Copy the text of the current string" Margin="6,0,0,0">
+                                            <Button x:Name="PART_CopyCurrentStringButton" ToolTip="Copy the text of the current string" Margin="6,0,0,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface">
                                                 <Button.Content>
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
@@ -135,11 +135,11 @@
                                                             <ColumnDefinition Width="*"/>
                                                         </Grid.ColumnDefinitions>
                                                         <Image Grid.Column="0" Width="14" Source="/FrostyCore;component/Images/Copy.png"/>
-                                                        <TextBlock Grid.Column="1" Text="Copy" Margin="0,0,4,0"/>
+                                                        <TextBlock Grid.Column="1" Text="Copy" Margin="0,0,4,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                                     </Grid>
                                                 </Button.Content>
                                             </Button>
-                                            <Button x:Name="PART_PasteCurrentStringButton" ToolTip="Paste text over the current string" Margin="6,0,0,0">
+                                            <Button x:Name="PART_PasteCurrentStringButton" ToolTip="Paste text over the current string" Margin="6,0,0,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface">
                                                 <Button.Content>
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
@@ -147,11 +147,11 @@
                                                             <ColumnDefinition Width="*"/>
                                                         </Grid.ColumnDefinitions>
                                                         <Image Grid.Column="0" Width="14" Source="/FrostyCore;component/Images/Paste.png"/>
-                                                        <TextBlock Grid.Column="1" Text="Paste" Margin="0,0,4,0"/>
+                                                        <TextBlock Grid.Column="1" Text="Paste" Margin="0,0,4,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                                     </Grid>
                                                 </Button.Content>
                                             </Button>
-                                            <Button x:Name="PART_RevertCurrentStringButton" ToolTip="Revert/Remove Currently Selected String" Margin="6,0,0,0">
+                                            <Button x:Name="PART_RevertCurrentStringButton" ToolTip="Revert/Remove Currently Selected String" Margin="6,0,0,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface">
                                                 <Button.Content>
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
@@ -159,13 +159,14 @@
                                                             <ColumnDefinition Width="*"/>
                                                         </Grid.ColumnDefinitions>
                                                         <Image Grid.Column="0" Width="14" Source="/FrostyEditor;component/Images/Revert.png"/>
-                                                        <TextBlock Grid.Column="1" Text="Revert" Margin="0,0,4,0"/>
+                                                        <TextBlock Grid.Column="1" Text="Revert" Margin="0,0,4,0" FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                                     </Grid>
                                                 </Button.Content>
                                             </Button>
                                         </WrapPanel>
                                     </Border>
-                                    <TextBox Grid.Row ="2" x:Name="PART_LocalizedString" AcceptsReturn="True" AcceptsTab="True" AllowDrop="True" Cursor="IBeam" Padding="4" IsReadOnly="False" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible"/>
+                                    <TextBox Grid.Row ="2" x:Name="PART_LocalizedString" AcceptsReturn="True" AcceptsTab="True" AllowDrop="True" Cursor="IBeam" Padding="4" IsReadOnly="False" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible"
+                                             FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
                                 </Grid>
 
                             </Grid>
