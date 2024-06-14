@@ -4,17 +4,37 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FlammenwerferPlugin.Editor.Windows"
+        xmlns:core="clr-namespace:Frosty.Core;assembly=FrostyCore"
         xmlns:ctrl="clr-namespace:Frosty.Controls;assembly=FrostyControls"
+        xmlns:fdev="FrostyDeveloper"
         mc:Ignorable="d"
-        Title="Import Strings" MinHeight="450" Height="Auto" Width="500" SizeToContent="Height"
+        UseLayoutRounding="True"
+        Title="Import Strings" SizeToContent="Height" MaxHeight="800" Width="450" 
+        Icon="/FlammenwerferPlugin.Editor;component/Images/LocalizedStringEditor_HighRes.png"
         WindowStartupLocation="CenterOwner"
-        FontFamily="system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, PingFang TC, PingFang HK, Microsoft Yahei, Microsoft JhengHei, Global User Interface">
+        FontFamily="system-ui, -apple-system, Segoe UI, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, Arial, Microsoft Yahei, Microsoft JhengHei, Global User Interface"
+        AllowDrop="True"
+        Drop="Window_Drop"
+        >
 
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/FrostyControls;component/Themes/Generic.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="DataGridCellStyle" TargetType="DataGridCell">
+                <Setter Property="Background" Value="{StaticResource ListBackground}"/>
+                <Setter Property="Foreground" Value="{StaticResource FontColor}"/>
+                <Setter Property="BorderThickness" Value="0.5"/>
+                <Setter Property="BorderBrush" Value="{StaticResource ControlBackground}"/>
+            </Style>
+            <Style x:Key="DataGridHeaderStyle" TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="{StaticResource ListBackground}"/>
+                <Setter Property="Foreground" Value="{StaticResource FontColor}"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="BorderBrush" Value="{StaticResource ControlBackground}"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -23,28 +43,108 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        
         <Border Grid.Row="0" Background="{StaticResource ListBackground}"/>
-        <StackPanel Grid.Row="0" Margin="2">
-            <WrapPanel Orientation="Horizontal" Margin="2">
-                <Label Width="Auto" Content="File: "/>
-                <Button Padding="5, 0, 5, 0" Width="Auto" Margin="2" Content="Browse" Click="FileBrowseButton_Click"/>
-                <Label MaxWidth="400" Width="Auto" x:Name="FileNameLabel" Content="Or drag a file here" ToolTip=""/> <!-- Show file name if user choose a file -->
-            </WrapPanel>
-
-            <WrapPanel Orientation="Horizontal" Margin="2">
-                <Label Width="Auto" Content="File Type: "/>
+        <StackPanel Grid.Row="0" Margin="5">
+            
+            <!-- File Type -->
+            <WrapPanel Orientation="Horizontal" Margin="3">
+                <Label Width="Auto">
+                    <Label.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Margin="0, 1, 5, 0" Text="&#xe97c;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="File Type: "/>
+                        </StackPanel>
+                    </Label.Content>
+                </Label>
                 <ComboBox x:Name="FileTypeComboBox" MinWidth="100" Width="Auto" Margin="2">
-                    <ComboBoxItem Name="Auto" Tag="Auto" IsSelected="True"/>
-                    <ComboBoxItem Name="CSV" Tag="CSV"/>
-                    <ComboBoxItem Name="Json" Tag="Json"/>
-                    <ComboBoxItem Name="Excel" Tag="Excel"/>
+                    <ComboBoxItem Name="Auto" Content="Auto"  IsSelected="True"/>
+                    <ComboBoxItem Name="Csv" Content="CSV"/>
+                    <ComboBoxItem Name="Json" Content="Json"/>
+                    <ComboBoxItem Name="Excel" Content="Excel"/>
                 </ComboBox>
             </WrapPanel>
             
+            <!-- File -->
+            <WrapPanel Orientation="Horizontal" Margin="3">
+                <Label Width="Auto">
+                    <Label.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyCore;component/Images/Assets/BlankFileType.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="File: "/>
+                        </StackPanel>
+                    </Label.Content>
+                </Label>
+                <Button Padding="6, 1, 6, 1" Margin="0, 2, 0, 2" Width="Auto" Click="FileBrowseButton_Click">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="Browse"/>
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+                <Label MaxWidth="400" Width="Auto" x:Name="FileNameLabel" Content="or drag a file here" ToolTip=""/> <!-- Show file name if user choose a file -->
+            </WrapPanel>
+
+
+            <!-- CSV -->
+            <Grid x:Name="CsvGrid" Margin="3">
+                <DataGrid Name="CsvPreviewDataGrid" AutoGenerateColumns="False" Grid.Row="1" Margin="5, 0, 5, 0"
+                          Background="{StaticResource ListBackground}"
+                          Foreground="{StaticResource FontColor}" BorderThickness="0"
+                          ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                          CellStyle="{StaticResource DataGridCellStyle}"
+                          HeadersVisibility="Column"
+                          RowHeaderWidth="0"
+                          MinColumnWidth="175"
+                          ColumnWidth="175"
+                          GridLinesVisibility="None"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          CanUserReorderColumns="False"
+                          CanUserResizeColumns="True" 
+                          CanUserResizeRows="True"
+                          >
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="IsEnabled" Value="True"/>
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="Background" Value="{StaticResource ListBackground}"/>
+                        </Style>
+                    </DataGrid.Resources>
+                </DataGrid>
+            </Grid>
+
+            <!-- Json -->
+            <Grid x:Name="JsonGrid" Margin="3">
+            </Grid>
+            
+            <!-- Excel -->
+            <Grid x:Name="ExcelGrid" Margin="3">
+                <Label Width="Auto">
+                    <Label.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Properties.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="Properties: "/>
+                        </StackPanel>
+                    </Label.Content>
+                </Label>
+            </Grid>
         </StackPanel>
 
-        <Grid Grid.Row="1" Height="38">
-            
+        <Grid Grid.Row="1" MinHeight="38" Height="Auto">
+            <Grid Margin="8">
+                <DockPanel LastChildFill="False">
+                    <Button x:Name="CancelButton" Content="Cancel" DockPanel.Dock="Left" Width="75"/>
+                    <Button x:Name="ConfirmButton" Content="Import" DockPanel.Dock="Right" Width="90" IsEnabled="False"/>
+                </DockPanel>
+            </Grid>
         </Grid>
+
     </Grid>
 </ctrl:FrostyDockableWindow>
