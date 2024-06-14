@@ -116,9 +116,8 @@ namespace FlammenwerferPlugin.Editor.Controls
             ComboBox_FilterType.Items.Add("Show modified strings");
             ComboBox_FilterType.Items.Add("Show unmodified strings");
             ComboBox_FilterType.SelectedIndex = 0;
-            List<string> languages = GetLocalizedLanguages();
             ComboBox_Language.Items.Clear();
-            languages.ForEach(x => ComboBox_Language.Items.Add(x));
+            GetLocalizedLanguages().ForEach(x => ComboBox_Language.Items.Add(x));
             ComboBox_Language.SelectedIndex = ComboBox_Language.Items.IndexOf(Config.Get<string>("Language", "English", ConfigScope.Game));
             Button_AddString.Click += AddStringButton_Click;
             Button_BulkReplace.Click += BulkReplaceButton_Click;
@@ -212,7 +211,7 @@ namespace FlammenwerferPlugin.Editor.Controls
             RemakeList();
         }
 
-        private List<string> GetLocalizedLanguages()
+        public static List<string> GetLocalizedLanguages()
         {
             List<string> languages = new List<string>();
             foreach (EbxAssetEntry entry in App.AssetManager.EnumerateEbx("LocalizationAsset"))
@@ -275,7 +274,7 @@ namespace FlammenwerferPlugin.Editor.Controls
 
         private void ImportButton_Click(object sender, RoutedEventArgs e)
         {
-            ImportStringWindow importWindow = new ImportStringWindow();
+            ImportStringWindow importWindow = new ImportStringWindow(Application.Current.MainWindow);
             if (importWindow.ShowDialog() == true)
                 Refresh_Click(sender, e);
 
