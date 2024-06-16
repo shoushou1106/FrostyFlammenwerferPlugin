@@ -274,40 +274,17 @@ namespace FlammenwerferPlugin.Editor.Controls
 
         private void ImportButton_Click(object sender, RoutedEventArgs e)
         {
-            ImportStringWindow importWindow = new ImportStringWindow(Application.Current.MainWindow);
-            if (importWindow.ShowDialog() == true)
+            try
+            {
+                ImportStringWindow importWindow = new ImportStringWindow(Application.Current.MainWindow);
+                if (importWindow.ShowDialog() == true)
+                    Refresh_Click(sender, e);
+            }
+            catch (Exception ex)
+            {
+                FrostyExceptionBox.Show(ex, "Flammenwerfer Editor (Import Strings)");
                 Refresh_Click(sender, e);
-
-            //FrostyOpenFileDialog ofd = new FrostyOpenFileDialog("Import Localized Strings", "*.csv (CSV File)|*.csv", "LocalizedStrings");
-            //if (ofd.ShowDialog())
-            //{
-            //    int modified = 0;
-            //    int added = 0;
-            //    FrostyTaskWindow.Show("Importing Localized Strings", "", (task) =>
-            //    {
-            //        using (StreamReader reader = new StreamReader(ofd.FileName))
-            //        {
-            //            while (!reader.EndOfStream)
-            //            {
-            //                string line = reader.ReadLine();
-            //                uint hash = uint.Parse(line.Substring(0, 8), System.Globalization.NumberStyles.HexNumber);
-            //                string s = line.Substring(10, line.Length - 11);
-            //                if (stringIds.Contains(hash) && s != db.GetString(hash))
-            //                {
-            //                    db.SetString(hash, s);
-            //                    modified++;
-            //                }
-            //                else
-            //                {
-            //                    db.SetString(hash, s);
-            //                    added++;
-            //                }
-            //            }
-            //        }
-            //    });
-            //    Refresh_Click(sender, e);
-            //    logger.Log(string.Format("{0} strings modified and {1} strings added.", modified, added));
-            //}
+            }
         }
 
         private void ExportButton_Click(object sender, RoutedEventArgs e)
