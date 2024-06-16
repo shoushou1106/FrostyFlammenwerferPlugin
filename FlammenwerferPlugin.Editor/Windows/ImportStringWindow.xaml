@@ -149,7 +149,7 @@
                     </WrapPanel>
                 </WrapPanel>
 
-                <DataGrid Name="CsvPreviewDataGrid" Margin="3"
+                <DataGrid Name="CsvPreviewDataGrid" Margin="5, 3, 5, 3"
                           Background="{StaticResource ListBackground}"
                           Foreground="{StaticResource FontColor}" BorderThickness="0"
                           ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"

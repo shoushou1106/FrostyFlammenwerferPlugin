@@ -8,6 +8,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -30,9 +31,9 @@ namespace FlammenwerferPlugin.Editor.Windows
             CsvGrid.Visibility = Visibility.Collapsed;
             JsonGrid.Visibility = Visibility.Collapsed;
             ExcelGrid.Visibility = Visibility.Collapsed;
-            FileTypeComboBox.SelectionChanged += PropertyChanged_Selection;
-            CsvFallbackEncodingComboBox.SelectionChanged += PropertyChanged_Selection;
-            //CsvRemoveDuplicatedBomCheckBox.Click += PropertyChanged_Routed;
+            FileTypeComboBox.SelectionChanged += PropertyChanged;
+            CsvFallbackEncodingComboBox.SelectionChanged += PropertyChanged;
+            //CsvRemoveDuplicatedBomCheckBox.Click += PropertyChanged;
 
             List<Encoding> encodings = Encoding.GetEncodings().Select(e => e.GetEncoding()).ToList();
             CsvFallbackEncodingComboBox.ItemsSource = encodings;
@@ -77,14 +78,20 @@ namespace FlammenwerferPlugin.Editor.Windows
             }
         }
 
-        private void PropertyChanged_Routed(object sender, RoutedEventArgs e)
+        private async void PropertyChanged(object sender, RoutedEventArgs e)
         {
-            LoadFile();
+            await Task.Run(() =>
+            {
+                LoadFile();
+            });
         }
 
-        private void PropertyChanged_Selection(object sender, SelectionChangedEventArgs e)
+        private async void PropertyChanged(object sender, SelectionChangedEventArgs e)
         {
-            LoadFile();
+            await Task.Run(() =>
+            {
+                LoadFile();
+            });
         }
 
         private void LoadFile()
@@ -366,8 +373,6 @@ namespace FlammenwerferPlugin.Editor.Windows
                 positionStart = CsvRemoveDuplicatedBOM(0);
                 GC.Collect();
             }
-
-            App.Logger.Log(positionStart.ToString());
 
             using (MemoryStream stream = new MemoryStream(File.ReadAllBytes(FilePath).Skip((int)positionStart).ToArray()))
             using (IExcelDataReader reader = ExcelReaderFactory.CreateCsvReader(stream, new ExcelReaderConfiguration()
