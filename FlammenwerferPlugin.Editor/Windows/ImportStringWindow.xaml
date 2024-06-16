@@ -9,7 +9,7 @@
         xmlns:fdev="FrostyDeveloper"
         mc:Ignorable="d"
         UseLayoutRounding="True"
-        Title="Import Strings" SizeToContent="Height" MaxHeight="800" Width="450" 
+        Title="Import Strings" SizeToContent="Height" MaxHeight="800" Width="500"
         Icon="/FlammenwerferPlugin.Editor;component/Images/LocalizedStringEditor_HighRes.png"
         WindowStartupLocation="CenterOwner"
         FontFamily="system-ui, -apple-system, Segoe UI, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, Arial, Microsoft Yahei, Microsoft JhengHei, Global User Interface"
@@ -45,7 +45,7 @@
         </Grid.RowDefinitions>
         
         <Border Grid.Row="0" Background="{StaticResource ListBackground}"/>
-        <StackPanel Grid.Row="0" Margin="5">
+        <StackPanel Grid.Row="0" Margin="5, 10, 5, 10">
             
             <!-- File Type -->
             <WrapPanel Orientation="Horizontal" Margin="3">
@@ -66,7 +66,7 @@
                     <ComboBoxItem Name="Excel" Content="Excel"/>
                 </ComboBox>
             </WrapPanel>
-            
+
             <!-- File -->
             <WrapPanel Orientation="Horizontal" Margin="3">
                 <Label Width="Auto">
@@ -90,14 +90,71 @@
                 <Label MaxWidth="400" Width="Auto" x:Name="FileNameLabel" Content="or drag a file here" ToolTip=""/> <!-- Show file name if user choose a file -->
             </WrapPanel>
 
-
             <!-- CSV -->
-            <Grid x:Name="CsvGrid" Margin="3">
-                <DataGrid Name="CsvPreviewDataGrid" AutoGenerateColumns="False" Grid.Row="1" Margin="5, 0, 5, 0"
+            <WrapPanel x:Name="CsvGrid" Margin="3" Orientation="Vertical">
+                <Label Width="Auto">
+                    <Label.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Properties.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="Properties: "/>
+                        </StackPanel>
+                    </Label.Content>
+                </Label>
+
+                <WrapPanel Orientation="Vertical" Margin="15, 0, 0, 0">
+                    <!-- Encoding -->
+                    <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
+                        <WrapPanel.ToolTip>
+                            <TextBlock Text="Sets a value indicating the encoding to use when the input XLS lacks a CodePage record, or when the input CSV lacks a BOM and does not parse as UTF8. Default: cp1252. (XLS BIFF2-5 and CSV only)" Foreground="{StaticResource FontColor}"/>
+                        </WrapPanel.ToolTip>
+                        <Label Width="Auto">
+                            <Label.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Margin="0, 1, 5, 0" Text="&#xe774;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    <TextBlock Foreground="{StaticResource FontColor}" Text="Fallback Encoding: "/>
+                                </StackPanel>
+                            </Label.Content>
+                        </Label>
+                        <ComboBox x:Name="CsvFallbackEncodingComboBox" MinWidth="175" Width="Auto" Margin="3, 0, 3, 0"
+                                  DisplayMemberPath="EncodingName" SelectedValuePath="CodePage"
+                                  IsTextSearchEnabled="True" IsTextSearchCaseSensitive="False" TextSearch.TextPath="EncodingName">
+                            <ComboBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel MinWidth="250" Width="Auto"/>
+                                </ItemsPanelTemplate>
+                            </ComboBox.ItemsPanel>
+                        </ComboBox>
+                    </WrapPanel>
+
+                    <!-- Remove incorrect BOM -->
+                    <!-- idk why ExcelDataReader will read bom as a string, so i add this -->
+                    <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
+                        <WrapPanel.ToolTip>
+                            <TextBlock Text="Removes duplicated Byte Order Mark (BOM) for UTF-8, UTF-16 and UTF-32 if detected. Default: false (This shit is for ParaTranz) (Only affect when importing)" Foreground="{StaticResource FontColor}"/>
+                        </WrapPanel.ToolTip>
+                        <Label Width="Auto">
+                            <Label.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Margin="0, 1, 5, 0" Text="&#xe75c;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    <TextBlock Foreground="{StaticResource FontColor}" Text="Remove duplicated BOM: "/>
+                                </StackPanel>
+                            </Label.Content>
+                        </Label>
+                        <CheckBox x:Name="CsvRemoveDuplicatedBomCheckBox" Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </WrapPanel>
+                </WrapPanel>
+
+                <DataGrid Name="CsvPreviewDataGrid" Margin="3"
                           Background="{StaticResource ListBackground}"
                           Foreground="{StaticResource FontColor}" BorderThickness="0"
                           ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
                           CellStyle="{StaticResource DataGridCellStyle}"
+                          AutoGenerateColumns="False"
                           HeadersVisibility="Column"
                           RowHeaderWidth="0"
                           MinColumnWidth="175"
@@ -108,6 +165,8 @@
                           CanUserReorderColumns="False"
                           CanUserResizeColumns="True" 
                           CanUserResizeRows="True"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto"
                           >
                     <DataGrid.Resources>
                         <Style TargetType="DataGridRow">
@@ -117,7 +176,7 @@
                         </Style>
                     </DataGrid.Resources>
                 </DataGrid>
-            </Grid>
+            </WrapPanel>
 
             <!-- Json -->
             <Grid x:Name="JsonGrid" Margin="3">
@@ -140,8 +199,25 @@
         <Grid Grid.Row="1" MinHeight="38" Height="Auto">
             <Grid Margin="8">
                 <DockPanel LastChildFill="False">
-                    <Button x:Name="CancelButton" Content="Cancel" DockPanel.Dock="Left" Width="75"/>
-                    <Button x:Name="ConfirmButton" Content="Import" DockPanel.Dock="Right" Width="90" IsEnabled="False"/>
+                    <Button x:Name="CancelButton" Padding="6, 1, 6, 1" DockPanel.Dock="Left" Width="Auto" Click="CancelButton_Click"  IsEnabled="False">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyControls;component/Images/Clear.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Cancel"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                    
+                    <Button x:Name="ConfirmButton" Padding="6, 1, 6, 1" DockPanel.Dock="Right" Width="Auto" Click="ConfirmButton_Click"  IsEnabled="False">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Import.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Import"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
                 </DockPanel>
             </Grid>
         </Grid>
