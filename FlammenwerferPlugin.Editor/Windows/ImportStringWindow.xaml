@@ -95,52 +95,36 @@
                 <Label Width="Auto">
                     <Label.Content>
                         <StackPanel Orientation="Horizontal">
-                            <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Properties.png"
+                            <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyCore;component/Images/Settings.png"
                                    RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Foreground="{StaticResource FontColor}" Text="Properties: "/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="Options: "/>
                         </StackPanel>
                     </Label.Content>
                 </Label>
 
                 <WrapPanel Orientation="Vertical" Margin="15, 0, 0, 0">
-                    <!-- Encoding -->
-                    <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
-                        <WrapPanel.ToolTip>
-                            <TextBlock Text="Sets a value indicating the encoding to use when the input XLS lacks a CodePage record, or when the input CSV lacks a BOM and does not parse as UTF8. Default: cp1252. (XLS BIFF2-5 and CSV only)" Foreground="{StaticResource FontColor}"/>
-                        </WrapPanel.ToolTip>
-                        <Label Width="Auto">
-                            <Label.Content>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Margin="0, 1, 5, 0" Text="&#xe774;" 
-                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
-                                    <TextBlock Foreground="{StaticResource FontColor}" Text="Fallback Encoding: "/>
-                                </StackPanel>
-                            </Label.Content>
-                        </Label>
-                        <ComboBox x:Name="CsvFallbackEncodingComboBox" MinWidth="175" Width="Auto" Margin="3, 0, 3, 0"
-                                  DisplayMemberPath="EncodingName" SelectedValuePath="CodePage"
-                                  IsTextSearchEnabled="True" IsTextSearchCaseSensitive="False" TextSearch.TextPath="EncodingName">
-                            <ComboBox.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <VirtualizingStackPanel MinWidth="250" Width="Auto"/>
-                                </ItemsPanelTemplate>
-                            </ComboBox.ItemsPanel>
-                        </ComboBox>
-                    </WrapPanel>
-
                     <!-- Remove incorrect BOM -->
                     <!-- idk why ExcelDataReader will read bom as a string, so i add this -->
                     <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
+                        <Label Width="Auto">
+                            <Label.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Foreground="{StaticResource FontColor}" Text="Has Header: "/>
+                                </StackPanel>
+                            </Label.Content>
+                        </Label>
+                        <CheckBox x:Name="CsvHasHeaderCheckBox" Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center" Click="OptionsChanged"/>
+                    </WrapPanel>
+
+                    <!-- Remove incorrect BOM -->
+                    <!-- idk why ParaTranz will write 2 bom, so i add this -->
+                    <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
                         <WrapPanel.ToolTip>
-                            <TextBlock Text="Removes duplicated Byte Order Mark (BOM) for UTF-8, UTF-16 and UTF-32 if detected. Default: false (This shit is for ParaTranz) (Only affect when importing)" Foreground="{StaticResource FontColor}"/>
+                            <TextBlock Text="Removes duplicated Byte Order Mark (BOM) for UTF-8, UTF-16 and UTF-32 if detected. Default false. (This shit is for ParaTranz) (Only affect when importing)" Foreground="{StaticResource FontColor}"/>
                         </WrapPanel.ToolTip>
                         <Label Width="Auto">
                             <Label.Content>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Margin="0, 1, 5, 0" Text="&#xe75c;" 
-                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
                                     <TextBlock Foreground="{StaticResource FontColor}" Text="Remove duplicated BOM: "/>
                                 </StackPanel>
                             </Label.Content>
@@ -179,8 +163,21 @@
             </WrapPanel>
 
             <!-- Json -->
-            <Grid x:Name="JsonGrid" Margin="3">
-            </Grid>
+            <WrapPanel x:Name="JsonGrid" Margin="3">
+                <Label Width="Auto">
+                    <Label.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Properties.png"
+                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="Options: "/>
+                        </StackPanel>
+                    </Label.Content>
+                </Label>
+
+                <WrapPanel Orientation="Vertical" Margin="15, 0, 0, 0">
+                </WrapPanel>
+
+            </WrapPanel>
             
             <!-- Excel -->
             <Grid x:Name="ExcelGrid" Margin="3">

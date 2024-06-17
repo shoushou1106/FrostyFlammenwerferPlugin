@@ -1,17 +1,22 @@
-﻿using ExcelDataReader;
-using Frosty.Controls;
+﻿using Frosty.Controls;
 using Frosty.Core;
 using Frosty.Core.Controls;
+using Frosty.Core.Sdk.AnthemDemo;
+using Frosty.Core.Windows;
+using FrostySdk.Interfaces;
+using Sylvan.Data.Csv;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Threading;
 
 namespace FlammenwerferPlugin.Editor.Windows
 {
@@ -31,13 +36,18 @@ namespace FlammenwerferPlugin.Editor.Windows
             CsvGrid.Visibility = Visibility.Collapsed;
             JsonGrid.Visibility = Visibility.Collapsed;
             ExcelGrid.Visibility = Visibility.Collapsed;
-            FileTypeComboBox.SelectionChanged += PropertyChanged;
-            CsvFallbackEncodingComboBox.SelectionChanged += PropertyChanged;
-            //CsvRemoveDuplicatedBomCheckBox.Click += PropertyChanged;
 
-            List<Encoding> encodings = Encoding.GetEncodings().Select(e => e.GetEncoding()).ToList();
-            CsvFallbackEncodingComboBox.ItemsSource = encodings;
-            CsvFallbackEncodingComboBox.SelectedItem = new ExcelReaderConfiguration().FallbackEncoding;
+            Dispatcher.UnhandledException += UnhandledException;
+
+            // Manually set to prevent exception
+            FileTypeComboBox.SelectionChanged += OptionsChanged;
+        }
+
+        private void UnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            FrostyExceptionBox.Show(e.Exception, "Flammenwerfer Editor (Import Strings)");
+            DialogResult = false;
+            Close();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -78,20 +88,14 @@ namespace FlammenwerferPlugin.Editor.Windows
             }
         }
 
-        private async void PropertyChanged(object sender, RoutedEventArgs e)
+        private void OptionsChanged(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() =>
-            {
-                LoadFile();
-            });
+            LoadFile();
         }
 
-        private async void PropertyChanged(object sender, SelectionChangedEventArgs e)
+        private void OptionsChanged(object sender, SelectionChangedEventArgs e)
         {
-            await Task.Run(() =>
-            {
-                LoadFile();
-            });
+            LoadFile();
         }
 
         private void LoadFile()
@@ -170,7 +174,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                 FrostyMessageBox.Show("File not found", "Flammenwerfer Editor (Import String Window)");
                 return;
             }
-
+            
             FileInfo fileInfo = new FileInfo(FilePath);
             FileNameLabel.Content = fileInfo.Name;
             FileNameLabel.ToolTip = FilePath;
@@ -227,6 +231,24 @@ namespace FlammenwerferPlugin.Editor.Windows
             }
         }
 
+        private async void ReportProgress(ILogger logger, int current, int total, int currentPart = 1, int totalParts = 1, int detail = 1, int totalDetails = 1)
+        {
+            if (total > 0)
+            {
+                // totalParts = tp
+                // currentPart = p
+                // total = t
+                // current = c
+                // totalDetails = td
+                // detail = d
+                // ((((p - 1) * t + (c - 1)) * td + d) / (tp * t * td)) * 100%
+                await Task.Run(() =>
+                {
+                    logger.Log("progress:" + (((((double)currentPart - 1) * (double)total + ((double)current - 1)) * (double)totalDetails + (double)detail) / ((double)totalDetails * (double)total * (double)totalParts)) * 100.0d);
+                });
+            }
+        }
+
         #region - CSV -
 
         private void ShowPreviewCsv()
@@ -242,6 +264,7 @@ namespace FlammenwerferPlugin.Editor.Windows
 
                 foreach (DataColumn column in dataTable.Columns)
                 {
+                    // Create the header
                     ComboBox header = new ComboBox();
                     header.Items.Add(new ComboBoxItem()
                     {
@@ -262,15 +285,17 @@ namespace FlammenwerferPlugin.Editor.Windows
                         }));
                     header.BorderThickness = new Thickness(1);
 
+                    // Create the cell
                     DataTemplate cell = new DataTemplate();
                     var cellTextBlock = new FrameworkElementFactory(typeof(TextBlock));
-                    cellTextBlock.SetBinding(TextBlock.TextProperty, new Binding(column.ColumnName));
+                    cellTextBlock.SetBinding(TextBlock.TextProperty, new Binding(column.ColumnName)); // Binding the value
                     cellTextBlock.SetValue(TextBlock.ForegroundProperty, FindResource("FontColor"));
                     cellTextBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
                     cellTextBlock.SetValue(TextBlock.TextWrappingProperty, TextWrapping.NoWrap);
                     cellTextBlock.SetValue(TextBlock.PaddingProperty, new Thickness(2));
                     cell.VisualTree = cellTextBlock;
 
+                    // Create the column
                     DataGridTemplateColumn templateColumn = new DataGridTemplateColumn
                     {
                         Header = header,
@@ -283,11 +308,14 @@ namespace FlammenwerferPlugin.Editor.Windows
             }
             catch (Exception ex)
             {
+                // If there's really an exception occur, use the DataGrid to display it.
+
                 // Allow user to force import
                 //ConfirmButton.IsEnabled = false; 
                 CsvPreviewDataGrid.ItemsSource = null;
                 CsvPreviewDataGrid.Columns.Clear();
 
+                // Create the header
                 TextBox textBox = new TextBox();
                 textBox.IsReadOnly = true;
                 textBox.Width = ActualWidth - 30;
@@ -296,6 +324,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                 textBox.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
                 textBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
 
+                // Create exception message
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine("Could not read the file as CSV, you can still force import");
                 sb.AppendLine();
@@ -313,6 +342,7 @@ namespace FlammenwerferPlugin.Editor.Windows
 
                 textBox.Text = sb.ToString();
 
+                // Create column
                 DataGridTemplateColumn templateColumn = new DataGridTemplateColumn
                 {
                     Header = textBox,
@@ -330,10 +360,9 @@ namespace FlammenwerferPlugin.Editor.Windows
         {
             DataTable dt = new DataTable();
 
-            using (FileStream stream = File.Open(FilePath, FileMode.Open, FileAccess.Read))
-            using (IExcelDataReader reader = ExcelReaderFactory.CreateCsvReader(stream, new ExcelReaderConfiguration()
+            using (CsvDataReader reader = CsvDataReader.Create(FilePath, new CsvDataReaderOptions()
             {
-                FallbackEncoding = CsvFallbackEncodingComboBox.SelectedItem as Encoding
+                HasHeaders = CsvHasHeaderCheckBox.IsChecked.GetValueOrDefault(false)
             }))
             {
                 for (int i = 0; i < 5; i++)
@@ -343,6 +372,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                     DataRow dr = dt.NewRow();
                     for (int j = 0; j < reader.FieldCount; j++)
                     {
+                        // Add column if not exist, column name is index (i)
                         if (!dt.Columns.Contains(j.ToString()))
                             dt.Columns.Add(j.ToString(), typeof(string));
                         dr[j] = reader.GetString(j);
@@ -356,122 +386,283 @@ namespace FlammenwerferPlugin.Editor.Windows
 
         private bool ImportCsv()
         {
-            ILocalizedStringDatabase db = LocalizedStringDatabase.Current;
-            DataTable dt = new DataTable();
-            Dictionary<int, Func<string, uint, uint>> funcs = new Dictionary<int, Func<string, uint, uint>>();
-            Dictionary<string, List<Tuple<uint, string>>> stringsToAdd = new Dictionary<string, List<Tuple<uint, string>>>();
+            bool result = true;
+            CancellationTokenSource cancelToken = new CancellationTokenSource();
 
-            foreach (string lang in Controls.LocalizedStringEditor.GetLocalizedLanguages())
+            FrostyTaskWindow.Show(this, "Importing CSV", "Loading", (task) =>
             {
-                stringsToAdd.Add(lang, new List<Tuple<uint, string>>());
-            }
-
-            // Remove duplicated BOM
-            long positionStart = 0;
-            if (CsvRemoveDuplicatedBomCheckBox.IsChecked == true)
-            {
-                positionStart = CsvRemoveDuplicatedBOM(0);
-                GC.Collect();
-            }
-
-            using (MemoryStream stream = new MemoryStream(File.ReadAllBytes(FilePath).Skip((int)positionStart).ToArray()))
-            using (IExcelDataReader reader = ExcelReaderFactory.CreateCsvReader(stream, new ExcelReaderConfiguration()
-            {
-                FallbackEncoding = CsvFallbackEncodingComboBox.SelectedItem as Encoding
-            }))
-            {
-                while (reader.Read())
+                try
                 {
-                    DataRow dr = dt.NewRow();
-                    for (int i = 0; i < reader.FieldCount; i++)
+                    const int totalParts = 6;
+                    cancelToken.Token.ThrowIfCancellationRequested();
+
+                    ILocalizedStringDatabase db = LocalizedStringDatabase.Current;
+                    DataTable dt = new DataTable();
+                    Dictionary<int, Func<string, uint, uint>> funcs = new Dictionary<int, Func<string, uint, uint>>();
+                    Dictionary<string, List<Tuple<uint, string>>> stringsToAdd = new Dictionary<string, List<Tuple<uint, string>>>();
+
+                    // Step 1: Loading Languages
+                    task.TaskLogger.Log("[1/6] Loading Languages");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 1, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+                    int languagesCount = Controls.LocalizedStringEditor.GetLocalizedLanguages().Count;
+                    int index = 0;
+
+                    foreach (string lang in Controls.LocalizedStringEditor.GetLocalizedLanguages())
                     {
-                        if (!dt.Columns.Contains(i.ToString()))
-                            dt.Columns.Add(i.ToString(), typeof(string));
-                        dr[i] = reader.GetString(i);
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        // Initialize dictionary with languages
+                        stringsToAdd.Add(lang, new List<Tuple<uint, string>>());
+                        ReportProgress(task.TaskLogger, ++index, languagesCount, currentPart: 1, totalParts);
                     }
-                    dt.Rows.Add(dr);
-                }
-            }
 
-            GC.Collect();
+                    // Step 2: Remove duplicated BOM
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 2, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
 
-            int keyIndex = -1;
+                    long positionStart = 0;
+                    bool isRemoveDuplicatedBom = false;
+                    Dispatcher.Invoke(() =>
+                    {
+                        isRemoveDuplicatedBom = CsvRemoveDuplicatedBomCheckBox.IsChecked.GetValueOrDefault(false);
+                    });
+                    if (isRemoveDuplicatedBom)
+                    {
+                        task.TaskLogger.Log("[2/6] Removing duplicated BOM");
 
-            for (int i = 0; i < CsvPreviewDataGrid.Columns.Count; i++)
-            {
-                string name = ((CsvPreviewDataGrid.Columns[i].Header as ComboBox).SelectedItem as ComboBoxItem).Name;
-                switch (name)
-                {
-                    case null:
-                    case "":
-                    case "None":
-                        Func<string, uint, uint> noneAction = (_, inKey) => {
-                            return inKey;
-                        };
-                        funcs.Add(i, noneAction);
-                        break;
+                        positionStart = CsvRemoveDuplicatedBOM(0);
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        GC.Collect();
+                    }
 
-                    case "Key":
-                        if (keyIndex == -1)
-                            keyIndex = i;
-                        else
+                    // Step 3: Read CSV file
+                    task.TaskLogger.Log("[3/6] Reading CSV file");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 3, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+
+                    bool hasHeader = false;
+                    Dispatcher.Invoke(() =>
+                    {
+                        hasHeader = CsvHasHeaderCheckBox.IsChecked.GetValueOrDefault(false);
+                    });
+                    using (StreamReader reader = new StreamReader(File.OpenRead(FilePath)))
+                    {
+                        reader.BaseStream.Position = positionStart;
+                        using (CsvDataReader csvReader = CsvDataReader.Create(reader, new CsvDataReaderOptions()
                         {
-                            FrostyMessageBox.Show("Please only select one key column", "Flammenwerfer Editor (Import String Window)");
-                            return false;
+                            HasHeaders = hasHeader,
+                        }))
+                        {
+                            while (csvReader.Read())
+                            {
+                                cancelToken.Token.ThrowIfCancellationRequested();
+                                DataRow dr = dt.NewRow();
+                                for (int i = 0; i < csvReader.FieldCount; i++)
+                                {
+                                    // Add column if not exist, column name is index (i)
+                                    if (!dt.Columns.Contains(i.ToString()))
+                                        dt.Columns.Add(i.ToString(), typeof(string));
+                                    dr[i] = csvReader.GetString(i);
+                                    cancelToken.Token.ThrowIfCancellationRequested();
+                                }
+                                dt.Rows.Add(dr);
+                            }
                         }
+                    }
 
-                        Func<string, uint, uint> keyAction = (inValue, _) => {
-                            return uint.Parse(inValue, System.Globalization.NumberStyles.HexNumber);
-                        };
-                        funcs.Add(i, keyAction);
-                        break;
+                    GC.Collect();
 
-                    default:
-                        Func<string, uint, uint> stringAction = (inValue, inKey) => {
-                            stringsToAdd[name].Add(new Tuple<uint, string>(inKey, inValue));
-                            return inKey;
-                        };
-                        funcs.Add(i, stringAction);
-                        break;
+                    // Step 4: Process column header to actions
+                    task.TaskLogger.Log("[4/6] Processing columns");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 4, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+
+                    int keyIndex = -1;
+
+                    int previewDataGridColumnsCount = 0;
+                    Dispatcher.Invoke(() =>
+                    {
+                        previewDataGridColumnsCount = CsvPreviewDataGrid.Columns.Count;
+                    });
+
+                    // Iterate through the selected usages for each column
+                    for (int i = 0; i < previewDataGridColumnsCount; i++)
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        // Get usage from header ComboBox
+                        string name = null;
+                        Dispatcher.Invoke(() =>
+                        {
+                            name = ((CsvPreviewDataGrid.Columns[i].Header as ComboBox).SelectedItem as ComboBoxItem).Name;
+                        });
+                        switch (name)
+                        {
+                            case null:
+                            case "":
+                            case "None":
+                                // Do nothing
+                                Func<string, uint, uint> noneAction = (_, inKey) =>
+                                {
+                                    return inKey;
+                                };
+                                funcs.Add(i, noneAction);
+                                break;
+
+                            case "Key":
+                                // Key column
+                                if (keyIndex == -1)
+                                    keyIndex = i;
+                                else
+                                {
+                                    // Do not accept multiple key columns
+                                    FrostyMessageBox.Show("Please only select one key column", "Flammenwerfer Editor (Import String Window)");
+                                    result = false;
+                                    return;
+                                }
+
+                                Func<string, uint, uint> keyAction = (inValue, _) =>
+                                {
+                                    // Return the parsed key
+                                    return uint.Parse(inValue, System.Globalization.NumberStyles.HexNumber);
+                                };
+                                funcs.Add(i, keyAction);
+                                break;
+
+                            default:
+                                // String column
+                                Func<string, uint, uint> stringAction = (inValue, inKey) =>
+                                {
+                                    // Add string and key to stringsToAdd list
+                                    stringsToAdd[name].Add(new Tuple<uint, string>(inKey, inValue));
+                                    return inKey;
+                                };
+                                funcs.Add(i, stringAction);
+                                break;
+                        }
+                        ReportProgress(task.TaskLogger, i + 1, previewDataGridColumnsCount, currentPart: 4, totalParts);
+                    }
+
+                    if (keyIndex == -1)
+                    {
+                        // Check if key column exists
+                        FrostyMessageBox.Show("Please select one key column", "Flammenwerfer Editor (Import String Window)");
+                        result = false;
+                        return;
+                    }
+
+                    // Step 5: Run actions
+                    task.TaskLogger.Log("[5/6] Preparing strings");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 5, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+
+                    index = 0;
+
+                    // Run actions that processed at step 4 for each row
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        // Get the key first from key column
+                        uint key = funcs[keyIndex](row[keyIndex].ToString(), 0);
+                        // Iterate every value in the row
+                        for (int i = 0; i < row.ItemArray.Length; i++)
+                        {
+                            // Will no nothing if this value is in                          None column
+                            // Will get the same key if this value is in                    Key column
+                            // Will add the string to stringsToAdd if this value is in      String column
+                            funcs[i](row[i].ToString(), key);
+                        }
+                        ReportProgress(task.TaskLogger, ++index, dt.Rows.Count, currentPart: 5, totalParts);
+                    }
+
+                    // Step 6: Import Strings
+                    task.TaskLogger.Log("[6/6] Importing strings");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 6, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+
+                    index = 0;
+                    int totalAdded = 0;
+                    int totalModified = 0;
+                    int totalIgnored = 0;
+                    int totalSame = 0;
+                    int totalLanguage = 0;
+
+                    // Calculate total languages
+                    foreach (KeyValuePair<string, List<Tuple<uint, string>>> pair in stringsToAdd)
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        if (pair.Value.Count != 0)
+                            totalLanguage++;
+                    }
+
+                    // Back up the language currently selected by the user
+                    string currentLanguage = Config.Get("Language", "English", ConfigScope.Game);
+                    // Iterate every languages and the strings for the language
+                    // pair.Key is the language, pair.Value is the string list for the pair.Key
+                    foreach (KeyValuePair<string, List<Tuple<uint, string>>> pair in stringsToAdd)
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        if (pair.Value.Count == 0)
+                            continue;
+                        index++;
+
+                        // Switch to language
+                        Config.Add("Language", pair.Key, ConfigScope.Game);
+                        Config.Save();
+                        db.Initialize();
+                        var currentStringIds = db.EnumerateStrings().Distinct().AsQueryable();
+                        int totalSet = 0;
+
+                        // Add strings
+                        //Parallel.ForEach(pair.Value, new ParallelOptions() { CancellationToken = cancelToken.Token, MaxDegreeOfParallelism = 4 }, (tuple) =>
+                        foreach (Tuple<uint, string> tuple in pair.Value)
+                        {
+                            cancelToken.Token.ThrowIfCancellationRequested();
+
+                            if (db.GetString(tuple.Item1) == tuple.Item2)
+                                totalSame++;
+                            else if (currentStringIds.Contains(tuple.Item1))
+                                totalModified++;
+                            else
+                                totalAdded++;
+
+                            db.SetString(tuple.Item1, tuple.Item2);
+                            totalSet++;
+
+                            // Make users feel fast
+                            task.TaskLogger.Log($"[6/6] Importing strings ({tuple.Item1.ToString("X")})");
+                            ReportProgress(task.TaskLogger, index, totalLanguage, 6, totalParts, totalSet, pair.Value.Count);
+                        }
+                        totalIgnored += currentStringIds.Count() - totalSet;
+
+                        ReportProgress(task.TaskLogger, index, totalLanguage, currentPart: 6, totalParts);
+                    }
+                    App.Logger.Log($"{totalModified} strings modified, {totalAdded} strings added, {totalSame} strings same and {totalIgnored} strings ignored. In {totalLanguage} languages.");
+
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    task.TaskLogger.Log("Finishing");
+                    ReportProgress(task.TaskLogger, 1, 1, 1, 1);
+                    Thread.Sleep(1);
+
+                    // Switch back to the previously backed-up language
+                    Config.Add("Language", currentLanguage, ConfigScope.Game);
+                    Config.Save();
+                    db.Initialize();
                 }
-            }
-
-            if (keyIndex == -1)
-            {
-                FrostyMessageBox.Show("Please select one key column", "Flammenwerfer Editor (Import String Window)");
-                return false;
-            }
-
-            foreach (DataRow row in dt.Rows)
-            {
-                uint key = funcs[keyIndex](row[keyIndex].ToString(), 0);
-                for (int i = 0; i < row.ItemArray.Length; i++)
+                catch (OperationCanceledException)
                 {
-                    funcs[i](row[i].ToString(), key);
+                    // User canceled
+                    result = false;
+                    App.Logger.Log("CSV import canceled");
                 }
-            }
+            }, true, (task) => cancelToken.Cancel());
 
-            string currentLanguage = Config.Get("Language", "English", ConfigScope.Game);
-
-            foreach (KeyValuePair<string, List<Tuple<uint, string>>> pair in stringsToAdd)
-            {
-                if (pair.Value.Count == 0)
-                    continue;
-
-                Config.Add("Language", pair.Key, ConfigScope.Game);
-                Config.Save();
-                db.Initialize();
-
-                foreach (Tuple<uint, string> tuple in pair.Value)
-                {
-                    db.SetString(tuple.Item1, tuple.Item2);
-                }
-            }
-
-            Config.Add("Language", currentLanguage, ConfigScope.Game);
-            Config.Save();
-            db.Initialize();
-            return true;
+            return result;
         }
 
         private long CsvRemoveDuplicatedBOM(long currentPosition)
@@ -535,18 +726,6 @@ namespace FlammenwerferPlugin.Editor.Windows
         }
 
         #endregion
-
-
-
-
-
-
-
-
-
-        // Excel header example maybe https://github.com/ExcelDataReader/ExcelDataReader/issues/335
-
-
 
     }
 }
