@@ -1,28 +1,59 @@
 ﻿using Frosty.Controls;
 using Frosty.Core;
 using Frosty.Core.Controls;
-using Frosty.Core.Sdk.AnthemDemo;
 using Frosty.Core.Windows;
 using FrostySdk.Interfaces;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Sylvan.Data.Csv;
+using Sylvan.Data.Excel;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace FlammenwerferPlugin.Editor.Windows
 {
-    public partial class ImportStringWindow : FrostyDockableWindow
+    public partial class ImportStringWindow : FrostyDockableWindow, INotifyPropertyChanged
     {
-        private string FilePath { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public string FilePath { get; set; }
+        public List<ComboBoxItem> ComboBoxItems { get; set; }
+
+        private int _previewCount = 5;
+        public int PreviewCount
+        {
+            get { return _previewCount; }
+            set
+            {
+                _previewCount = value;
+                OnPropertyChanged(nameof(PreviewCount));
+                OnPropertyChanged(nameof(IsLoadLessButtonEnabled));
+            }
+        }
+
+        public bool IsLoadLessButtonEnabled => PreviewCount > 1;
 
         public ImportStringWindow(Window owner)
         {
@@ -37,7 +68,50 @@ namespace FlammenwerferPlugin.Editor.Windows
             JsonGrid.Visibility = Visibility.Collapsed;
             ExcelGrid.Visibility = Visibility.Collapsed;
 
+            this.DataContext = this;
+
             Dispatcher.UnhandledException += UnhandledException;
+
+            ComboBoxItems = new List<ComboBoxItem>
+            {
+                new ComboBoxItem()
+                {
+                    Name = "None",
+                    Content = "None",
+                    IsSelected = true
+                },
+                new ComboBoxItem()
+                {
+                    Name = "Key",
+                    Content = "Key",
+                }
+            };
+            Controls.LocalizedStringEditor.GetLocalizedLanguages()
+                .ForEach(x => ComboBoxItems.Add(new ComboBoxItem()
+                {
+                    Name = x,
+                    Content = "String (" + x + ")",
+                }));
+
+            JsonFieldTypes = new List<JsonFieldType>
+            {
+                new JsonFieldType()
+                {
+                    Name = "None",
+                    DisplayName = "None",
+                },
+                new JsonFieldType()
+                {
+                    Name = "Key",
+                    DisplayName = "Key",
+                }
+            };
+            Controls.LocalizedStringEditor.GetLocalizedLanguages()
+                .ForEach(x => JsonFieldTypes.Add(new JsonFieldType()
+                {
+                    Name = x,
+                    DisplayName = "String (" + x + ")",
+                }));
 
             // Manually set to prevent exception
             FileTypeComboBox.SelectionChanged += OptionsChanged;
@@ -54,6 +128,67 @@ namespace FlammenwerferPlugin.Editor.Windows
         {
             DialogResult = false;
             Close();
+        }
+
+        private async void LoadMoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(() =>
+            {
+                PreviewCount++;
+            });
+        }
+
+        private async void LoadLessButton_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(async () =>
+            {
+                if (PreviewCount > 1)
+                {
+                    PreviewCount--;
+                    if (PreviewCount == 1)
+                    {
+                        await Task.Delay(200);
+                        Dispatcher.Invoke(() =>
+                        {
+                            LoadFile();
+                        });
+                    }
+                }
+            });
+        }
+
+        private void PreviewCountChanged(object sender, RoutedEventArgs e)
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(200);
+                Dispatcher.Invoke(() =>
+                {
+                    LoadFile();
+                });
+            });
+        }
+        private void PreviewCountChanged(object sender, KeyEventArgs e)
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(200);
+                Dispatcher.Invoke(() =>
+                {
+                    LoadFile();
+                });
+            });
+        }
+        private void PreviewCountChanged(object sender, MouseButtonEventArgs e)
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(200);
+                Dispatcher.Invoke(() =>
+                {
+                    LoadFile();
+                });
+            });
         }
 
         private void Window_Drop(object sender, DragEventArgs e)
@@ -76,7 +211,7 @@ namespace FlammenwerferPlugin.Editor.Windows
         private void FileBrowseButton_Click(object sender, RoutedEventArgs e)
         {
             FrostyOpenFileDialog openFileDialog = new FrostyOpenFileDialog("Import Localized Strings",
-                "All supported file (*.csv;*.json;*.xlsx;*.xlsb;*.xls)|*.csv;*.json;*.xlsx;*.xlsb;*.xls|CSV file (*.csv)|*.csv|Json file (*.json)|*.json|Excel file (*.xlsx;*.xlsb;*.xls)|*.xlsx;*.xlsb;*.xls|All file (*.*)|*.*",
+                "All supported file (*.csv;*.json;*.xlsx;*.xlsb;*.xls)|*.csv;*.json;*.xlsx;*.xlsb;*.xls|CSV file (*.csv)|*.csv|JSON file (*.json)|*.json|Excel file (*.xlsx;*.xlsb;*.xls)|*.xlsx;*.xlsb;*.xls|All file (*.*)|*.*",
                 "LocalizedStrings")
             {
                 Multiselect = false // TODO: Allow import multiple files
@@ -88,15 +223,25 @@ namespace FlammenwerferPlugin.Editor.Windows
             }
         }
 
-        private void OptionsChanged(object sender, RoutedEventArgs e)
+        private void OptionsChanged(object sender, RoutedEventArgs e) => LoadFile();
+        private void OptionsChanged(object sender, SelectionChangedEventArgs e) => LoadFile();
+
+        private async void ReportProgress(ILogger logger, int current, int total, int currentPart = 1, int totalParts = 1, int detail = 1, int totalDetails = 1)
         {
-            LoadFile();
+            if (total > 0)
+            {
+                // totalParts = tp
+                // currentPart = p
+                // total = t
+                // current = c
+                // totalDetails = td
+                // detail = d
+                // ((((p - 1) * t + (c - 1)) * td + d) / (tp * t * td)) * 100%
+                await Task.Run(() => logger.Log("progress:" + (((((double)currentPart - 1) * (double)total + ((double)current - 1)) * (double)totalDetails + (double)detail) / ((double)totalDetails * (double)total * (double)totalParts)) * 100.0d));
+            }
         }
 
-        private void OptionsChanged(object sender, SelectionChangedEventArgs e)
-        {
-            LoadFile();
-        }
+        #region - File -
 
         private void LoadFile()
         {
@@ -107,15 +252,16 @@ namespace FlammenwerferPlugin.Editor.Windows
 
             if (!File.Exists(FilePath))
             {
-                FileNameLabel.Content = "or drag a file here";
-                FileNameLabel.ToolTip = null;
+                (FileNameLabel.Content as TextBlock).Text = "or drag a file here";
+                (FileNameLabel.ToolTip as TextBlock).Text = null;
                 FilePath = null;
                 return;
             }
 
             FileInfo fileInfo = new FileInfo(FilePath);
-            FileNameLabel.Content = fileInfo.Name;
-            FileNameLabel.ToolTip = FilePath;
+            (FileNameLabel.Content as TextBlock).Text = fileInfo.Name;
+            (FileNameLabel.ToolTip as TextBlock).Text = FilePath;
+
 
             switch ((FileTypeComboBox.SelectedItem as ComboBoxItem).Name)
             {
@@ -127,13 +273,13 @@ namespace FlammenwerferPlugin.Editor.Windows
                             break;
 
                         case ".json":
-                            //ReadCsv(path);
+                            ShowPreviewJson();
                             break;
 
                         case ".xlsx":
                         case ".xlsb":
                         case ".xls":
-                            //ReadCsv(path);
+                            ShowPreviewExcel();
                             break;
                         default:
                             CsvGrid.Visibility = Visibility.Collapsed;
@@ -149,16 +295,18 @@ namespace FlammenwerferPlugin.Editor.Windows
                     break;
 
                 case "Json":
-                    //ReadCsv(path);
+                    ShowPreviewJson();
                     break;
 
                 case "Excel":
-                    //ReadCsv(path);
+                    ShowPreviewExcel();
                     break;
 
                 default:
                     throw new FileFormatException("The selected File Type cannot be recognized");
             }
+
+            GC.Collect();
         }
 
         private void ConfirmButton_Click(object sender, RoutedEventArgs e)
@@ -168,16 +316,16 @@ namespace FlammenwerferPlugin.Editor.Windows
                 CsvGrid.Visibility = Visibility.Collapsed;
                 JsonGrid.Visibility = Visibility.Collapsed;
                 ExcelGrid.Visibility = Visibility.Collapsed;
-                FileNameLabel.Content = "or drag a file here";
-                FileNameLabel.ToolTip = null;
+                (FileNameLabel.Content as TextBlock).Text = "or drag a file here";
+                (FileNameLabel.ToolTip as TextBlock).Text = null;
                 FilePath = null;
                 FrostyMessageBox.Show("File not found", "Flammenwerfer Editor (Import String Window)");
                 return;
             }
             
             FileInfo fileInfo = new FileInfo(FilePath);
-            FileNameLabel.Content = fileInfo.Name;
-            FileNameLabel.ToolTip = FilePath;
+            (FileNameLabel.Content as TextBlock).Text = fileInfo.Name;
+            (FileNameLabel.ToolTip as TextBlock).Text = FilePath;
 
             bool isSuccess = false;
 
@@ -197,7 +345,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                         case ".xlsx":
                         case ".xlsb":
                         case ".xls":
-                            //ReadCsv(path);
+                            isSuccess = ImportExcel();
                             break;
                         default:
                             CsvGrid.Visibility = Visibility.Collapsed;
@@ -209,7 +357,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                     break;
 
                 case "Csv":
-                    ShowPreviewCsv();
+                    isSuccess = ImportCsv();
                     break;
 
                 case "Json":
@@ -217,7 +365,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                     break;
 
                 case "Excel":
-                    //ReadCsv(path);
+                    isSuccess = ImportExcel();
                     break;
 
                 default:
@@ -231,141 +379,159 @@ namespace FlammenwerferPlugin.Editor.Windows
             }
         }
 
-        private async void ReportProgress(ILogger logger, int current, int total, int currentPart = 1, int totalParts = 1, int detail = 1, int totalDetails = 1)
-        {
-            if (total > 0)
-            {
-                // totalParts = tp
-                // currentPart = p
-                // total = t
-                // current = c
-                // totalDetails = td
-                // detail = d
-                // ((((p - 1) * t + (c - 1)) * td + d) / (tp * t * td)) * 100%
-                await Task.Run(() =>
-                {
-                    logger.Log("progress:" + (((((double)currentPart - 1) * (double)total + ((double)current - 1)) * (double)totalDetails + (double)detail) / ((double)totalDetails * (double)total * (double)totalParts)) * 100.0d);
-                });
-            }
-        }
+        #endregion
 
         #region - CSV -
 
         private void ShowPreviewCsv()
         {
-            CsvGrid.Visibility = Visibility.Visible;
-            ConfirmButton.IsEnabled = true;
-            CsvPreviewDataGrid.ItemsSource = null;
-            CsvPreviewDataGrid.Columns.Clear();
-            try
-            {
-                DataTable dataTable = ReadPreviewCsv();
-                CsvPreviewDataGrid.ItemsSource = dataTable.DefaultView;
+            CancellationTokenSource cancelToken = new CancellationTokenSource();
 
-                foreach (DataColumn column in dataTable.Columns)
+            FrostyTaskWindow.Show(this, "Loading CSV", "Loading", (task) =>
+            {
+                try
                 {
-                    // Create the header
-                    ComboBox header = new ComboBox();
-                    header.Items.Add(new ComboBoxItem()
+                    const int totalParts = 2;
+                    cancelToken.Token.ThrowIfCancellationRequested();
+
+                    Dispatcher.Invoke(() =>
                     {
-                        Name = "None",
-                        Content = "None",
+                        CsvGrid.Visibility = Visibility.Visible;
+                        ConfirmButton.IsEnabled = true;
+                        CsvPreviewDataGrid.ItemsSource = null;
+                        CsvPreviewDataGrid.Columns.Clear();
                     });
-                    header.Items.Add(new ComboBoxItem()
+
+                    task.TaskLogger.Log("[1/2] Reading CSV file");
+                    ReportProgress(task.TaskLogger, 0, 1, 1, totalParts);
+                    Thread.Sleep(1);
+
+                    DataTable dataTable = ReadPreviewCsv();
+                    Dispatcher.Invoke(() =>
                     {
-                        Name = "Key",
-                        Content = "Key",
+                        CsvPreviewDataGrid.ItemsSource = dataTable.DefaultView;
                     });
-                    header.SelectedIndex = 0;
-                    Controls.LocalizedStringEditor.GetLocalizedLanguages()
-                        .ForEach(x => header.Items.Add(new ComboBoxItem()
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    ReportProgress(task.TaskLogger, 1, 1, 1, totalParts);
+
+                    int index = 0;
+                    task.TaskLogger.Log("[2/2] Creating preview");
+                    Thread.Sleep(1);
+                    ReportProgress(task.TaskLogger, 0, 1, 2, totalParts);
+                    foreach (DataColumn column in dataTable.Columns)
+                    {
+                        Dispatcher.Invoke(() =>
                         {
-                            Name = x,
-                            Content = "String (" + x + ")",
-                        }));
-                    header.BorderThickness = new Thickness(1);
+                            // Create the header
+                            cancelToken.Token.ThrowIfCancellationRequested();
+                            ComboBox header = new ComboBox();
+                            header.ItemsSource = ComboBoxItems;
+                            header.SelectedIndex = 0;
+                            header.BorderThickness = new Thickness(1);
 
-                    // Create the cell
-                    DataTemplate cell = new DataTemplate();
-                    var cellTextBlock = new FrameworkElementFactory(typeof(TextBlock));
-                    cellTextBlock.SetBinding(TextBlock.TextProperty, new Binding(column.ColumnName)); // Binding the value
-                    cellTextBlock.SetValue(TextBlock.ForegroundProperty, FindResource("FontColor"));
-                    cellTextBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
-                    cellTextBlock.SetValue(TextBlock.TextWrappingProperty, TextWrapping.NoWrap);
-                    cellTextBlock.SetValue(TextBlock.PaddingProperty, new Thickness(2));
-                    cell.VisualTree = cellTextBlock;
+                            // Create the cell
+                            cancelToken.Token.ThrowIfCancellationRequested();
+                            DataTemplate cell = new DataTemplate();
+                            var cellTextBlock = new FrameworkElementFactory(typeof(TextBlock));
+                            cellTextBlock.SetBinding(TextBlock.TextProperty, new Binding(column.ColumnName)); // Binding the value
+                            cellTextBlock.SetValue(TextBlock.ForegroundProperty, FindResource("FontColor"));
+                            cellTextBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
+                            cellTextBlock.SetValue(TextBlock.TextWrappingProperty, TextWrapping.NoWrap);
+                            cellTextBlock.SetValue(TextBlock.PaddingProperty, new Thickness(2));
+                            cell.VisualTree = cellTextBlock;
 
-                    // Create the column
-                    DataGridTemplateColumn templateColumn = new DataGridTemplateColumn
-                    {
-                        Header = header,
-                        CellTemplate = cell,
-                        CellStyle = (Style)FindResource("DataGridCellStyle"),
-                        HeaderStyle = (Style)FindResource("DataGridHeaderStyle")
-                    };
-                    CsvPreviewDataGrid.Columns.Add(templateColumn);
+                            // Create the column
+                            cancelToken.Token.ThrowIfCancellationRequested();
+                            DataGridTemplateColumn templateColumn = new DataGridTemplateColumn
+                            {
+                                Header = header,
+                                CellTemplate = cell,
+                                CellStyle = (Style)FindResource("DataGridCellStyle"),
+                                HeaderStyle = (Style)FindResource("DataGridHeaderStyle")
+                            };
+                            CsvPreviewDataGrid.Columns.Add(templateColumn);
+                        });
+
+                        ReportProgress(task.TaskLogger, ++index, dataTable.Columns.Count, 2, totalParts);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                // If there's really an exception occur, use the DataGrid to display it.
-
-                // Allow user to force import
-                //ConfirmButton.IsEnabled = false; 
-                CsvPreviewDataGrid.ItemsSource = null;
-                CsvPreviewDataGrid.Columns.Clear();
-
-                // Create the header
-                TextBox textBox = new TextBox();
-                textBox.IsReadOnly = true;
-                textBox.Width = ActualWidth - 30;
-                textBox.BorderThickness = new Thickness(1);
-                textBox.TextWrapping = TextWrapping.WrapWithOverflow;
-                textBox.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-                textBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
-
-                // Create exception message
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine("Could not read the file as CSV, you can still force import");
-                sb.AppendLine();
-                sb.AppendLine("Exception:");
-                sb.Append("Type=");
-                sb.AppendLine(ex.GetType().ToString());
-                sb.Append("HResult=");
-                sb.AppendLine("0x" + ex.HResult.ToString("X"));
-                sb.Append("Message=");
-                sb.AppendLine(ex.Message);
-                sb.Append("Source=");
-                sb.AppendLine(ex.Source);
-                sb.AppendLine("StackTrace:");
-                sb.AppendLine(ex.StackTrace);
-
-                textBox.Text = sb.ToString();
-
-                // Create column
-                DataGridTemplateColumn templateColumn = new DataGridTemplateColumn
+                catch (OperationCanceledException)
                 {
-                    Header = textBox,
-                    CellTemplate = new DataTemplate(),
-                    CellStyle = (Style)FindResource("DataGridCellStyle"),
-                    HeaderStyle = (Style)FindResource("DataGridHeaderStyle"),
-                    Width = ActualWidth - 30
-                };
-                CsvPreviewDataGrid.Columns.Add(templateColumn);
-                CsvPreviewDataGrid.Columns.Add(new DataGridTemplateColumn());
-            }
+                    // User canceled
+                    Dispatcher.Invoke(() =>
+                    {
+                        CsvPreviewDataGrid.Visibility = Visibility.Collapsed;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // If there's really an exception occur, use the DataGrid to display it.
+                    Dispatcher.Invoke(() =>
+                    {
+                        ConfirmButton.IsEnabled = false; 
+                        CsvPreviewDataGrid.ItemsSource = null;
+                        CsvPreviewDataGrid.Columns.Clear();
+                    
+                        // Create the header
+                        TextBox textBox = new TextBox();
+                        textBox.IsReadOnly = true;
+                        textBox.Width = ActualWidth - 30;
+                        textBox.BorderThickness = new Thickness(1);
+                        textBox.TextWrapping = TextWrapping.WrapWithOverflow;
+                        textBox.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+                        textBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+
+                        // Create exception message
+                        StringBuilder sb = new StringBuilder();
+                        sb.AppendLine("Could not read the file as CSV");
+                        sb.AppendLine();
+                        sb.AppendLine("Exception:");
+                        sb.Append("Type=");
+                        sb.AppendLine(ex.GetType().ToString());
+                        sb.Append("HResult=");
+                        sb.AppendLine("0x" + ex.HResult.ToString("X"));
+                        sb.Append("Message=");
+                        sb.AppendLine(ex.Message);
+                        sb.Append("Source=");
+                        sb.AppendLine(ex.Source);
+                        sb.AppendLine("StackTrace:");
+                        sb.AppendLine(ex.StackTrace);
+
+                        textBox.Text = sb.ToString();
+
+                        // Create column
+                        DataGridTemplateColumn templateColumn = new DataGridTemplateColumn
+                        {
+                            Header = textBox,
+                            CellTemplate = new DataTemplate(),
+                            CellStyle = (Style)FindResource("DataGridCellStyle"),
+                            HeaderStyle = (Style)FindResource("DataGridHeaderStyle"),
+                            Width = ActualWidth - 30
+                        };
+
+                        CsvPreviewDataGrid.Columns.Add(templateColumn);
+                        CsvPreviewDataGrid.Columns.Add(new DataGridTemplateColumn());
+                    });
+                }
+            }, true, (task) => cancelToken.Cancel());
         }
 
         private DataTable ReadPreviewCsv()
         {
             DataTable dt = new DataTable();
 
+            bool hasHeaders = false;
+            Dispatcher.Invoke(() =>
+            {
+                hasHeaders = CsvHasHeaderCheckBox.IsChecked.GetValueOrDefault(false);
+            });
+
             using (CsvDataReader reader = CsvDataReader.Create(FilePath, new CsvDataReaderOptions()
             {
-                HasHeaders = CsvHasHeaderCheckBox.IsChecked.GetValueOrDefault(false)
+                HasHeaders = hasHeaders
             }))
             {
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < PreviewCount; i++)
                 {
                     if (!reader.Read())
                         break;
@@ -662,6 +828,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                 }
             }, true, (task) => cancelToken.Cancel());
 
+            GC.Collect();
             return result;
         }
 
@@ -723,6 +890,821 @@ namespace FlammenwerferPlugin.Editor.Windows
             }
 
             return outputPosition;
+        }
+
+        #endregion
+
+        #region - JSON -
+
+        public ObservableCollection<JsonFieldItem> JsonFieldItems { get; set; } = new ObservableCollection<JsonFieldItem>();
+        public List<JsonFieldType> JsonFieldTypes { get; set; } = new List<JsonFieldType>();
+
+        public class JsonTreeNode
+        {
+            public string Name { get; set; }
+            public string Path { get; set; }
+            public ObservableCollection<JsonTreeNode> Children { get; set; }
+
+            public JsonTreeNode()
+            {
+                Children = new ObservableCollection<JsonTreeNode>();
+            }
+        }
+
+        public class JsonFieldItem
+        {
+            internal ListBox parent;
+
+            internal JsonFieldType _type;
+            public JsonFieldType Type
+            {
+                get { return _type; }
+                set
+                {
+                    _type = value;
+                    OnPropertyChanged(nameof(Type));
+                }
+            }
+            
+            private string _assignTo;
+            public string AssignTo
+            {
+                get { return _assignTo; }
+                set
+                {
+                    _assignTo = value;
+                    OnPropertyChanged(nameof(AssignTo));
+                }
+            }
+
+            public ObservableCollection<string> PopupPreviewContent { get; set; }
+
+            private bool _isPopupOpen;
+            public bool IsPopupOpen
+            {
+                get { return _isPopupOpen; }
+                set
+                {
+                    if (_isPopupOpen != value)
+                    {
+                        _isPopupOpen = value;
+                        OnPropertyChanged(nameof(IsPopupOpen));
+                    }
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            protected virtual void OnPropertyChanged(string propertyName)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                if (parent != null)
+                    parent.Items.Refresh();
+            }
+        }
+
+        public class JsonFieldType
+        {
+            public string Name { get; set; }
+            public string DisplayName { get; set; }
+        }
+
+        public bool IsJsonAssignButtonEnabled => JsonPreviewTreeView.SelectedItem != null && (JsonPreviewTreeView.SelectedItem as JsonTreeNode).Path != null;
+        private void JsonPreviewTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) => OnPropertyChanged(nameof(IsJsonAssignButtonEnabled));
+
+        public bool IsJsonRemoveFieldButtonEnabled => JsonFieldsListBox.SelectedItem != null;
+        private void JsonFieldsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => OnPropertyChanged(nameof(IsJsonRemoveFieldButtonEnabled));
+        
+        private void ShowPreviewJson()
+        {
+            CancellationTokenSource cancelToken = new CancellationTokenSource();
+
+            FrostyTaskWindow.Show(this, "Loading JSON", "Loading", (task) =>
+            {
+                try
+                {
+                    const int totalParts = 2;
+                    cancelToken.Token.ThrowIfCancellationRequested();
+
+                    Dispatcher.Invoke(() =>
+                    {
+                        JsonGrid.Visibility = Visibility.Visible;
+                        ConfirmButton.IsEnabled = true;
+                        JsonPreviewTreeView.ItemsSource = null;
+                        JsonPreviewTreeView.Items.Clear();
+                        //JsonFieldItems.Clear();
+                        foreach (var item in JsonFieldItems)
+                        {
+                            
+                        }
+                    });
+
+                    task.TaskLogger.Log("[1/2] Reading Json file");
+                    ReportProgress(task.TaskLogger, 0, 1, 1, totalParts);
+                    Thread.Sleep(1);
+
+                    task.TaskLogger.Log("[2/2] Parsing Json file");
+                    ReportProgress(task.TaskLogger, 0, 1, 2, totalParts);
+                    Thread.Sleep(1);
+
+                    ObservableCollection<JsonTreeNode> treeNodes = ParseJsonToTree(ReadJson());
+
+                    Dispatcher.Invoke(() =>
+                    {
+                        JsonPreviewTreeView.ItemsSource = treeNodes;
+                    });
+                }
+                catch (OperationCanceledException)
+                {
+                    // User canceled
+                    Dispatcher.Invoke(() =>
+                    {
+                        JsonGrid.Visibility = Visibility.Collapsed;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        JsonGrid.Visibility = Visibility.Collapsed;
+                        FrostyExceptionBox.Show(ex, "Flammenwerfer Editor (Import Strings) Could not read the file as JSON");
+                    });
+                }
+            }, true, (task) => cancelToken.Cancel());
+        }
+
+        private JToken ReadJson()
+        {
+            // read JSON directly from a file
+            using (StreamReader file = new StreamReader(File.OpenRead(FilePath)))
+            using (JsonTextReader reader = new JsonTextReader(file))
+            {
+                return JToken.ReadFrom(reader);
+            }
+        }
+
+        private ObservableCollection<JsonTreeNode> ParseJsonToTree(JToken jToken)
+        {
+            ObservableCollection<JsonTreeNode> root = new ObservableCollection<JsonTreeNode>();
+
+            if (jToken == null)
+                return root;
+            if (jToken is JValue)
+            {
+                var childItem = new JsonTreeNode { Name = jToken.ToString() };
+                root.Add(childItem);
+            }
+            else if (jToken is JObject obj)
+            {
+                int count = 0;
+                foreach (var property in obj.Properties())
+                {
+                    if (count >= PreviewCount)
+                        break;
+                    var childItem = new JsonTreeNode { Name = property.Name, Path = property.Path };
+                    root.Add(childItem);
+                    ParseJsonTokenToNode(property.Value, childItem);
+                }
+            }
+            else if (jToken is JArray array)
+            {
+                for (int i = 0; i < array.Count && i < PreviewCount; i++)
+                {
+                    var childItem = new JsonTreeNode { Name = i.ToString(), Path = array[i].Path };
+                    root.Add(childItem);
+                    ParseJsonTokenToNode(array[i], childItem);
+                }
+            }
+
+            return root;
+        }
+
+        private void ParseJsonTokenToNode(JToken token, JsonTreeNode inTreeNode)
+        {
+            if (token == null)
+                return;
+            if (token is JValue)
+            {
+                var childItem = new JsonTreeNode { Name = token.ToString(), Path = token.Path };
+                inTreeNode.Children.Add(childItem);
+            }
+            else if (token is JObject obj)
+            {
+                foreach (var property in obj.Properties())
+                {
+                    var childItem = new JsonTreeNode { Name = property.Name, Path = property.Path };
+                    inTreeNode.Children.Add(childItem);
+                    ParseJsonTokenToNode(property.Value, childItem);
+                }
+            }
+            else if (token is JArray array)
+            {
+                for (int i = 0; i < array.Count; i++)
+                {
+                    var childItem = new JsonTreeNode { Name = i.ToString(), Path = array[i].Path };
+                    inTreeNode.Children.Add(childItem);
+                    ParseJsonTokenToNode(array[i], childItem);
+                }
+            }
+        }
+
+        private void JsonAddItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            JsonFieldItems.Add(new JsonFieldItem() { _type = JsonFieldTypes[0], parent = JsonFieldsListBox });
+        }
+
+        private void JsonRemoveItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsJsonRemoveFieldButtonEnabled)
+            {
+                var selectedIndex = JsonFieldsListBox.SelectedIndex;
+                JsonFieldItems.Remove(JsonFieldsListBox.SelectedItem as JsonFieldItem);
+                JsonFieldsListBox.SelectedIndex = selectedIndex;
+            }
+        }
+
+        private void JsonAssignButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsJsonAssignButtonEnabled && sender is Button button && button.Tag is JsonFieldItem fieldItem)
+            {
+                fieldItem.AssignTo = (JsonPreviewTreeView.SelectedItem as JsonTreeNode).Path;
+            }
+        }
+
+        private void JsonJPathTestButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is Popup popup && popup.Tag is JsonFieldItem fieldItem && !String.IsNullOrEmpty(fieldItem.AssignTo))
+            {
+                fieldItem.PopupPreviewContent = new ObservableCollection<string>(ReadJson().SelectTokens(fieldItem.AssignTo).Take(PreviewCount).Select(token => token.ToString()));
+                fieldItem.IsPopupOpen = true;
+                ((popup.Child) as ListBox).Items.Refresh();
+            }
+        }
+
+        private void JsonPathHelpButton_Click(object sender, RoutedEventArgs e)
+        {
+            string recommendedJsonPath = null;
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("In JSON mode, this window will use JSONPath to select content and import");
+            sb.AppendLine("Use Assign (right arrow) button to set the path of the currently selected json object");
+            sb.AppendLine("Use Test button to preview the items that will selected by the path (displayed count is sync with the preview count)");
+            sb.AppendLine();
+            if (JsonFieldsListBox.SelectedItem != null && JsonFieldsListBox.SelectedItem is JsonFieldItem fieldItem && !String.IsNullOrEmpty(fieldItem.AssignTo) &&
+                fieldItem.AssignTo.Split('.') is string[] paths && paths.Length > 1)
+            {
+                bool isBracketsFinded = false;
+                for (int i = 0; i < paths.Length; i++)
+                {
+                    string opt = Regex.Replace(paths[i], @"\[\d+\]", "[*]");
+                    if (opt != paths[i])
+                    {
+                        paths[i] = opt;
+                        isBracketsFinded = true;
+                        break;
+                    }
+                }
+
+                if (isBracketsFinded)
+                {
+                    recommendedJsonPath = String.Join(".", paths);
+                    sb.Append("Selected field item is assign to: ");
+                    sb.AppendLine(fieldItem.AssignTo);
+                    sb.Append("Recommended JSONPath: ");
+                    sb.AppendLine(recommendedJsonPath);
+                    sb.AppendLine();
+                    sb.AppendLine("Click Yes to open JSONPath document");
+                    sb.Append("Click No will replace current path with recommended one");
+                }
+                else
+                {
+                    paths[paths.Length - 1] = "*";
+                    recommendedJsonPath = String.Join(".", paths);
+                    sb.Append("Selected field item is assign to: ");
+                    sb.AppendLine(fieldItem.AssignTo);
+                    sb.Append("Recommended JSONPath: ");
+                    sb.AppendLine(recommendedJsonPath);
+                    sb.AppendLine();
+                    sb.AppendLine("Click Yes to open JSONPath document");
+                    sb.Append("Click No will replace current path with recommended one");
+                }
+            }
+            else
+            {
+                sb.AppendLine("Click Yes to open JSONPath document");
+                sb.Append("Click No will do nothing, because no field selected");
+            }
+
+            MessageBoxResult result = FrostyMessageBox.Show(sb.ToString(),
+                "JSONPath Help",
+                MessageBoxButton.YesNoCancel); 
+
+            switch (result)
+            {
+                case MessageBoxResult.Yes:
+                    Process.Start(@"https://goessner.net/articles/JsonPath/");
+                    break;
+                case MessageBoxResult.No:
+                    if (recommendedJsonPath != null)
+                    {
+                        (JsonFieldsListBox.SelectedItem as JsonFieldItem).AssignTo = recommendedJsonPath;
+                    }
+                    break;
+            }
+        }
+
+
+        #endregion
+
+        #region - Excel -
+
+        private void ShowPreviewExcel()
+        {
+            CancellationTokenSource cancelToken = new CancellationTokenSource();
+
+            FrostyTaskWindow.Show(this, "Loading Excel file", "Loading", (task) =>
+            {
+                try
+                {
+                    const int totalParts = 2;
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Dispatcher.Invoke(() =>
+                    {
+                        ExcelGrid.Visibility = Visibility.Visible;
+                        ConfirmButton.IsEnabled = true;
+                        ExcelPreviewTabControl.Items.Clear();
+                    });
+
+                    task.TaskLogger.Log("[1/2] Reading Excel file");
+                    ReportProgress(task.TaskLogger, 0, 1, 1, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+                    DataSet dataSet = ReadPreviewExcel();
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    ReportProgress(task.TaskLogger, 1, 1, 1, totalParts);
+
+                    int index = 0;
+                    int index2 = 0;
+                    task.TaskLogger.Log("[2/2] Creating preview");
+                    Thread.Sleep(1);
+                    ReportProgress(task.TaskLogger, 0, 1, 2, totalParts);
+                    foreach (DataTable table in dataSet.Tables)
+                    {
+                        index++;
+
+                        Dispatcher.Invoke(() =>
+                        {
+                            // Create a tab
+                            TabItem tabItem = new TabItem
+                            {
+                                Header = table.TableName
+                            };
+
+                            DataGrid dataGrid = new DataGrid
+                            {
+                                Background = (Brush)FindResource("ListBackground"),
+                                Foreground = (Brush)FindResource("FontColor"),
+                                BorderThickness = new Thickness(0),
+                                ColumnHeaderStyle = (Style)FindResource("DataGridHeaderStyle"),
+                                CellStyle = (Style)FindResource("DataGridCellStyle"),
+                                AutoGenerateColumns = false,
+                                HeadersVisibility = DataGridHeadersVisibility.Column,
+                                RowHeaderWidth = 0,
+                                RowStyle = (Style)FindResource("DataGridRowStyle"),
+                                MinColumnWidth = 25,
+                                ColumnWidth = 175,
+                                GridLinesVisibility = DataGridGridLinesVisibility.None,
+                                CanUserAddRows = false,
+                                CanUserDeleteRows = false,
+                                CanUserReorderColumns = false,
+                                CanUserResizeColumns = true,
+                                CanUserResizeRows = true,
+                                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
+                            };
+
+                            dataGrid.ItemsSource = table.DefaultView;
+
+                            index2 = 0;
+                            foreach (DataColumn column in table.Columns)
+                            {
+                                // Create the header
+                                ComboBox header = new ComboBox();
+                                header.ItemsSource = ComboBoxItems;
+                                header.SelectedIndex = 0;
+                                header.BorderThickness = new Thickness(1);
+
+                                // Create the cell
+                                DataTemplate cell = new DataTemplate();
+                                var cellTextBlock = new FrameworkElementFactory(typeof(TextBlock));
+                                cellTextBlock.SetBinding(TextBlock.TextProperty, new Binding(column.ColumnName)); // Binding the value
+                                cellTextBlock.SetValue(TextBlock.ForegroundProperty, FindResource("FontColor"));
+                                cellTextBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
+                                cellTextBlock.SetValue(TextBlock.TextWrappingProperty, TextWrapping.NoWrap);
+                                cellTextBlock.SetValue(TextBlock.PaddingProperty, new Thickness(2));
+                                cell.VisualTree = cellTextBlock;
+
+                                // Create the column
+                                DataGridTemplateColumn templateColumn = new DataGridTemplateColumn
+                                {
+                                    Header = header,
+                                    CellTemplate = cell,
+                                    CellStyle = (Style)FindResource("DataGridCellStyle"),
+                                    HeaderStyle = (Style)FindResource("DataGridHeaderStyle")
+                                };
+                                dataGrid.Columns.Add(templateColumn);
+                                ReportProgress(task.TaskLogger, index, dataSet.Tables.Count, 2, totalParts, ++index2, table.Columns.Count);
+                            }
+
+                            tabItem.Content = dataGrid;
+                            ExcelPreviewTabControl.Items.Add(tabItem);
+                        });
+                        ReportProgress(task.TaskLogger, index, dataSet.Tables.Count, 2, totalParts);
+                    }
+                    Dispatcher.Invoke(() =>
+                    {
+                        if (ExcelPreviewTabControl.Items.Count >= 1)
+                            ExcelPreviewTabControl.SelectedIndex = 0;
+                    });
+                }
+                catch (OperationCanceledException)
+                {
+                    // User canceled
+                    Dispatcher.Invoke(() =>
+                    {
+                        ExcelPreviewTabControl.Visibility = Visibility.Collapsed;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // If there's really an exception occur, use the TabControl to display it.
+                    Dispatcher.Invoke(() =>
+                    {
+                        ConfirmButton.IsEnabled = false; 
+                        ExcelPreviewTabControl.Items.Clear();
+
+                        // Create a tab
+                        TabItem tabItem = new TabItem
+                        {
+                            Header = "Exception"
+                        };
+
+                        // Create the content
+                        TextBox textBox = new TextBox();
+                        textBox.IsReadOnly = true;
+                        textBox.Width = ActualWidth - 30;
+                        textBox.BorderThickness = new Thickness(1);
+                        textBox.TextWrapping = TextWrapping.WrapWithOverflow;
+                        textBox.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+                        textBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+
+                        // Create exception message
+                        StringBuilder sb = new StringBuilder();
+                        sb.AppendLine("Could not read the file as Excel file");
+                        sb.AppendLine();
+                        sb.AppendLine("Exception:");
+                        sb.Append("Type=");
+                        sb.AppendLine(ex.GetType().ToString());
+                        sb.Append("HResult=");
+                        sb.AppendLine("0x" + ex.HResult.ToString("X"));
+                        sb.Append("Message=");
+                        sb.AppendLine(ex.Message);
+                        sb.Append("Source=");
+                        sb.AppendLine(ex.Source);
+                        sb.AppendLine("StackTrace:");
+                        sb.AppendLine(ex.StackTrace);
+
+                        textBox.Text = sb.ToString();
+
+                        tabItem.Content = textBox;
+                        ExcelPreviewTabControl.Items.Add(tabItem);
+                        ExcelPreviewTabControl.SelectedItem = tabItem;
+                    });
+                }
+            }, true, (task) => cancelToken.Cancel());
+        }
+
+        private DataSet ReadPreviewExcel()
+        {
+            DataSet ds = new DataSet();
+
+            bool isReadHiddenWorksheets = false;
+            Dispatcher.Invoke(() =>
+            {
+                isReadHiddenWorksheets = ExcelReadHiddenWorksheetsCheckBox.IsChecked.GetValueOrDefault(false);
+            });
+
+            using (ExcelDataReader reader = ExcelDataReader.Create(FilePath, new ExcelDataReaderOptions()
+            {
+                ReadHiddenWorksheets = isReadHiddenWorksheets
+            }))
+            {
+                do
+                {
+                    DataTable dt = new DataTable();
+                    dt.TableName = reader.WorksheetName;
+
+                    // Skip first row (header)
+                    Dispatcher.Invoke(() =>
+                    {
+                        if (ExcelHasHeaderCheckBox.IsChecked.GetValueOrDefault(false))
+                            reader.Read();
+                    });
+
+                    for (int i = 0; i < PreviewCount; i++)
+                    {
+                        if (!reader.Read())
+                            break;
+                        DataRow dr = dt.NewRow();
+                        for (int j = 0; j < reader.FieldCount; j++)
+                        {
+                            // Add column if not exist, column name is index (i)
+                            if (!dt.Columns.Contains(j.ToString()))
+                                dt.Columns.Add(j.ToString(), typeof(string));
+                            dr[j] = reader.GetString(j);
+                        }
+                        dt.Rows.Add(dr);
+                    }
+                    ds.Tables.Add(dt);
+
+                } while (reader.NextResult());
+            }
+            return ds;
+        }
+
+        private bool ImportExcel()
+        {
+            bool result = true;
+            CancellationTokenSource cancelToken = new CancellationTokenSource();
+
+            FrostyTaskWindow.Show(this, "Importing Excel file", "Loading", (task) =>
+            {
+                try
+                {
+                    const int totalParts = 5;
+                    cancelToken.Token.ThrowIfCancellationRequested();
+
+                    ILocalizedStringDatabase db = LocalizedStringDatabase.Current;
+                    DataTable dt = new DataTable();
+                    Dictionary<int, Func<string, uint, uint>> funcs = new Dictionary<int, Func<string, uint, uint>>();
+                    Dictionary<string, List<Tuple<uint, string>>> stringsToAdd = new Dictionary<string, List<Tuple<uint, string>>>();
+
+                    // Step 1: Loading Languages
+                    task.TaskLogger.Log("[1/5] Loading Languages");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 1, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+                    int languagesCount = Controls.LocalizedStringEditor.GetLocalizedLanguages().Count;
+                    int index = 0;
+
+                    foreach (string lang in Controls.LocalizedStringEditor.GetLocalizedLanguages())
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        // Initialize dictionary with languages
+                        stringsToAdd.Add(lang, new List<Tuple<uint, string>>());
+                        ReportProgress(task.TaskLogger, ++index, languagesCount, currentPart: 1, totalParts);
+                    }
+
+                    // Step 2: Read Excel file
+                    task.TaskLogger.Log("[2/5] Reading Excel file");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 2, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+
+                    bool isReadHiddenWorksheets = false;
+                    Dispatcher.Invoke(() =>
+                    {
+                        isReadHiddenWorksheets = ExcelReadHiddenWorksheetsCheckBox.IsChecked.GetValueOrDefault(false);
+                    });
+
+                    using (ExcelDataReader reader = ExcelDataReader.Create(FilePath, new ExcelDataReaderOptions()
+                    {
+                        ReadHiddenWorksheets = isReadHiddenWorksheets
+                    }))
+                    {
+                        // Move to selected worksheet
+                        Dispatcher.Invoke(() =>
+                        {
+                            for (int i = 0; i < ExcelPreviewTabControl.SelectedIndex; i++)
+                            {
+                                reader.NextResult();
+                            }
+                        });
+                        
+
+                        // Skip first row (header)
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (ExcelHasHeaderCheckBox.IsChecked.GetValueOrDefault(false))
+                                reader.Read();
+                        });
+
+                        while (reader.Read())
+                        {
+                            cancelToken.Token.ThrowIfCancellationRequested();
+                            DataRow dr = dt.NewRow();
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                // Add column if not exist, column name is index (i)
+                                if (!dt.Columns.Contains(i.ToString()))
+                                    dt.Columns.Add(i.ToString(), typeof(string));
+                                dr[i] = reader.GetString(i);
+                                cancelToken.Token.ThrowIfCancellationRequested();
+                            }
+                            dt.Rows.Add(dr);
+                        }
+                    }
+
+                    GC.Collect();
+
+                    // Step 3: Process column header to actions
+                    task.TaskLogger.Log("[3/5] Processing columns");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 3, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+
+                    int keyIndex = -1;
+
+                    int previewDataGridColumnsCount = 0;
+                    Dispatcher.Invoke(() =>
+                    {
+                        previewDataGridColumnsCount = ((ExcelPreviewTabControl.SelectedItem as TabItem).Content as DataGrid).Columns.Count;
+                    });
+
+                    // Iterate through the selected usages for each column
+                    for (int i = 0; i < previewDataGridColumnsCount; i++)
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        // Get usage from header ComboBox
+                        string name = null;
+                        Dispatcher.Invoke(() =>
+                        {
+                            name = ((((ExcelPreviewTabControl.SelectedItem as TabItem).Content as DataGrid).Columns[i].Header as ComboBox).SelectedItem as ComboBoxItem).Name;
+                        });
+                        switch (name)
+                        {
+                            case null:
+                            case "":
+                            case "None":
+                                // Do nothing
+                                Func<string, uint, uint> noneAction = (_, inKey) =>
+                                {
+                                    return inKey;
+                                };
+                                funcs.Add(i, noneAction);
+                                break;
+
+                            case "Key":
+                                // Key column
+                                if (keyIndex == -1)
+                                    keyIndex = i;
+                                else
+                                {
+                                    // Do not accept multiple key columns
+                                    FrostyMessageBox.Show("Please only select one key column", "Flammenwerfer Editor (Import String Window)");
+                                    result = false;
+                                    return;
+                                }
+
+                                Func<string, uint, uint> keyAction = (inValue, _) =>
+                                {
+                                    // Return the parsed key
+                                    return uint.Parse(inValue, System.Globalization.NumberStyles.HexNumber);
+                                };
+                                funcs.Add(i, keyAction);
+                                break;
+
+                            default:
+                                // String column
+                                Func<string, uint, uint> stringAction = (inValue, inKey) =>
+                                {
+                                    // Add string and key to stringsToAdd list
+                                    stringsToAdd[name].Add(new Tuple<uint, string>(inKey, inValue));
+                                    return inKey;
+                                };
+                                funcs.Add(i, stringAction);
+                                break;
+                        }
+                        ReportProgress(task.TaskLogger, i + 1, previewDataGridColumnsCount, currentPart: 3, totalParts);
+                    }
+
+                    if (keyIndex == -1)
+                    {
+                        // Check if key column exists
+                        FrostyMessageBox.Show("Please select one key column", "Flammenwerfer Editor (Import String Window)");
+                        result = false;
+                        return;
+                    }
+
+                    // Step 4: Run actions
+                    task.TaskLogger.Log("[4/5] Preparing strings");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 4, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+
+                    index = 0;
+
+                    // Run actions that processed at step 4 for each row
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        // Get the key first from key column
+                        uint key = funcs[keyIndex](row[keyIndex].ToString(), 0);
+                        // Iterate every value in the row
+                        for (int i = 0; i < row.ItemArray.Length; i++)
+                        {
+                            // Will no nothing if this value is in                          None column
+                            // Will get the same key if this value is in                    Key column
+                            // Will add the string to stringsToAdd if this value is in      String column
+                            funcs[i](row[i].ToString(), key);
+                        }
+                        ReportProgress(task.TaskLogger, ++index, dt.Rows.Count, currentPart: 4, totalParts);
+                    }
+
+                    // Step 5: Import Strings
+                    task.TaskLogger.Log("[5/5] Importing strings");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 5, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+
+                    index = 0;
+                    int totalAdded = 0;
+                    int totalModified = 0;
+                    int totalIgnored = 0;
+                    int totalSame = 0;
+                    int totalLanguage = 0;
+
+                    // Calculate total languages
+                    foreach (KeyValuePair<string, List<Tuple<uint, string>>> pair in stringsToAdd)
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        if (pair.Value.Count != 0)
+                            totalLanguage++;
+                    }
+
+                    // Back up the language currently selected by the user
+                    string currentLanguage = Config.Get("Language", "English", ConfigScope.Game);
+                    // Iterate every languages and the strings for the language
+                    // pair.Key is the language, pair.Value is the string list for the pair.Key
+                    foreach (KeyValuePair<string, List<Tuple<uint, string>>> pair in stringsToAdd)
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        if (pair.Value.Count == 0)
+                            continue;
+                        index++;
+
+                        // Switch to language
+                        Config.Add("Language", pair.Key, ConfigScope.Game);
+                        Config.Save();
+                        db.Initialize();
+                        var currentStringIds = db.EnumerateStrings().Distinct().AsQueryable();
+                        int totalSet = 0;
+
+                        // Add strings
+                        //Parallel.ForEach(pair.Value, new ParallelOptions() { CancellationToken = cancelToken.Token, MaxDegreeOfParallelism = 4 }, (tuple) =>
+                        foreach (Tuple<uint, string> tuple in pair.Value)
+                        {
+                            cancelToken.Token.ThrowIfCancellationRequested();
+
+                            if (db.GetString(tuple.Item1) == tuple.Item2)
+                                totalSame++;
+                            else if (currentStringIds.Contains(tuple.Item1))
+                                totalModified++;
+                            else
+                                totalAdded++;
+
+                            db.SetString(tuple.Item1, tuple.Item2);
+                            totalSet++;
+
+                            // Make users feel fast
+                            task.TaskLogger.Log($"[5/5] Importing strings ({tuple.Item1.ToString("X")})");
+                            ReportProgress(task.TaskLogger, index, totalLanguage, 5, totalParts, totalSet, pair.Value.Count);
+                        }
+                        totalIgnored += currentStringIds.Count() - totalSet;
+
+                        ReportProgress(task.TaskLogger, index, totalLanguage, currentPart: 5, totalParts);
+                    }
+                    App.Logger.Log($"{totalModified} strings modified, {totalAdded} strings added, {totalSame} strings same and {totalIgnored} strings ignored. In {totalLanguage} languages.");
+
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    task.TaskLogger.Log("Finishing");
+                    ReportProgress(task.TaskLogger, 1, 1, 1, 1);
+                    Thread.Sleep(1);
+
+                    // Switch back to the previously backed-up language
+                    Config.Add("Language", currentLanguage, ConfigScope.Game);
+                    Config.Save();
+                    db.Initialize();
+                }
+                catch (OperationCanceledException)
+                {
+                    // User canceled
+                    result = false;
+                    App.Logger.Log("Excel import canceled");
+                }
+            }, true, (task) => cancelToken.Cancel());
+
+            GC.Collect();
+            return result;
         }
 
         #endregion

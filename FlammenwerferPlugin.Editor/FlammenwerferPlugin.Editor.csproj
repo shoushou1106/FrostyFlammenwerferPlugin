@@ -36,6 +36,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3">
+      <ExcludeAssets>true</ExcludeAssets>
+      <Private>false</Private>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Sylvan.Data.Csv" Version="1.3.8" />
     <PackageReference Include="Sylvan.Data.Excel" Version="0.4.23" />
   </ItemGroup>
