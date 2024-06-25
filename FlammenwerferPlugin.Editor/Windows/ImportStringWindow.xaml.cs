@@ -55,6 +55,8 @@ namespace FlammenwerferPlugin.Editor.Windows
 
         public bool IsLoadLessButtonEnabled => PreviewCount > 1;
 
+        #region - Window -
+
         public ImportStringWindow(Window owner)
         {
             Owner = owner;
@@ -241,6 +243,8 @@ namespace FlammenwerferPlugin.Editor.Windows
             }
         }
 
+        #endregion
+
         #region - File -
 
         private void LoadFile()
@@ -339,7 +343,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                             break;
 
                         case ".json":
-                            //ReadCsv(path);
+                            isSuccess = ImportJson();
                             break;
 
                         case ".xlsx":
@@ -347,6 +351,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                         case ".xls":
                             isSuccess = ImportExcel();
                             break;
+
                         default:
                             CsvGrid.Visibility = Visibility.Collapsed;
                             JsonGrid.Visibility = Visibility.Collapsed;
@@ -361,7 +366,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                     break;
 
                 case "Json":
-                    //ReadCsv(path);
+                    isSuccess = ImportJson();
                     break;
 
                 case "Excel":
@@ -681,11 +686,13 @@ namespace FlammenwerferPlugin.Editor.Windows
                             case "Key":
                                 // Key column
                                 if (keyIndex == -1)
+                                {
                                     keyIndex = i;
+                                }
                                 else
                                 {
                                     // Do not accept multiple key columns
-                                    FrostyMessageBox.Show("Please only select one key column", "Flammenwerfer Editor (Import String Window)");
+                                    FrostyMessageBox.Show("Please select only one key column", "Flammenwerfer Editor (Import String Window)");
                                     result = false;
                                     return;
                                 }
@@ -715,7 +722,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                     if (keyIndex == -1)
                     {
                         // Check if key column exists
-                        FrostyMessageBox.Show("Please select one key column", "Flammenwerfer Editor (Import String Window)");
+                        FrostyMessageBox.Show("Please at least select one key column", "Flammenwerfer Editor (Import String Window)");
                         result = false;
                         return;
                     }
@@ -1212,6 +1219,215 @@ namespace FlammenwerferPlugin.Editor.Windows
             }
         }
 
+        private bool ImportJson()
+        {
+            bool result = true;
+            CancellationTokenSource cancelToken = new CancellationTokenSource();
+
+            FrostyTaskWindow.Show(this, "Importing JSON", "Loading", (task) =>
+            {
+                try
+                {
+                    const int totalParts = 5;
+                    cancelToken.Token.ThrowIfCancellationRequested();
+
+                    ILocalizedStringDatabase db = LocalizedStringDatabase.Current;
+                    JToken jToken;
+                    Dictionary<string, List<string>> languages = new Dictionary<string, List<string>>();
+
+                    // Step 1: Loading Languages
+                    task.TaskLogger.Log("[1/5] Loading Languages");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 1, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+                    int languagesCount = Controls.LocalizedStringEditor.GetLocalizedLanguages().Count;
+                    int index = 0;
+
+                    foreach (string lang in Controls.LocalizedStringEditor.GetLocalizedLanguages())
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        // Initialize dictionary with languages
+                        languages.Add(lang, new List<string>());
+                        ReportProgress(task.TaskLogger, ++index, languagesCount, currentPart: 1, totalParts);
+                    }
+
+                    // Step 2: Read Json
+                    task.TaskLogger.Log("[2/5] Reading JSON");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 2, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+
+                    jToken = ReadJson();
+
+                    GC.Collect();
+
+                    // Step 3: Process fields
+                    task.TaskLogger.Log("[3/5] Processing fields");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 3, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+
+                    string keyPath = null;
+                    index = 0;
+
+                    // Process the usage of each field into language list
+                    foreach (JsonFieldItem item in JsonFieldItems)
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+
+                        // Get usage
+                        string name = item.Type.Name;
+                        switch (name)
+                        {
+                            case null:
+                            case "":
+                            case "None":
+                                // Do nothing
+                                break;
+
+                            case "Key":
+                                // Key column
+                                if (String.IsNullOrEmpty(keyPath))
+                                {
+                                    keyPath = item.AssignTo;
+                                }
+                                else
+                                {
+                                    // Do not accept multiple key fields
+                                    FrostyMessageBox.Show("Please provide only one key field", "Flammenwerfer Editor (Import String Window)");
+                                    result = false;
+                                    return;
+                                }
+                                break;
+
+                            default:
+                                // String column
+                                languages[name].Add(item.AssignTo);
+                                break;
+                        }
+                        ReportProgress(task.TaskLogger, ++index, JsonFieldItems.Count, currentPart: 3, totalParts);
+                    }
+
+                    if (String.IsNullOrEmpty(keyPath))
+                    {
+                        // Check if key path exists
+                        FrostyMessageBox.Show("Please at least provide one key field", "Flammenwerfer Editor (Import String Window)");
+                        result = false;
+                        return;
+                    }
+
+                    // Step 4: Process keys
+                    task.TaskLogger.Log("[4/5] Processing keys");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 4, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+
+                    index = 0;
+                    List<uint> keys = new List<uint>();
+                    int keyCount = jToken.SelectTokens(keyPath).Count();
+                    foreach (JToken token in jToken.SelectTokens(keyPath))
+                    {
+                        keys.Add(uint.Parse(token.ToString(), System.Globalization.NumberStyles.HexNumber));
+                        ReportProgress(task.TaskLogger, ++index, keyCount, currentPart: 4, totalParts);
+                    }
+
+                    // Step 5: Import Strings
+                    task.TaskLogger.Log("[5/5] Importing strings");
+                    ReportProgress(task.TaskLogger, 0, 1, currentPart: 5, totalParts);
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+
+                    index = 0;
+                    int totalAdded = 0;
+                    int totalModified = 0;
+                    int totalIgnored = 0;
+                    int totalSame = 0;
+                    int totalLanguage = 0;
+
+                    // Calculate total languages
+                    foreach (KeyValuePair<string, List<string>> pair in languages)
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        if (pair.Value.Count != 0)
+                            totalLanguage++;
+                    }
+
+                    // Back up the language currently selected by the user
+                    string currentLanguage = Config.Get("Language", "English", ConfigScope.Game);
+                    // Iterate every languages and the string paths for the language
+                    // pair.Key is the language, pair.Value is the string list for the pair.Key
+                    foreach (KeyValuePair<string, List<string>> pair in languages)
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        if (pair.Value.Count == 0)
+                            continue;
+                        index++;
+
+                        // Switch to language
+                        Config.Add("Language", pair.Key, ConfigScope.Game);
+                        Config.Save();
+                        db.Initialize();
+                        var currentStringIds = db.EnumerateStrings().Distinct().AsQueryable();
+                        int totalSet = 0;
+
+                        // Add strings
+                        int index2 = 0;
+                        foreach (string path in pair.Value)
+                        {
+                            index2++;
+                            if (jToken.SelectTokens(path).Count() != keys.Count)
+                            {
+                                App.Logger.LogError($"The amount of data for this path is incorrect: {path}");
+                                continue;
+                            }
+                            for (int i = 0; i < jToken.SelectTokens(path).Count(); i++)
+                            {
+                                cancelToken.Token.ThrowIfCancellationRequested();
+
+                                List<JToken> tokens = jToken.SelectTokens(path).ToList();
+
+                                if (db.GetString(keys[i]) == tokens[i].ToString())
+                                    totalSame++;
+                                else if (currentStringIds.Contains(keys[i]))
+                                    totalModified++;
+                                else
+                                    totalAdded++;
+
+                                db.SetString(keys[i], tokens[i].ToString());
+                                totalSet++;
+
+                                // Make users feel fast
+                                task.TaskLogger.Log($"[5/5] Importing strings ({keys[i].ToString("X")})");
+                            }
+                            ReportProgress(task.TaskLogger, index, totalLanguage, 5, totalParts, index2, pair.Value.Count());
+                        }
+                        totalIgnored += currentStringIds.Count() - totalSet;
+
+                        ReportProgress(task.TaskLogger, index, totalLanguage, currentPart: 5, totalParts);
+                    }
+                    App.Logger.Log($"{totalModified} strings modified, {totalAdded} strings added, {totalSame} strings same and {totalIgnored} strings ignored. In {totalLanguage} languages.");
+
+                    cancelToken.Token.ThrowIfCancellationRequested();
+                    task.TaskLogger.Log("Finishing");
+                    ReportProgress(task.TaskLogger, 1, 1, 1, 1);
+                    Thread.Sleep(1);
+
+                    // Switch back to the previously backed-up language
+                    Config.Add("Language", currentLanguage, ConfigScope.Game);
+                    Config.Save();
+                    db.Initialize();
+                }
+                catch (OperationCanceledException)
+                {
+                    // User canceled
+                    result = false;
+                    App.Logger.Log("JSON import canceled");
+                }
+            }, true, (task) => cancelToken.Cancel());
+
+            GC.Collect();
+            return result;
+        }
 
         #endregion
 
@@ -1556,11 +1772,13 @@ namespace FlammenwerferPlugin.Editor.Windows
                             case "Key":
                                 // Key column
                                 if (keyIndex == -1)
+                                {
                                     keyIndex = i;
+                                }
                                 else
                                 {
                                     // Do not accept multiple key columns
-                                    FrostyMessageBox.Show("Please only select one key column", "Flammenwerfer Editor (Import String Window)");
+                                    FrostyMessageBox.Show("Please select only one key column", "Flammenwerfer Editor (Import String Window)");
                                     result = false;
                                     return;
                                 }
@@ -1590,7 +1808,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                     if (keyIndex == -1)
                     {
                         // Check if key column exists
-                        FrostyMessageBox.Show("Please select one key column", "Flammenwerfer Editor (Import String Window)");
+                        FrostyMessageBox.Show("Please at least select one key column", "Flammenwerfer Editor (Import String Window)");
                         result = false;
                         return;
                     }
