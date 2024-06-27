@@ -405,6 +405,9 @@ namespace FlammenwerferPlugin.Editor.Controls
 
             FillStringIDs(stringIds);
             RemakeList();
+
+            if (ComboBox_Language.SelectedIndex != ComboBox_Language.Items.IndexOf(Config.Get<string>("Language", "English", ConfigScope.Game)))
+                ComboBox_Language.SelectedIndex = ComboBox_Language.Items.IndexOf(Config.Get<string>("Language", "English", ConfigScope.Game));
         }
 
         private void Filter_KeyDown(object sender, KeyEventArgs e)
