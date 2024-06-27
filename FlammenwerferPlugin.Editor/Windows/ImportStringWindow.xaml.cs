@@ -31,6 +31,8 @@ namespace FlammenwerferPlugin.Editor.Windows
 {
     public partial class ImportStringWindow : FrostyDockableWindow, INotifyPropertyChanged
     {
+        #region - Window -
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged(string propertyName)
@@ -55,7 +57,6 @@ namespace FlammenwerferPlugin.Editor.Windows
 
         public bool IsLoadLessButtonEnabled => PreviewCount > 1;
 
-        #region - Window -
 
         public ImportStringWindow(Window owner)
         {
@@ -228,7 +229,7 @@ namespace FlammenwerferPlugin.Editor.Windows
         private void OptionsChanged(object sender, RoutedEventArgs e) => LoadFile();
         private void OptionsChanged(object sender, SelectionChangedEventArgs e) => LoadFile();
 
-        private async void ReportProgress(ILogger logger, int current, int total, int currentPart = 1, int totalParts = 1, int detail = 1, int totalDetails = 1)
+        private async void ReportProgress(ILogger logger, double current, double total, double currentPart = 1, double totalParts = 1, double detail = 1, double totalDetails = 1)
         {
             if (total > 0)
             {
@@ -1352,6 +1353,16 @@ namespace FlammenwerferPlugin.Editor.Windows
                             totalLanguage++;
                     }
 
+                    Func<double, double, double, double, double> calculateDetails = (current, total, currentPart, totalPart) =>
+                    {
+                        double Result = 0;
+                        Dispatcher.InvokeAsync(() =>
+                        {
+                            Result = ((currentPart - 1) * totalPart + current) / (totalPart * total) * 100.0d;
+                        }).Wait();
+                        return Result;
+                    };
+
                     // Back up the language currently selected by the user
                     string currentLanguage = Config.Get("Language", "English", ConfigScope.Game);
                     // Iterate every languages and the string paths for the language
@@ -1375,16 +1386,16 @@ namespace FlammenwerferPlugin.Editor.Windows
                         foreach (string path in pair.Value)
                         {
                             index2++;
-                            if (jToken.SelectTokens(path).Count() != keys.Count)
+                            List<JToken> tokens = jToken.SelectTokens(path).ToList();
+
+                            if (tokens.Count != keys.Count)
                             {
                                 App.Logger.LogError($"The amount of data for this path is incorrect: {path}");
                                 continue;
                             }
-                            for (int i = 0; i < jToken.SelectTokens(path).Count(); i++)
+                            for (int i = 0; i < tokens.Count; i++)
                             {
                                 cancelToken.Token.ThrowIfCancellationRequested();
-
-                                List<JToken> tokens = jToken.SelectTokens(path).ToList();
 
                                 if (db.GetString(keys[i]) == tokens[i].ToString())
                                     totalSame++;
@@ -1398,8 +1409,11 @@ namespace FlammenwerferPlugin.Editor.Windows
 
                                 // Make users feel fast
                                 task.TaskLogger.Log($"[5/5] Importing strings ({keys[i].ToString("X")})");
+                                //ReportProgress(task.TaskLogger, index, totalLanguage, 5, totalParts, index2, pair.Value.Count());
+                                ReportProgress(task.TaskLogger, index, totalLanguage, 5, totalParts,
+                                    calculateDetails(i + 1, tokens.Count, index2, pair.Value.Count),
+                                    100.0d);
                             }
-                            ReportProgress(task.TaskLogger, index, totalLanguage, 5, totalParts, index2, pair.Value.Count());
                         }
                         totalIgnored += currentStringIds.Count() - totalSet;
 
