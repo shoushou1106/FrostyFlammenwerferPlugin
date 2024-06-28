@@ -31,6 +31,7 @@ namespace FlammenwerferPlugin.Editor.Windows
 {
     public partial class ImportStringWindow : FrostyDockableWindow, INotifyPropertyChanged
     {
+
         #region - Window -
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -904,9 +905,19 @@ namespace FlammenwerferPlugin.Editor.Windows
 
         #region - JSON -
 
+        /// <summary>
+        /// Items for JsonFieldsListBox
+        /// </summary>
         public ObservableCollection<JsonFieldItem> JsonFieldItems { get; set; } = new ObservableCollection<JsonFieldItem>();
+
+        /// <summary>
+        /// Same as <see cref="ComboBoxItems"/>, but with JsonFieldType
+        /// </summary>
         public List<JsonFieldType> JsonFieldTypes { get; set; } = new List<JsonFieldType>();
 
+        /// <summary>
+        /// Node class for JsonPreviewTreeView
+        /// </summary>
         public class JsonTreeNode
         {
             public string Name { get; set; }
@@ -919,11 +930,22 @@ namespace FlammenwerferPlugin.Editor.Windows
             }
         }
 
+        /// <summary>
+        /// Item class for JsonFieldsListBox
+        /// </summary>
         public class JsonFieldItem
         {
-            internal ListBox parent;
+            public JsonFieldItem(ListBox parent = null, JsonFieldType type = null)
+            {
+                if (parent != null)
+                    Parent = parent;
+                if (type != null)
+                    Type = type;
+            }
 
-            internal JsonFieldType _type;
+            private ListBox Parent;
+
+            private JsonFieldType _type;
             public JsonFieldType Type
             {
                 get { return _type; }
@@ -966,11 +988,14 @@ namespace FlammenwerferPlugin.Editor.Windows
             protected virtual void OnPropertyChanged(string propertyName)
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-                if (parent != null)
-                    parent.Items.Refresh();
+                if (Parent != null)
+                    Parent.Items.Refresh();
             }
         }
 
+        /// <summary>
+        /// About the same as WPF <see cref="ComboBoxItem"/>, use for JsonFieldTypes
+        /// </summary>
         public class JsonFieldType
         {
             public string Name { get; set; }
@@ -991,7 +1016,7 @@ namespace FlammenwerferPlugin.Editor.Windows
             {
                 try
                 {
-                    const int totalParts = 2;
+                    const int totalParts = 3;
                     cancelToken.Token.ThrowIfCancellationRequested();
 
                     Dispatcher.Invoke(() =>
@@ -1001,21 +1026,31 @@ namespace FlammenwerferPlugin.Editor.Windows
                         JsonPreviewTreeView.ItemsSource = null;
                         JsonPreviewTreeView.Items.Clear();
                         //JsonFieldItems.Clear();
-                        foreach (var item in JsonFieldItems)
-                        {
-                            
-                        }
                     });
 
-                    task.TaskLogger.Log("[1/2] Reading Json file");
+                    task.TaskLogger.Log("[1/3] Reading Json file");
                     ReportProgress(task.TaskLogger, 0, 1, 1, totalParts);
                     Thread.Sleep(1);
 
-                    task.TaskLogger.Log("[2/2] Parsing Json file");
+                    JToken token = ReadJson();
+
+                    task.TaskLogger.Log("[2/3] Removeing unavailable fields");
                     ReportProgress(task.TaskLogger, 0, 1, 2, totalParts);
                     Thread.Sleep(1);
 
-                    ObservableCollection<JsonTreeNode> treeNodes = ParseJsonToTree(ReadJson());
+                    int index = 0;
+                    foreach (JsonFieldItem item in JsonFieldItems)
+                    {
+                        if (!token.SelectTokens(item.AssignTo).Any())
+                            item.AssignTo = null;
+                        ReportProgress(task.TaskLogger, ++index, JsonFieldItems.Count, 2, totalParts);
+                    }
+
+                    task.TaskLogger.Log("[3/3] Parsing Json file");
+                    ReportProgress(task.TaskLogger, 0, 1, 3, totalParts);
+                    Thread.Sleep(1);
+
+                    ObservableCollection<JsonTreeNode> treeNodes = ParseJsonToTree(token);
 
                     Dispatcher.Invoke(() =>
                     {
@@ -1041,6 +1076,9 @@ namespace FlammenwerferPlugin.Editor.Windows
             }, true, (task) => cancelToken.Cancel());
         }
 
+        /// <summary>
+        /// Read JSON from <see cref="FilePath"/>
+        /// </summary>
         private JToken ReadJson()
         {
             // read JSON directly from a file
@@ -1051,6 +1089,10 @@ namespace FlammenwerferPlugin.Editor.Windows
             }
         }
 
+        /// <summary>
+        /// Parse <see cref="PreviewCount"/> object to TreeView
+        /// </summary>
+        /// <param name="jToken">JToken to parse</param>
         private ObservableCollection<JsonTreeNode> ParseJsonToTree(JToken jToken)
         {
             ObservableCollection<JsonTreeNode> root = new ObservableCollection<JsonTreeNode>();
@@ -1087,6 +1129,7 @@ namespace FlammenwerferPlugin.Editor.Windows
             return root;
         }
 
+        // https://stackoverflow.com/questions/23812357/how-to-bind-dynamic-json-into-treeview-wpf/28097883
         private void ParseJsonTokenToNode(JToken token, JsonTreeNode inTreeNode)
         {
             if (token == null)
@@ -1118,7 +1161,7 @@ namespace FlammenwerferPlugin.Editor.Windows
 
         private void JsonAddItemButton_Click(object sender, RoutedEventArgs e)
         {
-            JsonFieldItems.Add(new JsonFieldItem() { _type = JsonFieldTypes[0], parent = JsonFieldsListBox });
+            JsonFieldItems.Add(new JsonFieldItem(JsonFieldsListBox, JsonFieldTypes[0]));
         }
 
         private void JsonRemoveItemButton_Click(object sender, RoutedEventArgs e)
@@ -1133,15 +1176,23 @@ namespace FlammenwerferPlugin.Editor.Windows
 
         private void JsonAssignButton_Click(object sender, RoutedEventArgs e)
         {
-            if (IsJsonAssignButtonEnabled && sender is Button button && button.Tag is JsonFieldItem fieldItem)
+            if (IsJsonAssignButtonEnabled &&
+                sender is Button button &&
+                button.Tag is JsonFieldItem fieldItem)
             {
                 fieldItem.AssignTo = (JsonPreviewTreeView.SelectedItem as JsonTreeNode).Path;
             }
         }
 
+        /// <summary>
+        /// Show what will the current JSONPath select
+        /// </summary>
         private void JsonJPathTestButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is Popup popup && popup.Tag is JsonFieldItem fieldItem && !String.IsNullOrEmpty(fieldItem.AssignTo))
+            if (sender is Button button &&
+                button.Tag is Popup popup &&
+                popup.Tag is JsonFieldItem fieldItem &&
+                !String.IsNullOrEmpty(fieldItem.AssignTo))
             {
                 fieldItem.PopupPreviewContent = new ObservableCollection<string>(ReadJson().SelectTokens(fieldItem.AssignTo).Take(PreviewCount).Select(token => token.ToString()));
                 fieldItem.IsPopupOpen = true;
@@ -1149,6 +1200,9 @@ namespace FlammenwerferPlugin.Editor.Windows
             }
         }
 
+        /// <summary>
+        /// Provide instructions to the user and automatically detect JSONPath
+        /// </summary>
         private void JsonPathHelpButton_Click(object sender, RoutedEventArgs e)
         {
             string recommendedJsonPath = null;
@@ -1241,15 +1295,15 @@ namespace FlammenwerferPlugin.Editor.Windows
                     ReportProgress(task.TaskLogger, 0, 1, currentPart: 1, totalParts);
                     cancelToken.Token.ThrowIfCancellationRequested();
                     Thread.Sleep(1);
-                    int languagesCount = Controls.LocalizedStringEditor.GetLocalizedLanguages().Count;
+                    List<string> localizedLanguages = Controls.LocalizedStringEditor.GetLocalizedLanguages();
                     int index = 0;
 
-                    foreach (string lang in Controls.LocalizedStringEditor.GetLocalizedLanguages())
+                    foreach (string lang in localizedLanguages)
                     {
                         cancelToken.Token.ThrowIfCancellationRequested();
                         // Initialize dictionary with languages
                         languages.Add(lang, new List<string>());
-                        ReportProgress(task.TaskLogger, ++index, languagesCount, currentPart: 1, totalParts);
+                        ReportProgress(task.TaskLogger, ++index, localizedLanguages.Count, currentPart: 1, totalParts);
                     }
 
                     // Step 2: Read Json
@@ -1277,8 +1331,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                         cancelToken.Token.ThrowIfCancellationRequested();
 
                         // Get usage
-                        string name = item.Type.Name;
-                        switch (name)
+                        switch (item.Type.Name)
                         {
                             case null:
                             case "":
@@ -1294,7 +1347,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                                 }
                                 else
                                 {
-                                    // Do not accept multiple key fields
+                                    // Do not accept multiple key
                                     FrostyMessageBox.Show("Please provide only one key field", "Flammenwerfer Editor (Import String Window)");
                                     result = false;
                                     return;
@@ -1303,7 +1356,7 @@ namespace FlammenwerferPlugin.Editor.Windows
 
                             default:
                                 // String column
-                                languages[name].Add(item.AssignTo);
+                                languages[item.Type.Name].Add(item.AssignTo);
                                 break;
                         }
                         ReportProgress(task.TaskLogger, ++index, JsonFieldItems.Count, currentPart: 3, totalParts);
@@ -1353,6 +1406,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                             totalLanguage++;
                     }
 
+                    // Function to calculate more details
                     Func<double, double, double, double, double> calculateDetails = (current, total, currentPart, totalPart) =>
                     {
                         double Result = 0;
@@ -1409,7 +1463,6 @@ namespace FlammenwerferPlugin.Editor.Windows
 
                                 // Make users feel fast
                                 task.TaskLogger.Log($"[5/5] Importing strings ({keys[i].ToString("X")})");
-                                //ReportProgress(task.TaskLogger, index, totalLanguage, 5, totalParts, index2, pair.Value.Count());
                                 ReportProgress(task.TaskLogger, index, totalLanguage, 5, totalParts,
                                     calculateDetails(i + 1, tokens.Count, index2, pair.Value.Count),
                                     100.0d);
