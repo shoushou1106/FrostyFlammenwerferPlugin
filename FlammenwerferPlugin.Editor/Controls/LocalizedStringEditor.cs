@@ -276,7 +276,7 @@ namespace FlammenwerferPlugin.Editor.Controls
         {
             try
             {
-                ImportStringWindow importWindow = new ImportStringWindow(Application.Current.MainWindow);
+                ImportStringsWindow importWindow = new ImportStringsWindow(Application.Current.MainWindow);
                 if (importWindow.ShowDialog() == true)
                     Refresh_Click(sender, e);
             }

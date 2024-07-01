@@ -1,0 +1,683 @@
+﻿<ctrl:FrostyDockableWindow x:Class="FlammenwerferPlugin.Editor.Windows.ExportStringsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FlammenwerferPlugin.Editor.Windows"
+        xmlns:core="clr-namespace:Frosty.Core;assembly=FrostyCore"
+        xmlns:ctrl="clr-namespace:Frosty.Controls;assembly=FrostyControls"
+        xmlns:fdev="FrostyDeveloper"
+        mc:Ignorable="d"
+        UseLayoutRounding="True"
+        Title="Export Strings" SizeToContent="Height" MaxHeight="850" Width="500"
+        x:Name="exportStringWindow"
+        WindowStartupLocation="CenterOwner"
+        FontFamily="system-ui, -apple-system, Segoe UI, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, Arial, Microsoft Yahei, Microsoft JhengHei, Global User Interface"
+        >
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/FrostyControls;component/Themes/Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="DataGridCellStyle" TargetType="DataGridCell">
+                <Setter Property="Background" Value="{StaticResource ListBackground}"/>
+                <Setter Property="Foreground" Value="{StaticResource FontColor}"/>
+                <Setter Property="BorderThickness" Value="0.5"/>
+                <Setter Property="BorderBrush" Value="{StaticResource ControlBackground}"/>
+            </Style>
+            <Style x:Key="DataGridHeaderStyle" TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="{StaticResource ListBackground}"/>
+                <Setter Property="Foreground" Value="{StaticResource FontColor}"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="BorderBrush" Value="{StaticResource ControlBackground}"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            </Style>
+            <Style x:Key="DataGridRowStyle" TargetType="DataGridRow">
+                <Setter Property="Focusable" Value="False"/>
+                <Setter Property="Background" Value="Transparent"/>
+            </Style>
+            <Style TargetType="{x:Type RepeatButton}">
+                <Setter Property="Foreground"
+                Value="{StaticResource FontColor}" />
+                <Setter Property="Background"
+                Value="{StaticResource ControlBackground}" />
+                <Setter Property="Padding"
+                Value="2" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type RepeatButton}">
+                            <Border x:Name="buttonBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="0">
+                                <ContentPresenter x:Name="content"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver"
+                                 Value="True">
+                                    <Setter TargetName="buttonBorder"
+                                    Property="Background"
+                                    Value="#FF707070" />
+                                </Trigger>
+                                <Trigger Property="IsPressed"
+                                 Value="True">
+                                    <Setter TargetName="buttonBorder"
+                                    Property="Background"
+                                    Value="#FF585858" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled"
+                                 Value="False">
+                                    <Setter TargetName="content"
+                                    Property="Opacity"
+                                    Value="0.5" />
+                                </Trigger>
+                                <EventTrigger RoutedEvent="Click">
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="1x" AutoReverse="True">
+                                            <DoubleAnimation Storyboard.TargetName="buttonBorder"
+                                             Storyboard.TargetProperty="Opacity"
+                                             From="1" To="0.75" Duration="0:0:0.05" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource WindowBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="{StaticResource ListBackground}"/>
+        <StackPanel Grid.Row="0" Margin="5, 10, 5, 10">
+            <!-- File Type -->
+            <WrapPanel Orientation="Horizontal" Margin="3">
+                <Label Width="Auto">
+                    <Label.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Margin="0, 1, 5, 0" Text="&#xe97c;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="File Type: "/>
+                        </StackPanel>
+                    </Label.Content>
+                </Label>
+                <ComboBox x:Name="FileTypeComboBox" MinWidth="100" Width="Auto" Margin="2">
+                    <ComboBoxItem Name="Csv" Content="CSV"/>
+                    <ComboBoxItem Name="Json" Content="JSON" IsSelected="True"/>
+                    <ComboBoxItem Name="Excel" Content="Excel"/>
+                </ComboBox>
+            </WrapPanel>
+
+            <!-- CSV -->
+            <StackPanel x:Name="CsvGrid" Margin="3" Orientation="Vertical">
+                <Label Width="Auto">
+                    <Label.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyCore;component/Images/Settings.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="Options: "/>
+                        </StackPanel>
+                    </Label.Content>
+                </Label>
+
+                <WrapPanel Orientation="Vertical" Margin="15, 0, 0, 0">
+                    <!-- Header -->
+                    <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
+                        <Label Width="Auto">
+                            <Label.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Foreground="{StaticResource FontColor}" Text="Header: "/>
+                                </StackPanel>
+                            </Label.Content>
+                        </Label>
+                        <CheckBox x:Name="CsvHeaderCheckBox" Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center" Click="OptionsChanged"/>
+                    </WrapPanel>
+                </WrapPanel>
+
+                <WrapPanel Orientation="Horizontal">
+                    <Label Width="Auto">
+                        <Label.Content>
+                            <WrapPanel Orientation="Horizontal">
+                                <TextBlock Margin="0, 1, 5, 0" Text="&#xe8ff;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Preview: "/>
+                            </WrapPanel>
+                        </Label.Content>
+                    </Label>
+                    <RepeatButton Padding="6, 3, 6, 3" Margin="0, 2, 4, 2" Width="Auto"
+                                  Delay="250" Interval="100"
+                                  Click="LoadMoreButton_Click" PreviewMouseUp="PreviewCountChanged">
+                        <RepeatButton.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0, 1, 5, 0" Text="&#xecc8;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Load More"/>
+                            </StackPanel>
+                        </RepeatButton.Content>
+                    </RepeatButton>
+                    <RepeatButton Padding="6, 3, 6, 3" Margin="2" Width="Auto"
+                                  IsEnabled="{Binding IsLoadLessButtonEnabled, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  Delay="250" Interval="100"
+                                  Click="LoadLessButton_Click" PreviewMouseUp="PreviewCountChanged">
+                        <RepeatButton.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0, 1, 5, 0" Text="&#xecc9;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Load Less"/>
+                            </StackPanel>
+                        </RepeatButton.Content>
+                    </RepeatButton>
+                    <TextBox Padding="2.5" Margin="2" Width="Auto"
+                             BorderThickness="1"
+                             Text="{Binding PreviewCount, RelativeSource={RelativeSource AncestorType=Window}}"
+                             LostFocus="PreviewCountChanged"
+                             AcceptsTab="False"
+                             AcceptsReturn="False"
+                             TextWrapping="NoWrap"
+                             AutoWordSelection="False"
+                             VerticalScrollBarVisibility="Disabled" 
+                             HorizontalScrollBarVisibility="Disabled"
+                             >
+                    </TextBox>
+                </WrapPanel>
+
+                <!-- <DataGrid Name="CsvPreviewDataGrid" Margin="5, 3, 5, 3" MaxHeight="550"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          VerticalContentAlignment="Stretch"
+                          Background="{StaticResource ListBackground}"
+                          Foreground="{StaticResource FontColor}" BorderThickness="0"
+                          ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                          CellStyle="{StaticResource DataGridCellStyle}"
+                          AutoGenerateColumns="False"
+                          HeadersVisibility="Column"
+                          RowHeaderWidth="0"
+                          RowStyle="{StaticResource DataGridRowStyle}"
+                          MinColumnWidth="50"
+                          ColumnWidth="175"
+                          GridLinesVisibility="None"
+                          CanUserAddRows="True"
+                          CanUserDeleteRows="True"
+                          CanUserReorderColumns="True"
+                          CanUserResizeColumns="True" 
+                          CanUserResizeRows="True"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto"
+                          >
+
+                </DataGrid> -->
+                
+                <DataGrid Name="CsvPreviewDataGrid" Margin="5, 3, 5, 3" MaxHeight="550"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          VerticalContentAlignment="Stretch"
+                          Background="{StaticResource ListBackground}"
+                          Foreground="{StaticResource FontColor}" BorderThickness="0"
+                          AutoGenerateColumns="False"
+                          HeadersVisibility="Column"
+                          RowHeaderWidth="0"
+                          MinColumnWidth="50"
+                          ColumnWidth="175"
+                          GridLinesVisibility="None"
+                          CanUserAddRows="True"
+                          CanUserDeleteRows="True"
+                          CanUserReorderColumns="True"
+                          CanUserResizeColumns="True" 
+                          CanUserResizeRows="True"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto"
+                          >
+
+                </DataGrid>
+                
+            </StackPanel>
+
+            <!-- Json -->
+            <StackPanel x:Name="JsonGrid" Margin="3" MaxHeight="810">
+                <WrapPanel Orientation="Horizontal">
+                    <Label Width="Auto">
+                        <Label.Content>
+                            <WrapPanel Orientation="Horizontal">
+                                <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Properties.png"
+                                RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Fields: "/>
+                            </WrapPanel>
+                        </Label.Content>
+                    </Label>
+
+                    <Button Padding="6, 3, 6, 3" Margin="0, 2, 4, 2" Width="Auto" Click="JsonAddItemButton_Click">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Add.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Add"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+
+                    <Button Padding="6, 3, 6, 3" Margin="2" Width="Auto" Click="JsonRemoveItemButton_Click"
+                            IsEnabled="{Binding IsJsonRemoveFieldButtonEnabled, RelativeSource={RelativeSource AncestorType=Window}}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Remove.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Remove"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                    
+                    <Button Padding="3" Margin="2" Width="Auto" Click="JsonPathHelpButton_Click">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0" Text="&#xe897;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                </WrapPanel>
+
+                <ListBox x:Name="JsonFieldsListBox" Margin="5, 3, 5, 3" Height="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         SelectionMode="Extended"
+                         VerticalAlignment="Top"
+                         SelectionChanged="JsonFieldsListBox_SelectionChanged"
+                         ItemsSource="{Binding JsonFieldItems, RelativeSource={RelativeSource AncestorType=Window}}"
+                         >
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <WrapPanel Orientation="Horizontal" Height="Auto">
+                                <ComboBox MinWidth="175" Width="Auto" Height="Auto" Margin="2"
+                                          ItemsSource="{Binding DataContext.JsonFieldTypes, ElementName=importStringWindow}" SelectedItem="{Binding Type}" DisplayMemberPath="DisplayName"/>
+                                <Button x:Name="JsonAssignButton" Width="14" Height="14" Padding="2" Margin="2, 0, 2, 0" VerticalAlignment="Center"
+                                        BorderThickness="0"
+                                        ToolTip="Assign from selected asset"
+                                        Background="Transparent"
+                                        IsEnabled="{Binding DataContext.IsJsonAssignButtonEnabled, ElementName=importStringWindow}"
+                                        Click="JsonAssignButton_Click"
+                                        Tag="{Binding}">
+                                    <Button.Content>
+                                        <Path Margin="0 0 0 0" Width="10" Height="10" Fill="#f7f7f7" Stretch="Uniform" Data="M0 6 L0 6 4 6 4 3 9 7.5 4 12 4 9 0 9" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Button.Content>
+                                </Button>
+                                <TextBox MinWidth="50" Margin="2" Padding="2" VerticalAlignment="Center" BorderThickness="1" Text="{Binding AssignTo}" ToolTip="JPath expression"/>
+                                <Button x:Name="JsonJPathTestButton" Padding="6, 3, 6, 3" Margin="2" HorizontalAlignment="Right" VerticalAlignment="Center" Width="Auto" Content="Test" Click="JsonJPathTestButton_Click" Tag="{Binding ElementName=JsonAssignTestPopup}"/>
+                                <Popup x:Name="JsonAssignTestPopup" AllowsTransparency="true" IsOpen="{Binding IsPopupOpen}" PlacementTarget="{Binding ElementName=JsonJPathTestButton}" Placement="Bottom" StaysOpen="False" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" Tag="{Binding}">
+                                    <ListBox Height="Auto" MaxHeight="{Binding ActualHeight, ElementName=importStringWindow}" Width="Auto" MaxWidth="{Binding ActualWidth, ElementName=importStringWindow}"
+                                             Background="{StaticResource ListBackground}"
+                                             BorderThickness="1"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                             ItemsSource="{Binding PopupPreviewContent}"
+                                             HorizontalContentAlignment="Stretch"
+                                             VerticalContentAlignment="Stretch"
+                                             >
+                                    </ListBox>
+                                </Popup>
+                            </WrapPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <DockPanel LastChildFill='True'/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                            <Setter Property="DockPanel.Dock" Value="Top" />
+                            <Setter Property="Height" Value="Auto" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+
+                <WrapPanel Orientation="Horizontal">
+                    <Label Width="Auto">
+                        <Label.Content>
+                            <WrapPanel Orientation="Horizontal">
+                                <TextBlock Margin="0, 1, 5, 0" Text="&#xe8ff;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Preview: "/>
+                            </WrapPanel>
+                        </Label.Content>
+                    </Label>
+                    <RepeatButton Padding="6, 3, 6, 3" Margin="0, 2, 4, 2" Width="Auto"
+                                  Delay="250" Interval="100"
+                                  Click="LoadMoreButton_Click" PreviewMouseUp="PreviewCountChanged">
+                        <RepeatButton.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0, 1, 5, 0" Text="&#xecc8;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Load More"/>
+                            </StackPanel>
+                        </RepeatButton.Content>
+                    </RepeatButton>
+                    <RepeatButton Padding="6, 3, 6, 3" Margin="2" Width="Auto"
+                                  IsEnabled="{Binding IsLoadLessButtonEnabled, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  Delay="250" Interval="100"
+                                  Click="LoadLessButton_Click" PreviewMouseUp="PreviewCountChanged">
+                        <RepeatButton.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0, 1, 5, 0" Text="&#xecc9;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Load Less"/>
+                            </StackPanel>
+                        </RepeatButton.Content>
+                    </RepeatButton>
+                    <TextBox Padding="2.5" Margin="2" Width="Auto"
+                             BorderThickness="1"
+                             Text="{Binding PreviewCount, RelativeSource={RelativeSource AncestorType=Window}}"
+                             LostFocus="PreviewCountChanged"
+                             AcceptsTab="False"
+                             AcceptsReturn="False"
+                             TextWrapping="NoWrap"
+                             AutoWordSelection="False"
+                             VerticalScrollBarVisibility="Disabled" 
+                             HorizontalScrollBarVisibility="Disabled"
+                             >
+                    </TextBox>
+                </WrapPanel>
+
+                <TreeView x:Name="JsonPreviewTreeView" Margin="5, 3, 5, 3" SelectedItemChanged="JsonPreviewTreeView_SelectedItemChanged"
+                          VirtualizingStackPanel.IsVirtualizing="True"
+                          VirtualizingStackPanel.VirtualizationMode="Recycling"
+                          >
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <Grid.ToolTip>
+                                    <TextBlock Text="{Binding Path}" Foreground="{StaticResource FontColor}"/>
+                                </Grid.ToolTip>
+                                <TextBlock Margin="8,0,3,0" Height="Auto" Padding="5"
+                                       Text="{Binding Name}"
+                                       Foreground="{StaticResource FontColor}"
+                                       TextWrapping="NoWrap"
+                                       TextTrimming="None"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Left"
+                                    FontFamily="Monospace, ui-monospace, MS Reference Sans Serif, system-ui, -apple-system, Segoe UI, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, Arial, Microsoft Yahei, Microsoft JhengHei, Global User Interface"/>
+                            </Grid>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource baseTreeViewItemStyle}">
+                            <Setter Property="IsExpanded" Value="{Binding Path=IsExpanded, Mode=TwoWay}"/>
+                            <Setter Property="IsSelected" Value="{Binding Path=IsSelected, Mode=TwoWay}"/>
+                            <!-- The FUCKING height is limited to 22, so I need to copy and edit it -->
+                            <!-- Copy from FrostyControls/Themes/Generic.xaml -->
+                            <!-- from line 1968 to 2080 -->
+                            <!-- Line 2036 need to edit -->
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type TreeViewItem}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition MinWidth="19"
+                                              Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition />
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Column="0"
+                              Grid.ColumnSpan="3">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition MinWidth="19"
+                                                  Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Label x:Name="Bd"
+                                   Grid.Column="1"
+                                   Grid.ColumnSpan="3"
+                                   Margin="-10000,0,0,0"
+                                   Background="{Binding Path=Background, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" />
+                                                <ToggleButton x:Name="Expander"
+                                          ClickMode="Press"
+                                          IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}">
+                                                    <ToggleButton.Template>
+                                                        <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                            <Border Background="Transparent"
+                                                Height="16"
+                                                Padding="5"
+                                                Width="16">
+                                                                <Path x:Name="ExpandPath"
+                                                  Fill="{StaticResource ControlPressed}"
+                                                  Stroke="{StaticResource ControlPressed}">
+                                                                    <Path.Data>
+                                                                        <PathGeometry Figures="M0,0 L0,6 L6,0 z" />
+                                                                    </Path.Data>
+                                                                    <Path.RenderTransform>
+                                                                        <RotateTransform Angle="135"
+                                                                     CenterY="3"
+                                                                     CenterX="3" />
+                                                                    </Path.RenderTransform>
+                                                                </Path>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsChecked"
+                                                     Value="True">
+                                                                    <Setter Property="RenderTransform"
+                                                        TargetName="ExpandPath">
+                                                                        <Setter.Value>
+                                                                            <RotateTransform Angle="180"
+                                                                         CenterY="3"
+                                                                         CenterX="3" />
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </ToggleButton.Template>
+                                                </ToggleButton>
+                                                <Border Grid.Column="1"
+                                    BorderThickness="0"
+                                    SnapsToDevicePixels="True"
+                                    MinHeight="22" Height="Auto"> <!-- Edited here -->
+                                                    <ContentPresenter x:Name="PART_Header"
+                                                  ContentSource="Header" />
+                                                </Border>
+
+                                                <Grid.Style>
+                                                    <Style TargetType="{x:Type Grid}">
+                                                        <Setter Property="Background"
+                                            Value="Transparent" />
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver"
+                                                 Value="True">
+                                                                <Setter Property="Background"
+                                                    Value="#303030" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Grid.Style>
+                                            </Grid>
+                                            <ItemsPresenter x:Name="ItemsHost"
+                                        Grid.ColumnSpan="2"
+                                        Grid.Column="1"
+                                        Grid.Row="1" />
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsExpanded"
+                                 Value="False">
+                                                <Setter Property="Visibility"
+                                    TargetName="ItemsHost"
+                                    Value="Collapsed" />
+                                            </Trigger>
+                                            <Trigger Property="HasItems"
+                                 Value="False">
+                                                <Setter Property="Visibility"
+                                    TargetName="Expander"
+                                    Value="Hidden" />
+                                            </Trigger>
+                                            <Trigger Property="IsSelected"
+                                 Value="True">
+                                                <Setter Property="Background"
+                                    TargetName="Bd"
+                                    Value="{StaticResource SubItemPressed}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                </TreeView>
+            </StackPanel>
+
+            <!-- Excel -->
+            <StackPanel x:Name="ExcelGrid" Margin="3" Orientation="Vertical">
+                <Label Width="Auto">
+                    <Label.Content>
+                        <WrapPanel Orientation="Horizontal">
+                            <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyCore;component/Images/Settings.png"
+                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="Options: "/>
+                        </WrapPanel>
+                    </Label.Content>
+                </Label>
+
+                <WrapPanel Orientation="Vertical" Margin="15, 0, 0, 0">
+                    <!-- Has Header -->
+                    <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
+                        <Label Width="Auto">
+                            <Label.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Foreground="{StaticResource FontColor}" Text="Has Header: "/>
+                                </StackPanel>
+                            </Label.Content>
+                        </Label>
+                        <CheckBox x:Name="ExcelHasHeaderCheckBox" Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center" Click="OptionsChanged"/>
+                    </WrapPanel>
+
+                    <!-- Read Hidden Worksheets -->
+                    <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
+                        <Label Width="Auto">
+                            <Label.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Foreground="{StaticResource FontColor}" Text="Read Hidden Worksheets: "/>
+                                </StackPanel>
+                            </Label.Content>
+                        </Label>
+                        <CheckBox x:Name="ExcelReadHiddenWorksheetsCheckBox" Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center" Click="OptionsChanged"/>
+                    </WrapPanel>
+                </WrapPanel>
+
+                <WrapPanel Orientation="Horizontal">
+                    <Label Width="Auto">
+                        <Label.Content>
+                            <WrapPanel Orientation="Horizontal">
+                                <TextBlock Margin="0, 1, 5, 0" Text="&#xe8ff;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Preview: "/>
+                            </WrapPanel>
+                        </Label.Content>
+                    </Label>
+                    <RepeatButton Padding="6, 3, 6, 3" Margin="0, 2, 4, 2" Width="Auto"
+                                  Delay="250" Interval="100"
+                                  Click="LoadMoreButton_Click" PreviewMouseUp="PreviewCountChanged">
+                        <RepeatButton.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0, 1, 5, 0" Text="&#xecc8;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Load More"/>
+                            </StackPanel>
+                        </RepeatButton.Content>
+                    </RepeatButton>
+                    <RepeatButton Padding="6, 3, 6, 3" Margin="2" Width="Auto"
+                                  IsEnabled="{Binding IsLoadLessButtonEnabled, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  Delay="250" Interval="100"
+                                  Click="LoadLessButton_Click" PreviewMouseUp="PreviewCountChanged">
+                        <RepeatButton.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0, 1, 5, 0" Text="&#xecc9;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Load Less"/>
+                            </StackPanel>
+                        </RepeatButton.Content>
+                    </RepeatButton>
+                    <TextBox Padding="2.5" Margin="2" Width="Auto"
+                             BorderThickness="1"
+                             Text="{Binding PreviewCount, RelativeSource={RelativeSource AncestorType=Window}}"
+                             LostFocus="PreviewCountChanged"
+                             AcceptsTab="False"
+                             AcceptsReturn="False"
+                             TextWrapping="NoWrap"
+                             AutoWordSelection="False"
+                             VerticalScrollBarVisibility="Disabled" 
+                             HorizontalScrollBarVisibility="Disabled"
+                             >
+                    </TextBox>
+                </WrapPanel>
+
+                <!-- FrostyTabControl is too ugly here -->
+                <TabControl x:Name="ExcelPreviewTabControl" Margin="5, 3, 5, 3" MaxHeight="550">
+                </TabControl>
+            </StackPanel>
+        </StackPanel>
+
+        <Grid Grid.Row="1" Height="38">
+            <Grid Margin="5">
+                <DockPanel LastChildFill="False">
+                    <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Click="CancelButton_Click">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyControls;component/Images/Clear.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Cancel"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+
+                    <Button x:Name="ConfirmButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto" Click="ConfirmButton_Click" IsEnabled="False">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Export.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Export"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+
+                    <Button Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto" Click="OptionsChanged">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0, 1, 5, 0" Text="&#xe72c;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Refresh"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+
+                </DockPanel>
+            </Grid>
+        </Grid>
+
+    </Grid>
+</ctrl:FrostyDockableWindow>
