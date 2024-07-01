@@ -66,9 +66,7 @@
   
   <ItemGroup>
     <None Remove="Images\LocalizedStringEditor.png" />
-    <None Remove="Images\LocalizedStringEditor_HighRes.png" />
     <Resource Include="Images\LocalizedStringEditor.png" />
-    <Resource Include="Images\LocalizedStringEditor_HighRes.png" />
   </ItemGroup>
   
 </Project>
