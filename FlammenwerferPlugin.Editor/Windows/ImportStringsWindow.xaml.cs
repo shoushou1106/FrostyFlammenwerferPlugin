@@ -29,7 +29,7 @@ using System.Windows.Threading;
 
 namespace FlammenwerferPlugin.Editor.Windows
 {
-    public partial class ImportStringWindow : FrostyDockableWindow, INotifyPropertyChanged
+    public partial class ImportStringsWindow : FrostyDockableWindow, INotifyPropertyChanged
     {
 
         #region - Window -
@@ -59,7 +59,7 @@ namespace FlammenwerferPlugin.Editor.Windows
         public bool IsLoadLessButtonEnabled => PreviewCount > 1;
 
 
-        public ImportStringWindow(Window owner)
+        public ImportStringsWindow(Window owner)
         {
             Owner = owner;
 
@@ -291,7 +291,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                             CsvGrid.Visibility = Visibility.Collapsed;
                             JsonGrid.Visibility = Visibility.Collapsed;
                             ExcelGrid.Visibility = Visibility.Collapsed;
-                            FrostyMessageBox.Show($"Unsupported file type: {fileInfo.Extension.ToLower()}{Environment.NewLine}Manually choose the File Type to force reading", "Flammenwerfer Editor (Import String Window)");
+                            FrostyMessageBox.Show($"Unsupported file type: {fileInfo.Extension.ToLower()}{Environment.NewLine}Manually choose the File Type to force reading", "Flammenwerfer Editor (Import Strings Window)");
                             break;
                     }
                     break;
@@ -1070,7 +1070,7 @@ namespace FlammenwerferPlugin.Editor.Windows
                     Dispatcher.Invoke(() =>
                     {
                         JsonGrid.Visibility = Visibility.Collapsed;
-                        FrostyExceptionBox.Show(ex, "Flammenwerfer Editor (Import Strings) Could not read the file as JSON");
+                        FrostyExceptionBox.Show(ex, "Flammenwerfer Editor (Import Strings Window) Could not read the file as JSON");
                     });
                 }
             }, true, (task) => cancelToken.Cancel());
