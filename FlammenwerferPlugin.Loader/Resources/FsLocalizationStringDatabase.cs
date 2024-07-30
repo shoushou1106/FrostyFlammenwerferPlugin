@@ -1,4 +1,4 @@
-﻿using FlammenwerferPlugin.Loader.Windows;
+﻿using FlammenwerferPlugin.Windows;
 using Frosty.Core;
 using FrostySdk.Ebx;
 using FrostySdk.IO;
@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FlammenwerferPlugin.Loader.Resources
+namespace FlammenwerferPlugin.Resources
 {
     public class ModifiedFsLocalizationAsset : ModifiedResource
     {

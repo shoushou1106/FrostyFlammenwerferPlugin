@@ -2,9 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34902.65
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlammenwerferPlugin.Loader", "FlammenwerferPlugin.Loader\FlammenwerferPlugin.Loader.csproj", "{1D548733-ED97-483F-9FEC-31049C97D4D7}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlammenwerferPlugin.Flammen", "FlammenwerferPlugin.Flammen\FlammenwerferPlugin.Flammen.csproj", "{FD53C371-010B-450C-9E61-E442BCEE66ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlammenwerferPlugin", "FlammenwerferPlugin.Loader\FlammenwerferPlugin.csproj", "{1D548733-ED97-483F-9FEC-31049C97D4D7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FrostyToolsuite", "FrostyToolsuite", "{03517833-0C36-4705-90FE-F3DEFFB00F1E}"
 EndProject
@@ -15,8 +13,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrostyControls", "..\FrostyToolsuite\FrostyControls\FrostyControls.csproj", "{51D3305B-48D0-4D4C-9D64-727185420EAC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrostyHash", "..\FrostyToolsuite\FrostyHash\FrostyHash.vcxproj", "{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlammenwerferPlugin.Editor", "FlammenwerferPlugin.Editor\FlammenwerferPlugin.Editor.csproj", "{DC73FD01-A38C-40AA-B098-71E143371F8B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,22 +42,6 @@ Global
 		{1D548733-ED97-483F-9FEC-31049C97D4D7}.Release - Final|x64.Build.0 = Release - Final|x64
 		{1D548733-ED97-483F-9FEC-31049C97D4D7}.Release - Final|x86.ActiveCfg = Release - Final|x64
 		{1D548733-ED97-483F-9FEC-31049C97D4D7}.Release - Final|x86.Build.0 = Release - Final|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Developer - Debug|x64.ActiveCfg = Developer - Debug|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Developer - Debug|x64.Build.0 = Developer - Debug|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Developer - Debug|x86.ActiveCfg = Developer - Debug|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Developer - Debug|x86.Build.0 = Developer - Debug|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Release - Alpha|x64.ActiveCfg = Release - Alpha|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Release - Alpha|x64.Build.0 = Release - Alpha|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Release - Alpha|x86.ActiveCfg = Release - Alpha|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Release - Alpha|x86.Build.0 = Release - Alpha|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Release - Beta|x64.ActiveCfg = Release - Beta|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Release - Beta|x64.Build.0 = Release - Beta|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Release - Beta|x86.ActiveCfg = Release - Beta|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Release - Beta|x86.Build.0 = Release - Beta|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Release - Final|x64.ActiveCfg = Release - Final|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Release - Final|x64.Build.0 = Release - Final|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Release - Final|x86.ActiveCfg = Release - Final|x64
-		{FD53C371-010B-450C-9E61-E442BCEE66ED}.Release - Final|x86.Build.0 = Release - Final|x64
 		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Developer - Debug|x64.ActiveCfg = Developer - Debug|x64
 		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Developer - Debug|x64.Build.0 = Developer - Debug|x64
 		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Developer - Debug|x86.ActiveCfg = Developer - Debug|x64
@@ -126,22 +106,6 @@ Global
 		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - Final|x64.Build.0 = Release - Final|x64
 		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - Final|x86.ActiveCfg = Release - Final|Win32
 		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - Final|x86.Build.0 = Release - Final|Win32
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Developer - Debug|x64.ActiveCfg = Developer - Debug|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Developer - Debug|x64.Build.0 = Developer - Debug|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Developer - Debug|x86.ActiveCfg = Developer - Debug|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Developer - Debug|x86.Build.0 = Developer - Debug|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Alpha|x64.ActiveCfg = Release - Alpha|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Alpha|x64.Build.0 = Release - Alpha|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Alpha|x86.ActiveCfg = Release - Alpha|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Alpha|x86.Build.0 = Release - Alpha|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Beta|x64.ActiveCfg = Release - Beta|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Beta|x64.Build.0 = Release - Beta|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Beta|x86.ActiveCfg = Release - Beta|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Beta|x86.Build.0 = Release - Beta|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Final|x64.ActiveCfg = Release - Final|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Final|x64.Build.0 = Release - Final|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Final|x86.ActiveCfg = Release - Final|x64
-		{DC73FD01-A38C-40AA-B098-71E143371F8B}.Release - Final|x86.Build.0 = Release - Final|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

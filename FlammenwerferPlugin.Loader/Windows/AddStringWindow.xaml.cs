@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Windows;
-using FlammenwerferPlugin.Loader.Resources;
+using FlammenwerferPlugin.Resources;
 using Frosty.Controls;
 using Frosty.Core;
 
-namespace FlammenwerferPlugin.Loader.Windows
+namespace FlammenwerferPlugin.Windows
 {
     public partial class AddStringWindow : FrostyDockableWindow
     {
