@@ -101,7 +101,7 @@ namespace FlammenwerferPlugin.Flammen
                             //
                             // _btw idk what is `Histogram.expand_shift_range`, its not exists in the original python code._
 
-                            throw new ArgumentException($"Unable to encode character {c} to bytes.");
+                            throw new ArgumentException($"Unable to encode character {c} to bytes." + Environment.NewLine + "Full String: " + str);
                         }
                     }
                 }
