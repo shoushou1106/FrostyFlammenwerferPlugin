@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Controls;
 
 namespace FlammenwerferPlugin.Flammen
 {
@@ -83,7 +85,7 @@ namespace FlammenwerferPlugin.Flammen
                         // Try to find a proper shift to fit the byte into range
                         foreach (int shift in shifts)
                         {
-                            int shiftByte = ((int)section[shift]) << 7;
+                            int shiftByte = (int)section[shift] << 7;
                             int byteShifted = index - shiftByte;
                             if (byteShifted < 0x80 && byteShifted >= 0)
                             {
@@ -97,11 +99,11 @@ namespace FlammenwerferPlugin.Flammen
                         if (!checkShift) 
                         {
                             // If this happens, it means that there is no proper shift to fit the character into range.
-                            // You may want to expand the shift range by calling `Histogram.expand_shift_range` method first.
-                            //
-                            // _btw idk what is `Histogram.expand_shift_range`, its not exists in the original python code._
+                            // You may want to expand the shift range by adding more characters to the histogram.
 
-                            throw new ArgumentException($"Unable to encode character {c} to bytes." + Environment.NewLine + "Full String: " + str);
+                            throw new ArgumentException($"Unable to encode character {c} to bytes." + Environment.NewLine +
+                                "You may want to expand the shift range by adding more characters to the histogram." + Environment.NewLine +
+                                "Full String: " + str);
                         }
                     }
                 }
@@ -111,8 +113,18 @@ namespace FlammenwerferPlugin.Flammen
             return binString.ToArray();
         }
 
-        public static void addCharsToHistogram(List<char> chars, ref uint dataOffSize, ref List<ushort> section)
+        public static void addCharsToHistogram(IEnumerable<string> strings, ref uint dataOffSize, ref List<char> section)
         {
+            HashSet<char> charSet = new HashSet<char>();
+
+            foreach (string str in strings)
+            {
+                charSet.UnionWith(str);
+            }
+
+            List<char> chars = charSet.Except(section).ToList();
+
+            // Calculate needed indices
             int shiftNumsIndex = 0x40;
             while (shiftNumsIndex < 0xFF)
             {
@@ -121,73 +133,81 @@ namespace FlammenwerferPlugin.Flammen
                 shiftNumsIndex++;
             }
 
-            uint insertedStart = dataOffSize - 1;
-
+            int insertedStart = (int)dataOffSize - 1;
             List<char> shiftNums = Enumerable
                 .Range(2, (int)section[shiftNumsIndex] + 1)
                 .Select(num => ((char)num))
                 .ToList();
             int shiftNumsCount = shiftNums.Count;
 
-            while (true)
+            Func<List<char>, List<char>> calculateBytePositions = (List<char> Chars) =>
             {
-                // calculate_byte_positions
-                List<int> bytePositions = new List<int>();
-                for (int i = 0; i < chars.Count; i++)
+                List<char> bytePositions = new List<char>();
+                for (int i = 0; i < Chars.Count; i++)
                 {
-                    bytePositions.Add((int)insertedStart + shiftNumsCount + (shiftNumsIndex - 0x80) + i);
+                    bytePositions.Add((char)(insertedStart + shiftNumsCount + (shiftNumsIndex - 0x80) + i));
                 }
+                return bytePositions;
+            };
 
-                // calculate_shift_nums_and_mappings
+            Func<List<char>, List<char>> calculateShiftNumsAndMappings = (List<char> BytePositions) =>
+            {
                 HashSet<char> shiftNumsSet = new HashSet<char>();
-                foreach (int @byte in bytePositions)
+                foreach (int @byte in BytePositions)
                 {
                     char shiftNum = (char)(@byte / 0x80);
 
                     if ((int)shiftNum >= 0x80)
                     {
-                        throw new ArgumentException("Too many characters");
+                        throw new ArgumentException("Too much characters");
                     }
-                    if (!shiftNumsSet.Contains(shiftNum))
+                    if (!shiftNumsSet.Contains(shiftNum)) 
                     {
                         shiftNumsSet.Add(shiftNum);
                     }
                 }
-                List<char> newShiftNums = shiftNumsSet.OrderBy(x => (int)x).ToList();
+                return shiftNumsSet.OrderBy(x => (int)x).ToList();
+            };
 
+            while (true)
+            {
+                List<char> newShiftNums = calculateShiftNumsAndMappings(calculateBytePositions(chars));
+
+                // The number of shift_nums doesn't change - the algorithm ends
                 if (newShiftNums.Count == shiftNumsCount)
                 {
                     shiftNums = newShiftNums;
                     break;
                 }
 
+                // Otherwise, update the number of shift_nums and repeat
                 shiftNumsCount = newShiftNums.Count;
             }
 
 
             // Create a new list to hold the updated section
-            List<ushort> newSection = new List<ushort>();
+            List<char> newSection = new List<char>();
 
             // Add the first 0x80 elements from the original section
             newSection.AddRange(section.Take(0x80));
 
             // Add the shift_nums elements
-            newSection.AddRange(shiftNums.Select(c => (ushort)c));
+            newSection.AddRange(shiftNums);
 
             // Add the elements from shiftNumsIndex to insertedStart
-            newSection.AddRange(section.Skip(shiftNumsIndex).Take((int)insertedStart - shiftNumsIndex));
+            newSection.AddRange(section.Skip(shiftNumsIndex).Take(insertedStart - shiftNumsIndex));
 
             // Add the chars elements
-            newSection.AddRange(chars.Select(c => (ushort)c));
+            newSection.AddRange(chars);
 
             // Add the remaining elements from insertedStart to the end
-            newSection.AddRange(section.Skip((int)insertedStart));
+            newSection.AddRange(section.Skip(insertedStart));
 
             // Update the section with the new list
             section = newSection;
 
             // Update the dataOffSize
-            dataOffSize += (uint)chars.Count;
+            dataOffSize += (uint)chars.Count();
         }
 
         public static Dictionary<uint, string> ReadStrings(ChunkAssetEntry histogramChunk, ChunkAssetEntry stringsBinaryChunk)
@@ -255,7 +275,7 @@ namespace FlammenwerferPlugin.Flammen
             uint histogramMagic;
             uint histogramFileSize;
             uint histogramDataOffSize;
-            List<ushort> histogramSection = new List<ushort>();
+            List<char> histogramSection = new List<char>();
             using (NativeReader reader = new NativeReader(App.AssetManager.GetChunk(histogramChunk)))
             {
                 histogramMagic = reader.ReadUInt();
@@ -266,10 +286,9 @@ namespace FlammenwerferPlugin.Flammen
                 histogramDataOffSize = reader.ReadUInt();
 
                 long sizeToRead = ((histogramFileSize + 8 - reader.Position) / 2); // Calculate first
-                
                 for (int i = 0; i < sizeToRead; i++)
                 {
-                    histogramSection.Add(reader.ReadUShort());
+                    histogramSection.Add((char)reader.ReadUShort());
                 }
             }
 
@@ -310,10 +329,13 @@ namespace FlammenwerferPlugin.Flammen
                     string binString = reader.ReadNullTerminatedString();
                     if (!stringList.ContainsKey(hashPair.Item1))
                     {
-                        stringList.Add(hashPair.Item1, DecodeString(binString, histogramSection));
+                        stringList.Add(hashPair.Item1, DecodeString(binString, histogramSection.Select(c => (ushort)c).ToList()));
                     }
                 }
             }
+
+            // Add chars to histogram
+            addCharsToHistogram(modifiedData.Values, ref histogramDataOffSize, ref histogramSection);
 
             // Merge new strings
             foreach (KeyValuePair<uint, string> data in modifiedData)
@@ -329,34 +351,6 @@ namespace FlammenwerferPlugin.Flammen
             }
             stringList.OrderBy(pair => pair.Key);
 
-            // Find chars to add
-            List<char> unsupportedChars = new List<char>();
-            foreach (KeyValuePair<uint, string> str in stringList)
-            {
-                foreach (char c in str.Value.ToCharArray())
-                {
-                    if (!(c < 0x80))
-                    {
-                        if (c > 0xFFFF)
-                        {
-                            App.Logger.LogError("Character not supported: \"" + c + "\" from string " + str.Key.ToString("X"));
-                        }
-                        else
-                        {
-                            int index = histogramSection.FindIndex(a => { return ((char)a).Equals(c); });
-                            if (index == -1)
-                            {
-                                unsupportedChars.Add(c);
-                                continue;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Add chars to histogram
-            addCharsToHistogram(unsupportedChars, ref histogramDataOffSize, ref histogramSection);
-
             // Write histogram chunk
             using (NativeWriter writer = new NativeWriter(new MemoryStream()))
             {
@@ -364,7 +358,7 @@ namespace FlammenwerferPlugin.Flammen
                 writer.Write(0xDEADBEEF);
                 writer.Write(histogramDataOffSize);
 
-                foreach (ushort c in histogramSection)
+                foreach (char c in histogramSection)
                 {
                     if (c <= 0xFFFF)
                     {
