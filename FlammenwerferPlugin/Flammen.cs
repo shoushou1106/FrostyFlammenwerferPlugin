@@ -426,9 +426,6 @@ namespace FlammenwerferPlugin.Flammen
 
                 newStringData = writer.ToByteArray();
             }
-
-            File.WriteAllBytes("E:\\peilin\\Downloads\\hischunk.chunk", newHistogramData);
-            File.WriteAllBytes("E:\\peilin\\Downloads\\strchunk.chunk", newStringData);
         }
     }
 }
