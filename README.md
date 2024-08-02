@@ -18,8 +18,8 @@
 
 ## Todo
 - [x] Migrate all features
-- [] Show diff
-- [] Export chunk
+- [ ] Show diff
+- [ ] Export chunk
 
 ###### ~~this readme and this project sucks, plz help me if u like~~
 ##### If you think this project or the README useful and would like to help improve it, contributions are welcome!
