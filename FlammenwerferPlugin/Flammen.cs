@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows.Controls;
 
 namespace FlammenwerferPlugin.Flammen
 {
@@ -360,9 +358,10 @@ namespace FlammenwerferPlugin.Flammen
 
                 foreach (char c in histogramSection)
                 {
-                    if (c <= 0xFFFF)
+                    ushort ch = (ushort)c;
+                    if (ch <= 0xFFFF)
                     {
-                        writer.Write(c);
+                        writer.Write(ch);
                     }
                     else
                     {
@@ -414,7 +413,7 @@ namespace FlammenwerferPlugin.Flammen
                     {
                         writer.Write(keyValuePair.Key);
                         writer.Write((uint)stringBuffer.Position);
-                        stringBuffer.Write(EncodeString(keyValuePair.Value, histogramShifts, histogramSection.Select(c => (char)c).ToList()));
+                        stringBuffer.Write(EncodeString(keyValuePair.Value, histogramShifts, histogramSection));
                     }
                     // Write strings
                     writer.Write(stringBuffer.ToByteArray());
@@ -427,6 +426,9 @@ namespace FlammenwerferPlugin.Flammen
 
                 newStringData = writer.ToByteArray();
             }
+
+            File.WriteAllBytes("E:\\peilin\\Downloads\\hischunk.chunk", newHistogramData);
+            File.WriteAllBytes("E:\\peilin\\Downloads\\strchunk.chunk", newStringData);
         }
     }
 }
