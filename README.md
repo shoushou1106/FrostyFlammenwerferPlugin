@@ -13,6 +13,7 @@
 
 ## Install
 - Delete or disable `FsLocalizationPlugin.dll` from your `Plugins` folder under **Frosty**.
+  - It's recommanded to disable it by rename to `FsLocalizationPlugin.dll.disable` or other suffix that is not `.dll`
 - Download `FlammenwerferPlugin.dll` from [GitHub Release](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
 - Place the downloaded file in the `Plugins` folder under **Frosty**.
 
