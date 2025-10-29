@@ -170,11 +170,17 @@ namespace FlammenwerferPlugin.Resources
         }
     }
 
+    /// <summary>
+    /// Database for managing localized strings in Frostbite games using FsLocalization assets.
+    /// </summary>
     public class FsLocalizationStringDatabase : ILocalizedStringDatabase
     {
         private Dictionary<uint, string> strings = new Dictionary<uint, string>();
         private FsLocalizationAsset loadedDatabase = null;
 
+        /// <summary>
+        /// Initializes the localization database by loading strings for the configured language.
+        /// </summary>
         public void Initialize()
         {
             string language = "LanguageFormat_" + Config.Get("Language", "English", ConfigScope.Game);

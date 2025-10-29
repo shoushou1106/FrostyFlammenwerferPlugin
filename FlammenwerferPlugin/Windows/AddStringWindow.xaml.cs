@@ -31,94 +31,99 @@ namespace FlammenwerferPlugin.Windows
         private static Random rand = new Random();
         private void addButton_Click(object sender, RoutedEventArgs e)
         {
-            string HashOrID = varIdTextBox.Text;
-            if (HashOrID.Length == 0)
-            {
-                HashOrID = Remove0X(varHashTextBox.Text);
-                try
-                {
-                    uint result = Convert.ToUInt32(HashOrID, 16);
-                    if (db.GetString(result) != "Invalid StringId: " + result.ToString("X8"))
-                    {
-                        string PreviousString = db.GetString(result);
-                        db.SetString(result, varValueTextBox.Text);
-                        //App.Logger.Log(string.Format("Replaced Value of String Hash: 0x{0}, with Value: \"{1}\", Previously: \"{2}\".", HashOrID, varValueTextBox.Text, PreviousString));
-                    }
-                    else
-                    {
-                        db.SetString(result, varValueTextBox.Text);
-                        //App.Logger.Log(string.Format("Added String Hash: 0x{0}, with Value: \"{1}\".", HashOrID, varValueTextBox.Text));
-                    }
-                }
-                catch
-                {
-                    App.Logger.Log("0x" + HashOrID + " is not a valid string hash.");
-                }
-            }
-            else
-            {
-                uint result = LocalizationHelper.HashStringId(HashOrID);
-                if (db.GetString(result) != "Invalid StringId: " + result.ToString("X8"))
-                {
-                    string PreviousString = db.GetString(result);
-                    db.SetString(result, varValueTextBox.Text);
-                    //App.Logger.Log(string.Format("Replaced Value of String ID: \"{3}\", Hash: 0x{0}, with Value: \"{1}\", Previously: \"{2}\".", result.ToString("X8"), varValueTextBox.Text, PreviousString, HashOrID));
-                }
-                else
-                {
-                    db.SetString(result, varValueTextBox.Text);
-                    //App.Logger.Log(string.Format("Added String ID: \"{2}\", Hash: 0x{0}, with Value: \"{1}\".", result.ToString("X8"), varValueTextBox.Text, HashOrID));
-                }
-            }
-
-            DialogResult = true;
-            Close();
-        }
-
-        public bool LazySolution = true;
-        private void varHashTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
-        {
-            if (LazySolution == true)
-            {
-                LazySolution = false;
-                varIdTextBox.Text = "";
-                LazySolution = true;
-            }
             try
             {
-                string MyHash = Remove0X(varHashTextBox.Text);
-                uint result = Convert.ToUInt32(MyHash, 16);
-                if (db.GetString(result) != "Invalid StringId: " + result.ToString("X8"))
+                uint hashId;
+                string input = varIdTextBox.Text;
+                
+                // Determine if input is a hash or string ID
+                if (string.IsNullOrEmpty(input))
                 {
-                    varCurrentValueTextBox.Text = db.GetString(result);
+                    // Use hash from hash text box
+                    string hashText = Remove0X(varHashTextBox.Text);
+                    hashId = Convert.ToUInt32(hashText, 16);
                 }
                 else
                 {
-                    varCurrentValueTextBox.Text = "No matching hash found in localisation database.";
+                    // Hash the string ID
+                    hashId = LocalizationHelper.HashStringId(input);
                 }
+
+                // Set the string value
+                db.SetString(hashId, varValueTextBox.Text);
+
+                DialogResult = true;
+                Close();
             }
-            catch
+            catch (FormatException)
             {
-                varCurrentValueTextBox.Text = "Invalid hash input.";
+                App.Logger.Log($"Invalid hash format: {varHashTextBox.Text}");
+            }
+            catch (Exception ex)
+            {
+                App.Logger.Log($"Error adding string: {ex.Message}");
             }
         }
 
-        public string Remove0X(string Hash)
+        private bool _isUpdating = false;
+
+        private void varHashTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            if (Hash.StartsWith("0x"))
+            if (_isUpdating)
+                return;
+
+            _isUpdating = true;
+            try
             {
-                return Hash.Remove(0, 2);
+                // Clear the ID textbox when hash is manually edited
+                varIdTextBox.Text = "";
+
+                // Try to display the current value for this hash
+                string hashText = Remove0X(varHashTextBox.Text);
+                if (uint.TryParse(hashText, System.Globalization.NumberStyles.HexNumber, null, out uint hashId))
+                {
+                    string currentValue = db.GetString(hashId);
+                    varCurrentValueTextBox.Text = currentValue.StartsWith("Invalid StringId:")
+                        ? "No matching hash found in localisation database."
+                        : currentValue;
+                }
+                else
+                {
+                    varCurrentValueTextBox.Text = "Invalid hash input.";
+                }
             }
-            return Hash;
+            finally
+            {
+                _isUpdating = false;
+            }
         }
+
         private void varIdTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            if (LazySolution == true)
+            if (_isUpdating)
+                return;
+
+            _isUpdating = true;
+            try
             {
-                LazySolution = false;
-                varHashTextBox.Text = "0x" + LocalizationHelper.HashStringId(varIdTextBox.Text).ToString("x");
-                LazySolution = true;
+                // Update hash textbox when ID is typed
+                if (!string.IsNullOrEmpty(varIdTextBox.Text))
+                {
+                    uint hash = LocalizationHelper.HashStringId(varIdTextBox.Text);
+                    varHashTextBox.Text = $"0x{hash:x}";
+                }
             }
+            finally
+            {
+                _isUpdating = false;
+            }
+        }
+
+        private string Remove0X(string hash)
+        {
+            return hash.StartsWith("0x", StringComparison.OrdinalIgnoreCase) 
+                ? hash.Substring(2) 
+                : hash;
         }
     }
 }
