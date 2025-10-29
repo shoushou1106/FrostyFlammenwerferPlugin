@@ -23,13 +23,6 @@ namespace FlammenwerferPlugin.Windows
             DialogResult = false;
             Close();
         }
-        private uint HashStringId(string stringId)
-        {
-            uint result = 0xFFFFFFFF;
-            for (int i = 0; i < stringId.Length; i++)
-                result = stringId[i] + 33 * result;
-            return result;
-        }
 
         private void GenerateHashButton_Click(object sender, RoutedEventArgs e)
         {
@@ -64,7 +57,7 @@ namespace FlammenwerferPlugin.Windows
             }
             else
             {
-                uint result = HashStringId(HashOrID);
+                uint result = LocalizationHelper.HashStringId(HashOrID);
                 if (db.GetString(result) != "Invalid StringId: " + result.ToString("X8"))
                 {
                     string PreviousString = db.GetString(result);
@@ -123,7 +116,7 @@ namespace FlammenwerferPlugin.Windows
             if (LazySolution == true)
             {
                 LazySolution = false;
-                varHashTextBox.Text = "0x" + HashStringId(varIdTextBox.Text).ToString("x");
+                varHashTextBox.Text = "0x" + LocalizationHelper.HashStringId(varIdTextBox.Text).ToString("x");
                 LazySolution = true;
             }
         }

@@ -29,84 +29,62 @@ namespace FlammenwerferPlugin.Windows
             DialogResult = false;
             Close();
         }
-        private uint HashStringId(string stringId)
-        {
-            uint result = 0xFFFFFFFF;
-            for (int i = 0; i < stringId.Length; i++)
-                result = stringId[i] + 33 * result;
-            return result;
-        }
         
         private void addButton_Click(object sender, RoutedEventArgs e)
         {
-            List<uint> TotalStrings = db.EnumerateStrings().Distinct().ToList();
-            int totalCount = TotalStrings.Count;
-            int index = 0;
-
-            if (!String.IsNullOrEmpty(CurrentValueTextBox.Text))
+            if (string.IsNullOrEmpty(CurrentValueTextBox.Text))
             {
-                RegexOptions options = isCaseSensitive.IsChecked.GetValueOrDefault(false) ? RegexOptions.None : RegexOptions.IgnoreCase;
-                string pattern = isMatchWholeWord.IsChecked.GetValueOrDefault(false) ? $@"\b{CurrentValueTextBox.Text}\b" : CurrentValueTextBox.Text;
-                // setup ability to cancel the process
-                CancellationTokenSource cancelToken = new CancellationTokenSource();
-                FrostyTaskWindow.Show(this, CurrentValueTextBox.Text, "", (task) =>
-                {
-                    try
-                    {
-                        foreach (uint stringid in TotalStrings)
-                        {
-                            cancelToken.Token.ThrowIfCancellationRequested();
-                            string value = db.GetString(stringid);
-                            task.TaskLogger.Log(value);
-                            task.TaskLogger.Log("progress:" + (index++ / (double)totalCount) * 100.0d);
-
-                            if (isMatchWholeWord.IsChecked.GetValueOrDefault(false))
-                            {
-                                cancelToken.Token.ThrowIfCancellationRequested();
-
-                                if (isRegularExpressions.IsChecked.GetValueOrDefault(false))
-                                {
-                                    if (Regex.IsMatch(value, CurrentValueTextBox.Text))
-                                    {
-                                        db.SetString(stringid, NewValueTextBox.Text);
-                                    }
-                                }
-                                else
-                                {
-                                    if (Regex.IsMatch(value, pattern, options))
-                                    {
-                                        db.SetString(stringid, NewValueTextBox.Text);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                cancelToken.Token.ThrowIfCancellationRequested();
-
-                                if (isRegularExpressions.IsChecked.GetValueOrDefault(false))
-                                {
-                                    if (Regex.IsMatch(value, CurrentValueTextBox.Text))
-                                    {
-                                        db.SetString(stringid, Regex.Replace(value, CurrentValueTextBox.Text, NewValueTextBox.Text));
-                                    }
-                                }
-                                else
-                                {
-                                    if (Regex.IsMatch(value, pattern, options))
-                                    {
-                                        db.SetString(stringid, Regex.Replace(value, pattern, NewValueTextBox.Text, options));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    catch (OperationCanceledException) { }
-
-                }, showCancelButton: true, cancelCallback: (task) => cancelToken.Cancel());
-
+                App.Logger.Log("Current value text cannot be empty.");
+                DialogResult = false;
+                Close();
+                return;
             }
 
-            App.Logger.Log(string.Format("Replaced {0} instances of \"{1}\" with \"{2}\".", index, CurrentValueTextBox.Text, NewValueTextBox.Text));
+            List<uint> totalStrings = db.EnumerateStrings().Distinct().ToList();
+            int totalCount = totalStrings.Count;
+            int matchedCount = 0;
+
+            // Determine regex options
+            bool isWholeWord = isMatchWholeWord.IsChecked.GetValueOrDefault(false);
+            bool isRegex = isRegularExpressions.IsChecked.GetValueOrDefault(false);
+            bool isCaseSensitiveMatch = isCaseSensitive.IsChecked.GetValueOrDefault(false);
+            
+            RegexOptions options = isCaseSensitiveMatch ? RegexOptions.None : RegexOptions.IgnoreCase;
+            string searchPattern = isRegex ? CurrentValueTextBox.Text : 
+                                  (isWholeWord ? $@"\b{Regex.Escape(CurrentValueTextBox.Text)}\b" : Regex.Escape(CurrentValueTextBox.Text));
+
+            // Setup cancellation
+            CancellationTokenSource cancelToken = new CancellationTokenSource();
+            
+            FrostyTaskWindow.Show(this, "Replacing strings", "", (task) =>
+            {
+                try
+                {
+                    int index = 0;
+                    foreach (uint stringId in totalStrings)
+                    {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+                        
+                        string value = db.GetString(stringId);
+                        task.TaskLogger.Log($"Processing: {value}");
+                        task.TaskLogger.Log($"progress:{(index++ / (double)totalCount) * 100.0d}");
+
+                        if (Regex.IsMatch(value, searchPattern, options))
+                        {
+                            string newValue = isWholeWord ? NewValueTextBox.Text : 
+                                            Regex.Replace(value, searchPattern, NewValueTextBox.Text, options);
+                            db.SetString(stringId, newValue);
+                            matchedCount++;
+                        }
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    task.TaskLogger.Log("Operation cancelled by user.");
+                }
+            }, showCancelButton: true, cancelCallback: (task) => cancelToken.Cancel());
+
+            App.Logger.Log($"Replaced {matchedCount} instances of \"{CurrentValueTextBox.Text}\" with \"{NewValueTextBox.Text}\".");
             DialogResult = true;
             Close();
         }

@@ -9,42 +9,73 @@ using System.Text;
 
 namespace FlammenwerferPlugin.Flammen
 {
+    /// <summary>
+    /// Provides functionality for encoding and decoding localized strings using histogram-based compression.
+    /// </summary>
     public class Flammen
     {
+        // Magic numbers for chunk validation
+        private const uint HISTOGRAM_MAGIC = 0x00039001;
+        private const uint STRINGS_BINARY_MAGIC = 0x00039000;
+        
+        // Histogram constants
+        private const int ASCII_THRESHOLD = 0x80;
+        private const int SHIFT_NUMS_START_INDEX = 0x40;
+        private const int MAX_SHIFT_VALUE = 0xFF;
+        private const int HISTOGRAM_INITIAL_SECTION_SIZE = 0x80;
+        private const int HISTOGRAM_SHIFT_END_INDEX = 0x1FE;
+        
+        // String chunk constants
+        private const uint DEFAULT_DATA_OFFSET = 0x8C;
+        private const uint HASH_PAIR_SIZE = 8;
         /// <summary>
-        /// Decode a binary string using the histogram.
+        /// Decodes a binary string using the histogram section.
         /// </summary>
-        /// <param name="binString">The string to decode.</param>
-        /// <param name="section">The histogram section.</param>
+        /// <param name="binString">The binary string to decode.</param>
+        /// <param name="section">The histogram section containing character mappings.</param>
         /// <returns>The decoded string.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when binString or section is null.</exception>
         public static string DecodeString(string binString, List<ushort> section)
         {
+            if (binString == null)
+                throw new ArgumentNullException(nameof(binString));
+            if (section == null)
+                throw new ArgumentNullException(nameof(section));
+
             int index = 0;
             StringBuilder sb = new StringBuilder();
 
             while (index < binString.Length)
             {
-                byte _byte = (byte)binString[index];
-                if (_byte < 0x80)
+                byte currentByte = (byte)binString[index];
+                
+                if (currentByte < ASCII_THRESHOLD)
                 {
-                    // ASCII
-                    sb.Append((char)_byte);
+                    // ASCII character - use directly
+                    sb.Append((char)currentByte);
                 }
                 else
                 {
-                    // Not ASCII
-                    ushort tmp = section[_byte];
-                    if (tmp >= 0x80)
+                    // Non-ASCII character - use histogram lookup
+                    ushort mappedValue = section[currentByte];
+                    
+                    if (mappedValue >= ASCII_THRESHOLD)
                     {
-                        sb.Append((char)tmp);
+                        // Direct mapping
+                        sb.Append((char)mappedValue);
                     }
                     else
                     {
-                        ++index;
-                        _byte = (byte)binString[index];
-                        if (_byte >= 0x80)
+                        // Shift-based mapping
+                        index++;
+                        if (index >= binString.Length)
+                            break;
+                            
+                        currentByte = (byte)binString[index];
+                        if (currentByte >= ASCII_THRESHOLD)
                         {
-                            sb.Append((char)section[(_byte - 0x80) + (tmp << 7)]);
+                            int shiftedIndex = (currentByte - ASCII_THRESHOLD) + (mappedValue << 7);
+                            sb.Append((char)section[shiftedIndex]);
                         }
                     }
                 }
@@ -53,189 +84,255 @@ namespace FlammenwerferPlugin.Flammen
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Encodes a string to bytes using the histogram section and shift mappings.
+        /// </summary>
+        /// <param name="str">The string to encode.</param>
+        /// <param name="shifts">The list of shift indices for multi-byte character encoding.</param>
+        /// <param name="section">The histogram section containing character mappings.</param>
+        /// <returns>The encoded byte array with null terminator.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when a character cannot be encoded.</exception>
         public static byte[] EncodeString(string str, List<int> shifts, List<char> section)
         {
+            if (str == null)
+                throw new ArgumentNullException(nameof(str));
+            if (shifts == null)
+                throw new ArgumentNullException(nameof(shifts));
+            if (section == null)
+                throw new ArgumentNullException(nameof(section));
+
             List<byte> binString = new List<byte>();
 
             foreach (char c in str)
             {
-                bool checkShift = false;
-                uint ordTmp = (uint)c;
+                uint charValue = (uint)c;
                 
-                if (ordTmp < 0x80)
+                if (charValue < ASCII_THRESHOLD)
                 {
-                    // ASCII
-                    binString.Add((byte)ordTmp); // unsigned char
+                    // ASCII character - encode directly
+                    binString.Add((byte)charValue);
                 }
                 else
                 {
-                    // Not ASCII
-                    int index = section.FindIndex((char a) => { return a.Equals(c); });
+                    // Non-ASCII character - use histogram lookup
+                    int index = section.FindIndex(a => a.Equals(c));
                     if (index == -1)
                         continue;
 
-                    if (index <= 0xFF)
+                    if (index <= MAX_SHIFT_VALUE)
                     {
+                        // Single byte encoding
                         binString.Add((byte)index);
                     }
                     else
                     {
-                        // Try to find a proper shift to fit the byte into range
+                        // Multi-byte encoding - find appropriate shift
+                        bool shiftFound = false;
+                        
                         foreach (int shift in shifts)
                         {
                             int shiftByte = (int)section[shift] << 7;
                             int byteShifted = index - shiftByte;
-                            if (byteShifted < 0x80 && byteShifted >= 0)
+                            
+                            if (byteShifted >= 0 && byteShifted < ASCII_THRESHOLD)
                             {
                                 binString.Add((byte)shift);
-                                binString.Add((byte)(byteShifted + 0x80));
-                                checkShift = true;
+                                binString.Add((byte)(byteShifted + ASCII_THRESHOLD));
+                                shiftFound = true;
                                 break;
                             }
                         }
 
-                        if (!checkShift) 
+                        if (!shiftFound) 
                         {
-                            // If this happens, it means that there is no proper shift to fit the character into range.
-                            // You may want to expand the shift range by adding more characters to the histogram.
-
-                            throw new ArgumentException($"Unable to encode character {c} to bytes." + Environment.NewLine +
-                                "You may want to expand the shift range by adding more characters to the histogram." + Environment.NewLine +
-                                "Full String: " + str);
+                            throw new ArgumentException(
+                                $"Unable to encode character '{c}' (U+{((int)c):X4}) to bytes." + Environment.NewLine +
+                                "The histogram does not contain a valid shift mapping for this character." + Environment.NewLine +
+                                "Consider expanding the histogram by adding more characters." + Environment.NewLine +
+                                $"Full String: {str}",
+                                nameof(str));
                         }
                     }
                 }
             }
 
+            // Add null terminator
             binString.Add(0x00);
             return binString.ToArray();
         }
 
-        public static void addCharsToHistogram(IEnumerable<string> strings, ref uint dataOffSize, ref List<char> section)
+        /// <summary>
+        /// Adds new characters to the histogram section, automatically calculating and adding necessary shifts.
+        /// </summary>
+        /// <param name="strings">The strings containing characters to add to the histogram.</param>
+        /// <param name="dataOffSize">Reference to the histogram data offset size, updated with new character count.</param>
+        /// <param name="section">Reference to the histogram section, updated with new characters.</param>
+        /// <exception cref="ArgumentNullException">Thrown when strings or section is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when too many characters are added.</exception>
+        public static void AddCharsToHistogram(IEnumerable<string> strings, ref uint dataOffSize, ref List<char> section)
         {
-            HashSet<char> charSet = new HashSet<char>();
+            if (strings == null)
+                throw new ArgumentNullException(nameof(strings));
+            if (section == null)
+                throw new ArgumentNullException(nameof(section));
 
+            // Collect unique characters from all strings
+            HashSet<char> charSet = new HashSet<char>();
             foreach (string str in strings)
             {
                 charSet.UnionWith(str);
             }
 
-            List<char> chars = charSet.Except(section).ToList();
+            // Find characters not already in section
+            List<char> newChars = charSet.Except(section).ToList();
+            
+            if (newChars.Count == 0)
+                return; // No new characters to add
 
-            // Calculate needed indices
-            int shiftNumsIndex = 0x40;
-            while (shiftNumsIndex < 0xFF)
+            // Find the shift numbers start index
+            int shiftNumsIndex = SHIFT_NUMS_START_INDEX;
+            while (shiftNumsIndex < MAX_SHIFT_VALUE)
             {
-                if (section[shiftNumsIndex] != 0x00)
+                if (section[shiftNumsIndex] != '\0')
                     break;
                 shiftNumsIndex++;
             }
 
+            // Calculate insertion point and initial shift numbers
             int insertedStart = (int)dataOffSize - 1;
             List<char> shiftNums = Enumerable
                 .Range(2, (int)section[shiftNumsIndex] + 1)
-                .Select(num => ((char)num))
+                .Select(num => (char)num)
                 .ToList();
             int shiftNumsCount = shiftNums.Count;
 
-            Func<List<char>, List<char>> calculateBytePositions = (List<char> Chars) =>
+            // Calculate byte positions for new characters
+            List<char> CalculateBytePositions(List<char> chars)
             {
                 List<char> bytePositions = new List<char>();
-                for (int i = 0; i < Chars.Count; i++)
+                for (int i = 0; i < chars.Count; i++)
                 {
-                    bytePositions.Add((char)(insertedStart + shiftNumsCount + (shiftNumsIndex - 0x80) + i));
+                    bytePositions.Add((char)(insertedStart + shiftNumsCount + (shiftNumsIndex - ASCII_THRESHOLD) + i));
                 }
                 return bytePositions;
-            };
+            }
 
-            Func<List<char>, List<char>> calculateShiftNumsAndMappings = (List<char> BytePositions) =>
+            // Calculate required shift numbers based on byte positions
+            List<char> CalculateShiftNumsAndMappings(List<char> bytePositions)
             {
                 HashSet<char> shiftNumsSet = new HashSet<char>();
-                foreach (int @byte in BytePositions)
+                foreach (int bytePos in bytePositions)
                 {
-                    char shiftNum = (char)(@byte / 0x80);
+                    char shiftNum = (char)(bytePos / ASCII_THRESHOLD);
 
-                    if ((int)shiftNum >= 0x80)
+                    if ((int)shiftNum >= ASCII_THRESHOLD)
                     {
-                        throw new ArgumentException("Too much characters");
+                        throw new ArgumentException("Too many characters to add to histogram. Maximum capacity exceeded.");
                     }
-                    if (!shiftNumsSet.Contains(shiftNum)) 
-                    {
-                        shiftNumsSet.Add(shiftNum);
-                    }
+                    
+                    shiftNumsSet.Add(shiftNum);
                 }
                 return shiftNumsSet.OrderBy(x => (int)x).ToList();
-            };
+            }
 
+            // Iterate until shift numbers stabilize
             while (true)
             {
-                List<char> newShiftNums = calculateShiftNumsAndMappings(calculateBytePositions(chars));
+                List<char> newShiftNums = CalculateShiftNumsAndMappings(CalculateBytePositions(newChars));
 
-                // The number of shift_nums doesn't change - the algorithm ends
                 if (newShiftNums.Count == shiftNumsCount)
                 {
                     shiftNums = newShiftNums;
                     break;
                 }
 
-                // Otherwise, update the number of shift_nums and repeat
                 shiftNumsCount = newShiftNums.Count;
             }
 
+            // Reconstruct section with new characters and shift numbers
+            List<char> updatedSection = new List<char>();
+            
+            // Add initial ASCII section
+            updatedSection.AddRange(section.Take(HISTOGRAM_INITIAL_SECTION_SIZE));
+            
+            // Add calculated shift numbers
+            updatedSection.AddRange(shiftNums);
+            
+            // Add middle section
+            updatedSection.AddRange(section.Skip(shiftNumsIndex).Take(insertedStart - shiftNumsIndex));
+            
+            // Add new characters
+            updatedSection.AddRange(newChars);
+            
+            // Add remaining section
+            updatedSection.AddRange(section.Skip(insertedStart));
 
-            // Create a new list to hold the updated section
-            List<char> newSection = new List<char>();
-
-            // Add the first 0x80 elements from the original section
-            newSection.AddRange(section.Take(0x80));
-
-            // Add the shift_nums elements
-            newSection.AddRange(shiftNums);
-
-            // Add the elements from shiftNumsIndex to insertedStart
-            newSection.AddRange(section.Skip(shiftNumsIndex).Take(insertedStart - shiftNumsIndex));
-
-            // Add the chars elements
-            newSection.AddRange(chars);
-
-            // Add the remaining elements from insertedStart to the end
-            newSection.AddRange(section.Skip(insertedStart));
-
-            // Update the section with the new list
-            section = newSection;
-
-            // Update the dataOffSize
-            dataOffSize += (uint)chars.Count();
+            section = updatedSection;
+            dataOffSize += (uint)newChars.Count;
         }
 
+        /// <summary>
+        /// Reads and decodes all localized strings from histogram and strings binary chunks.
+        /// </summary>
+        /// <param name="histogramChunk">The histogram chunk containing character mappings.</param>
+        /// <param name="stringsBinaryChunk">The strings binary chunk containing encoded strings.</param>
+        /// <returns>Dictionary mapping string hash IDs to decoded strings.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
+        /// <exception cref="InvalidDataException">Thrown when chunk format is invalid.</exception>
         public static Dictionary<uint, string> ReadStrings(ChunkAssetEntry histogramChunk, ChunkAssetEntry stringsBinaryChunk)
         {
+            if (histogramChunk == null)
+                throw new ArgumentNullException(nameof(histogramChunk));
+            if (stringsBinaryChunk == null)
+                throw new ArgumentNullException(nameof(stringsBinaryChunk));
+
             // Read histogram chunk
+            List<ushort> histogramSection = ReadHistogramSection(histogramChunk);
+
+            // Read strings binary chunk
+            return ReadStringsBinary(stringsBinaryChunk, histogramSection);
+        }
+
+        /// <summary>
+        /// Reads the histogram section from a chunk.
+        /// </summary>
+        private static List<ushort> ReadHistogramSection(ChunkAssetEntry histogramChunk)
+        {
             List<ushort> histogramSection = new List<ushort>();
+            
             using (NativeReader reader = new NativeReader(App.AssetManager.GetChunk(histogramChunk)))
             {
                 uint magic = reader.ReadUInt();
-                if (magic != 0x00039001)
-                    throw new InvalidDataException("Invalid histogram chunk.");
+                if (magic != HISTOGRAM_MAGIC)
+                    throw new InvalidDataException($"Invalid histogram chunk. Expected magic 0x{HISTOGRAM_MAGIC:X8}, got 0x{magic:X8}.");
 
                 uint fileSize = reader.ReadUInt();
                 uint dataOffSize = reader.ReadUInt();
 
-                long sizeToRead = ((fileSize + 8 - reader.Position) / 2); // Calculate first
+                long sizeToRead = (fileSize + 8 - reader.Position) / 2;
                 for (int i = 0; i < sizeToRead; i++)
                 {
                     histogramSection.Add(reader.ReadUShort());
                 }
             }
 
-            // Read strings binary chunk
+            return histogramSection;
+        }
+
+        /// <summary>
+        /// Reads and decodes strings from the strings binary chunk.
+        /// </summary>
+        private static Dictionary<uint, string> ReadStringsBinary(ChunkAssetEntry stringsBinaryChunk, List<ushort> histogramSection)
+        {
             Dictionary<uint, string> stringList = new Dictionary<uint, string>();
+            
             using (NativeReader reader = new NativeReader(App.AssetManager.GetChunk(stringsBinaryChunk)))
             {
-                // Header
+                // Read and validate header
                 uint magic = reader.ReadUInt();
-                if (magic != 0x00039000)
-                    throw new InvalidDataException("Invalid strings binary chunk.");
+                if (magic != STRINGS_BINARY_MAGIC)
+                    throw new InvalidDataException($"Invalid strings binary chunk. Expected magic 0x{STRINGS_BINARY_MAGIC:X8}, got 0x{magic:X8}.");
 
                 uint fileSize = reader.ReadUInt();
                 uint listSize = reader.ReadUInt();
@@ -244,19 +341,23 @@ namespace FlammenwerferPlugin.Flammen
 
                 string section = reader.ReadNullTerminatedString();
 
-                // Read hash pairs
+                // Read hash-offset pairs
                 List<Tuple<uint, uint>> hashPairList = new List<Tuple<uint, uint>>();
                 reader.Position = dataOffset + 8;
+                
                 while (reader.Position != stringsOffset + 8)
                 {
-                    hashPairList.Add(new Tuple<uint, uint>(reader.ReadUInt(), reader.ReadUInt()));
+                    uint hash = reader.ReadUInt();
+                    uint offset = reader.ReadUInt();
+                    hashPairList.Add(new Tuple<uint, uint>(hash, offset));
                 }
 
-                // Read strings by locating offsets
+                // Decode strings using histogram
                 foreach (Tuple<uint, uint> hashPair in hashPairList)
                 {
                     reader.Position = stringsOffset + hashPair.Item2 + 8;
                     string binString = reader.ReadNullTerminatedString();
+                    
                     if (!stringList.ContainsKey(hashPair.Item1))
                     {
                         stringList.Add(hashPair.Item1, DecodeString(binString, histogramSection));
@@ -267,23 +368,41 @@ namespace FlammenwerferPlugin.Flammen
             return stringList;
         }
 
+        /// <summary>
+        /// Writes updated histogram and strings binary data, merging modified strings with existing data.
+        /// </summary>
+        /// <param name="histogramChunk">The original histogram chunk.</param>
+        /// <param name="stringsBinaryChunk">The original strings binary chunk.</param>
+        /// <param name="modifiedData">Dictionary of modified strings to merge.</param>
+        /// <param name="newHistogramData">Output parameter containing the new histogram chunk data.</param>
+        /// <param name="newStringData">Output parameter containing the new strings binary chunk data.</param>
+        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
+        /// <exception cref="InvalidDataException">Thrown when chunk format is invalid.</exception>
         public static void WriteAll(ChunkAssetEntry histogramChunk, ChunkAssetEntry stringsBinaryChunk, Dictionary<uint, string> modifiedData, out byte[] newHistogramData, out byte[] newStringData)
         {
+            if (histogramChunk == null)
+                throw new ArgumentNullException(nameof(histogramChunk));
+            if (stringsBinaryChunk == null)
+                throw new ArgumentNullException(nameof(stringsBinaryChunk));
+            if (modifiedData == null)
+                throw new ArgumentNullException(nameof(modifiedData));
+
             // Read histogram chunk
             uint histogramMagic;
             uint histogramFileSize;
             uint histogramDataOffSize;
             List<char> histogramSection = new List<char>();
+            
             using (NativeReader reader = new NativeReader(App.AssetManager.GetChunk(histogramChunk)))
             {
                 histogramMagic = reader.ReadUInt();
-                if (histogramMagic != 0x00039001)
-                    throw new InvalidDataException("Invalid histogram chunk.");
+                if (histogramMagic != HISTOGRAM_MAGIC)
+                    throw new InvalidDataException($"Invalid histogram chunk. Expected magic 0x{HISTOGRAM_MAGIC:X8}, got 0x{histogramMagic:X8}.");
 
                 histogramFileSize = reader.ReadUInt();
                 histogramDataOffSize = reader.ReadUInt();
 
-                long sizeToRead = ((histogramFileSize + 8 - reader.Position) / 2); // Calculate first
+                long sizeToRead = (histogramFileSize + 8 - reader.Position) / 2;
                 for (int i = 0; i < sizeToRead; i++)
                 {
                     histogramSection.Add((char)reader.ReadUShort());
@@ -298,12 +417,13 @@ namespace FlammenwerferPlugin.Flammen
             uint stringStringsOffset;
             string stringSection;
             Dictionary<uint, string> stringList = new Dictionary<uint, string>();
+            
             using (NativeReader reader = new NativeReader(App.AssetManager.GetChunk(stringsBinaryChunk)))
             {
-                // Header
+                // Read and validate header
                 stringMagic = reader.ReadUInt();
-                if (stringMagic != 0x00039000)
-                    throw new InvalidDataException("Invalid strings binary chunk.");
+                if (stringMagic != STRINGS_BINARY_MAGIC)
+                    throw new InvalidDataException($"Invalid strings binary chunk. Expected magic 0x{STRINGS_BINARY_MAGIC:X8}, got 0x{stringMagic:X8}.");
 
                 stringFileSize = reader.ReadUInt();
                 stringListSize = reader.ReadUInt();
@@ -312,19 +432,21 @@ namespace FlammenwerferPlugin.Flammen
 
                 stringSection = reader.ReadNullTerminatedString();
 
-                // Read hash pairs
+                // Read hash-offset pairs
                 List<Tuple<uint, uint>> hashPairList = new List<Tuple<uint, uint>>();
                 reader.Position = stringDataOffset + 8;
+                
                 while (reader.Position != stringStringsOffset + 8)
                 {
                     hashPairList.Add(new Tuple<uint, uint>(reader.ReadUInt(), reader.ReadUInt()));
                 }
 
-                // Read strings by locating offsets
+                // Decode existing strings
                 foreach (Tuple<uint, uint> hashPair in hashPairList)
                 {
                     reader.Position = stringStringsOffset + hashPair.Item2 + 8;
                     string binString = reader.ReadNullTerminatedString();
+                    
                     if (!stringList.ContainsKey(hashPair.Item1))
                     {
                         stringList.Add(hashPair.Item1, DecodeString(binString, histogramSection.Select(c => (ushort)c).ToList()));
@@ -332,81 +454,80 @@ namespace FlammenwerferPlugin.Flammen
                 }
             }
 
-            // Add chars to histogram
-            addCharsToHistogram(modifiedData.Values, ref histogramDataOffSize, ref histogramSection);
+            // Add new characters to histogram
+            AddCharsToHistogram(modifiedData.Values, ref histogramDataOffSize, ref histogramSection);
 
-            // Merge new strings
+            // Merge modified strings with existing strings
             foreach (KeyValuePair<uint, string> data in modifiedData)
             {
-                if (stringList.ContainsKey(data.Key))
-                {
-                    stringList[data.Key] = data.Value;
-                }
-                else
-                {
-                    stringList.Append(data);
-                }
+                stringList[data.Key] = data.Value;
             }
-            stringList.OrderBy(pair => pair.Key);
 
             // Write histogram chunk
-            using (NativeWriter writer = new NativeWriter(new MemoryStream()))
-            {
-                writer.Write(histogramMagic);
-                writer.Write(0xDEADBEEF);
-                writer.Write(histogramDataOffSize);
-
-                foreach (char c in histogramSection)
-                {
-                    ushort ch = (ushort)c;
-                    if (ch <= 0xFFFF)
-                    {
-                        writer.Write(ch);
-                    }
-                    else
-                    {
-                        histogramSection.Remove(c);
-                    }
-                }
-
-                histogramFileSize = (uint)(writer.Position - 8);
-                writer.Position = 4;
-                writer.Write(histogramFileSize);
-
-                newHistogramData = writer.ToByteArray();
-            }
+            newHistogramData = WriteHistogramChunk(histogramMagic, histogramDataOffSize, histogramSection, out histogramFileSize);
 
             // Write string chunk
+            newStringData = WriteStringChunk(stringMagic, stringSection, stringList, histogramSection);
+        }
+
+        /// <summary>
+        /// Writes the histogram chunk data.
+        /// </summary>
+        private static byte[] WriteHistogramChunk(uint magic, uint dataOffSize, List<char> section, out uint fileSize)
+        {
             using (NativeWriter writer = new NativeWriter(new MemoryStream()))
             {
-                // Header
-                stringListSize = (uint)stringList.Count();
-                stringDataOffset = 0x8C;
-                stringStringsOffset = 0x8C + (stringListSize * 8);
+                writer.Write(magic);
+                writer.Write(0xDEADBEEF); // Placeholder for file size
+                writer.Write(dataOffSize);
 
-                writer.Write(stringMagic);
-                writer.Write(0xDEADBEEF); // fileSize
-                writer.Write(stringListSize);
-                writer.Write(stringDataOffset);
-                writer.Write(stringStringsOffset);
-                writer.WriteNullTerminatedString(stringSection);
-
-                // Padding stuff
-                while (writer.Position < stringDataOffset + 8)
-                    writer.Write((byte)0x00);
-
-                // Get the shifts of the histogram
-                List<int> histogramShifts = new List<int>();
-                for (int i = 0x1FE; i > 0x80; i--)
+                foreach (char c in section)
                 {
-                    if (histogramSection[i] < 0x80)
+                    ushort charCode = (ushort)c;
+                    if (charCode <= 0xFFFF)
                     {
-                        histogramShifts.Add(i);
+                        writer.Write(charCode);
                     }
+                    // Characters with code > 0xFFFF are silently skipped
                 }
 
-                // Update hash pair offsets
-                byte[] stringBytes = null;
+                // Update file size
+                fileSize = (uint)(writer.Position - 8);
+                writer.Position = 4;
+                writer.Write(fileSize);
+
+                return writer.ToByteArray();
+            }
+        }
+
+        /// <summary>
+        /// Writes the strings binary chunk data.
+        /// </summary>
+        private static byte[] WriteStringChunk(uint magic, string section, Dictionary<uint, string> stringList, List<char> histogramSection)
+        {
+            using (NativeWriter writer = new NativeWriter(new MemoryStream()))
+            {
+                // Calculate offsets
+                uint listSize = (uint)stringList.Count;
+                uint dataOffset = DEFAULT_DATA_OFFSET;
+                uint stringsOffset = dataOffset + (listSize * HASH_PAIR_SIZE);
+
+                // Write header
+                writer.Write(magic);
+                writer.Write(0xDEADBEEF); // Placeholder for file size
+                writer.Write(listSize);
+                writer.Write(dataOffset);
+                writer.Write(stringsOffset);
+                writer.WriteNullTerminatedString(section);
+
+                // Write padding to reach data offset
+                while (writer.Position < dataOffset + 8)
+                    writer.Write((byte)0x00);
+
+                // Get histogram shifts for encoding
+                List<int> histogramShifts = GetHistogramShifts(histogramSection);
+
+                // Write hash pairs and encode strings
                 using (NativeWriter stringBuffer = new NativeWriter(new MemoryStream()))
                 {
                     foreach (KeyValuePair<uint, string> keyValuePair in stringList)
@@ -415,17 +536,36 @@ namespace FlammenwerferPlugin.Flammen
                         writer.Write((uint)stringBuffer.Position);
                         stringBuffer.Write(EncodeString(keyValuePair.Value, histogramShifts, histogramSection));
                     }
-                    // Write strings
+                    
+                    // Write all encoded strings
                     writer.Write(stringBuffer.ToByteArray());
                 }
 
-                // Update fileSize
-                stringFileSize = (uint)(writer.Position - 8);
+                // Update file size
+                uint fileSize = (uint)(writer.Position - 8);
                 writer.Position = 4;
-                writer.Write(stringFileSize);
+                writer.Write(fileSize);
 
-                newStringData = writer.ToByteArray();
+                return writer.ToByteArray();
             }
+        }
+
+        /// <summary>
+        /// Extracts shift indices from the histogram section.
+        /// </summary>
+        private static List<int> GetHistogramShifts(List<char> histogramSection)
+        {
+            List<int> shifts = new List<int>();
+            
+            for (int i = HISTOGRAM_SHIFT_END_INDEX; i > ASCII_THRESHOLD; i--)
+            {
+                if ((int)histogramSection[i] < ASCII_THRESHOLD)
+                {
+                    shifts.Add(i);
+                }
+            }
+            
+            return shifts;
         }
     }
 }

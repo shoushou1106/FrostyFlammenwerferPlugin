@@ -10,6 +10,31 @@ using System.Linq;
 
 namespace FlammenwerferPlugin.Resources
 {
+    /// <summary>
+    /// Provides utility methods for localization string operations.
+    /// </summary>
+    public static class LocalizationHelper
+    {
+        /// <summary>
+        /// Computes a hash for a string ID using a custom hashing algorithm.
+        /// This is compatible with the Frostbite engine's string ID hashing.
+        /// </summary>
+        /// <param name="stringId">The string ID to hash.</param>
+        /// <returns>The 32-bit hash value.</returns>
+        public static uint HashStringId(string stringId)
+        {
+            if (string.IsNullOrEmpty(stringId))
+                return 0xFFFFFFFF;
+
+            uint result = 0xFFFFFFFF;
+            for (int i = 0; i < stringId.Length; i++)
+            {
+                result = stringId[i] + 33 * result;
+            }
+            return result;
+        }
+    }
+
     public class ModifiedFsLocalizationAsset : ModifiedResource
     {
         public Dictionary<uint, string> strings = new Dictionary<uint, string>();
@@ -55,13 +80,20 @@ namespace FlammenwerferPlugin.Resources
             }
         }
 
+        /// <summary>
+        /// Adds or updates a string with the specified ID.
+        /// </summary>
+        /// <param name="id">The hash ID of the string.</param>
+        /// <param name="str">The string value.</param>
         public void AddString(uint id, string str)
         {
-            if (!strings.ContainsKey(id))
-                strings.Add(id, str);
             strings[id] = str;
         }
 
+        /// <summary>
+        /// Removes a string with the specified ID.
+        /// </summary>
+        /// <param name="id">The hash ID of the string to remove.</param>
         public void RemoveString(uint id)
         {
             if (strings.ContainsKey(id))
@@ -70,7 +102,7 @@ namespace FlammenwerferPlugin.Resources
             }
             else
             {
-                App.Logger.Log("String " + id.ToString("X") + " is not a modified string");
+                App.Logger.Log($"String 0x{id:X8} is not a modified string");
             }
         }
 
@@ -227,12 +259,12 @@ namespace FlammenwerferPlugin.Resources
 
         public string GetString(string stringId)
         {
-            return GetString(HashStringId(stringId));
+            return GetString(LocalizationHelper.HashStringId(stringId));
         }
 
         public uint AddString(string id, string value)
         {
-            uint hash = HashStringId(id);
+            uint hash = LocalizationHelper.HashStringId(id);
 
             loadedDatabase.AddString(hash, value);
             App.AssetManager.ModifyEbx(App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid).Name, loadedDatabase);
@@ -254,34 +286,24 @@ namespace FlammenwerferPlugin.Resources
 
         public void SetString(string id, string value)
         {
-            SetString(HashStringId(id), value);
+            SetString(LocalizationHelper.HashStringId(id), value);
         }
 
         public void AddStringWindow()
         {
             AddStringWindow win = new AddStringWindow();
             win.ShowDialog();
-            return;
         }
 
         public void BulkReplaceWindow()
         {
             ReplaceMultipleStringWindow win = new ReplaceMultipleStringWindow();
             win.ShowDialog();
-            return;
         }
 
         public bool isStringEdited(uint id)
         {
-            return loadedDatabase.EnumerateStrings().Contains(id) ? true : false;
-        }
-
-        private uint HashStringId(string stringId)
-        {
-            uint result = 0xFFFFFFFF;
-            for (int i = 0; i < stringId.Length; i++)
-                result = stringId[i] + 33 * result;
-            return result;
+            return loadedDatabase.EnumerateStrings().Contains(id);
         }
     }
 }
