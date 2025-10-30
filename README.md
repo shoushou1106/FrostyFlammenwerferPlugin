@@ -27,7 +27,7 @@
 > Due to Frosty have a lot of community fork, you may need to build your own version of plugin.
 
 - A modern Windows and Visual Studio 2022 or newer.
-1. Clone FrostyToolsuite and this repo in a same directory. Frosty can be [official](https://github.com/CadeEvs/FrostyToolsuite) or other fork.<br><img width="338" height="161" alt="Screenshot 2025-10-29 165404" src="https://github.com/user-attachments/assets/e14bcc7e-78be-458b-84ca-dfb9f951928d" />
+1. [Clone](https://docs.github.com/repositories/creating-and-managing-repositories/cloning-a-repository) FrostyToolsuite and this repo in a same directory. Frosty can be [official](https://github.com/CadeEvs/FrostyToolsuite) or other fork.<br><img width="338" height="161" alt="Screenshot 2025-10-29 165404" src="https://github.com/user-attachments/assets/e14bcc7e-78be-458b-84ca-dfb9f951928d" />
 
 > [!TIP]
 > Release build are based on [official 1.0.6.3](https://github.com/CadeEvs/FrostyToolsuite/tree/1.0.6.3) and [official 1.0.7](https://github.com/CadeEvs/FrostyToolsuite/tree/1.0.7).
