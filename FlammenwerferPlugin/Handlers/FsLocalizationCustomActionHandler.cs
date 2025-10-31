@@ -70,10 +70,8 @@ namespace FlammenwerferPlugin.Handlers
 
         public void Modify(AssetEntry origEntry, AssetManager am, RuntimeResources runtimeResources, object data, out byte[] outData)
         {
-#if DEVELOPER___DEBUG
             try
             {
-#endif
                 ModifiedFsLocalizationAsset modFs = data as ModifiedFsLocalizationAsset;
 
                 EbxAsset ebxAsset = am.GetEbx(am.GetEbxEntry(origEntry.Name));
@@ -132,7 +130,6 @@ namespace FlammenwerferPlugin.Handlers
 
                 origEntry.Size = outData.Length;
                 origEntry.Sha1 = Utils.GenerateSha1(outData);
-#if DEVELOPER___DEBUG
             }
             catch (Exception ex)
             {
@@ -152,7 +149,6 @@ namespace FlammenwerferPlugin.Handlers
 
                 outData = null;
             }
-#endif
         }
 
         #endregion
