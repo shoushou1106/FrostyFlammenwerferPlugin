@@ -27,9 +27,9 @@ namespace FlammenwerferPlugin.Resources
                 return 0xFFFFFFFF;
 
             uint result = 0xFFFFFFFF;
-            for (int i = 0; i < stringId.Length; i++)
+            foreach (char c in stringId)
             {
-                result = stringId[i] + 33 * result;
+                result = c + 33 * result;
             }
             return result;
         }
@@ -102,7 +102,7 @@ namespace FlammenwerferPlugin.Resources
             }
             else
             {
-                App.Logger.Log($"String 0x{id:X8} is not a modified string");
+                App.Logger.Log("String " + id.ToString("X") + " is not a modified string");
             }
         }
 
@@ -170,9 +170,6 @@ namespace FlammenwerferPlugin.Resources
         }
     }
 
-    /// <summary>
-    /// Database for managing localized strings in Frostbite games using FsLocalization assets.
-    /// </summary>
     public class FsLocalizationStringDatabase : ILocalizedStringDatabase
     {
         private Dictionary<uint, string> strings = new Dictionary<uint, string>();

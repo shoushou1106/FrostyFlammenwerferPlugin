@@ -14,27 +14,26 @@ namespace FlammenwerferPlugin.Flammen
     /// </summary>
     public class Flammen
     {
-        // Magic numbers for chunk validation
-        private const uint HISTOGRAM_MAGIC = 0x00039001;
-        private const uint STRINGS_BINARY_MAGIC = 0x00039000;
-        
-        // Histogram constants
-        private const int ASCII_THRESHOLD = 0x80;
-        private const int SHIFT_NUMS_START_INDEX = 0x40;
-        private const int MAX_SHIFT_VALUE = 0xFF;
-        private const int HISTOGRAM_INITIAL_SECTION_SIZE = 0x80;
-        private const int HISTOGRAM_SHIFT_END_INDEX = 0x1FE;
-        
         // String chunk constants
-        private const uint DEFAULT_DATA_OFFSET = 0x8C;
-        private const uint HASH_PAIR_SIZE = 8;
+        private const uint StringMagic = 0x00039000;
+        private const uint StringDefaultDataOffset = 0x8C;
+        private const uint StringHashPairSize = 8;
+
+        // Histogram constants
+        private const uint HistogramMagic = 0x00039001;
+        private const int HistogramAsciiThreshold = 0x80;
+        private const int HistogramMaxShiftValue = 0xFF;
+        private const int HistogramInitialSectionSize = 0x80;
+        private const int HistogramShiftNumStartIndex = 0x40;
+        private const int HistogramShiftEndIndex = 0x1FE;
+        
         /// <summary>
-        /// Decodes a binary string using the histogram section.
+        /// Decodes binary string using histogram
         /// </summary>
-        /// <param name="binString">The binary string to decode.</param>
-        /// <param name="section">The histogram section containing character mappings.</param>
+        /// <param name="binString">String to decode</param>
+        /// <param name="section">Histogram</param>
         /// <returns>The decoded string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when binString or section is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when binString or section is null</exception>
         public static string DecodeString(string binString, List<ushort> section)
         {
             if (binString == null)
@@ -49,17 +48,17 @@ namespace FlammenwerferPlugin.Flammen
             {
                 byte currentByte = (byte)binString[index];
                 
-                if (currentByte < ASCII_THRESHOLD)
+                if (currentByte < HistogramAsciiThreshold)
                 {
-                    // ASCII character - use directly
+                    // ASCII character - decode directly
                     sb.Append((char)currentByte);
                 }
                 else
                 {
-                    // Non-ASCII character - use histogram lookup
+                    // Non-ASCII character - decode using histogram
                     ushort mappedValue = section[currentByte];
                     
-                    if (mappedValue >= ASCII_THRESHOLD)
+                    if (mappedValue >= HistogramAsciiThreshold)
                     {
                         // Direct mapping
                         sb.Append((char)mappedValue);
@@ -72,9 +71,9 @@ namespace FlammenwerferPlugin.Flammen
                             break;
                             
                         currentByte = (byte)binString[index];
-                        if (currentByte >= ASCII_THRESHOLD)
+                        if (currentByte >= HistogramAsciiThreshold)
                         {
-                            int shiftedIndex = (currentByte - ASCII_THRESHOLD) + (mappedValue << 7);
+                            int shiftedIndex = currentByte - HistogramAsciiThreshold + (mappedValue << 7);
                             sb.Append((char)section[shiftedIndex]);
                         }
                     }
@@ -85,11 +84,11 @@ namespace FlammenwerferPlugin.Flammen
         }
 
         /// <summary>
-        /// Encodes a string to bytes using the histogram section and shift mappings.
+        /// Encodes binary string using histogram
         /// </summary>
-        /// <param name="str">The string to encode.</param>
+        /// <param name="str">String to encode</param>
         /// <param name="shifts">The list of shift indices for multi-byte character encoding.</param>
-        /// <param name="section">The histogram section containing character mappings.</param>
+        /// <param name="section">Histogram</param>
         /// <returns>The encoded byte array with null terminator.</returns>
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
         /// <exception cref="ArgumentException">Thrown when a character cannot be encoded.</exception>
@@ -108,19 +107,19 @@ namespace FlammenwerferPlugin.Flammen
             {
                 uint charValue = (uint)c;
                 
-                if (charValue < ASCII_THRESHOLD)
+                if (charValue < HistogramAsciiThreshold)
                 {
                     // ASCII character - encode directly
                     binString.Add((byte)charValue);
                 }
                 else
                 {
-                    // Non-ASCII character - use histogram lookup
+                    // Non-ASCII character - encode using histogram
                     int index = section.FindIndex(a => a.Equals(c));
                     if (index == -1)
                         continue;
 
-                    if (index <= MAX_SHIFT_VALUE)
+                    if (index <= HistogramMaxShiftValue)
                     {
                         // Single byte encoding
                         binString.Add((byte)index);
@@ -135,10 +134,10 @@ namespace FlammenwerferPlugin.Flammen
                             int shiftByte = (int)section[shift] << 7;
                             int byteShifted = index - shiftByte;
                             
-                            if (byteShifted >= 0 && byteShifted < ASCII_THRESHOLD)
+                            if (byteShifted >= 0 && byteShifted < HistogramAsciiThreshold)
                             {
                                 binString.Add((byte)shift);
-                                binString.Add((byte)(byteShifted + ASCII_THRESHOLD));
+                                binString.Add((byte)(byteShifted + HistogramAsciiThreshold));
                                 shiftFound = true;
                                 break;
                             }
@@ -147,7 +146,7 @@ namespace FlammenwerferPlugin.Flammen
                         if (!shiftFound) 
                         {
                             throw new ArgumentException(
-                                $"Unable to encode character '{c}' (U+{((int)c):X4}) to bytes." + Environment.NewLine +
+                                $"Unable to encode character '{c}' (U+{(int)c:X4}) to bytes." + Environment.NewLine +
                                 "The histogram does not contain a valid shift mapping for this character." + Environment.NewLine +
                                 "Consider expanding the histogram by adding more characters." + Environment.NewLine +
                                 $"Full String: {str}",
@@ -167,7 +166,7 @@ namespace FlammenwerferPlugin.Flammen
         /// </summary>
         /// <param name="strings">The strings containing characters to add to the histogram.</param>
         /// <param name="dataOffSize">Reference to the histogram data offset size, updated with new character count.</param>
-        /// <param name="section">Reference to the histogram section, updated with new characters.</param>
+        /// <param name="section">Reference to the histogram, updated with new characters.</param>
         /// <exception cref="ArgumentNullException">Thrown when strings or section is null.</exception>
         /// <exception cref="ArgumentException">Thrown when too many characters are added.</exception>
         public static void AddCharsToHistogram(IEnumerable<string> strings, ref uint dataOffSize, ref List<char> section)
@@ -180,21 +179,19 @@ namespace FlammenwerferPlugin.Flammen
             // Collect unique characters from all strings
             HashSet<char> charSet = new HashSet<char>();
             foreach (string str in strings)
-            {
                 charSet.UnionWith(str);
-            }
 
             // Find characters not already in section
             List<char> newChars = charSet.Except(section).ToList();
             
-            if (newChars.Count == 0)
+            if (!newChars.Any())
                 return; // No new characters to add
 
             // Find the shift numbers start index
-            int shiftNumsIndex = SHIFT_NUMS_START_INDEX;
-            while (shiftNumsIndex < MAX_SHIFT_VALUE)
+            int shiftNumsIndex = HistogramShiftNumStartIndex;
+            while (shiftNumsIndex < HistogramMaxShiftValue)
             {
-                if (section[shiftNumsIndex] != '\0')
+                if (section[shiftNumsIndex] != 0x00)
                     break;
                 shiftNumsIndex++;
             }
@@ -213,7 +210,7 @@ namespace FlammenwerferPlugin.Flammen
                 List<char> bytePositions = new List<char>();
                 for (int i = 0; i < chars.Count; i++)
                 {
-                    bytePositions.Add((char)(insertedStart + shiftNumsCount + (shiftNumsIndex - ASCII_THRESHOLD) + i));
+                    bytePositions.Add((char)(insertedStart + shiftNumsCount + (shiftNumsIndex - HistogramAsciiThreshold) + i));
                 }
                 return bytePositions;
             }
@@ -224,9 +221,9 @@ namespace FlammenwerferPlugin.Flammen
                 HashSet<char> shiftNumsSet = new HashSet<char>();
                 foreach (int bytePos in bytePositions)
                 {
-                    char shiftNum = (char)(bytePos / ASCII_THRESHOLD);
+                    char shiftNum = (char)(bytePos / HistogramAsciiThreshold);
 
-                    if ((int)shiftNum >= ASCII_THRESHOLD)
+                    if ((int)shiftNum >= HistogramAsciiThreshold)
                     {
                         throw new ArgumentException("Too many characters to add to histogram. Maximum capacity exceeded.");
                     }
@@ -241,28 +238,30 @@ namespace FlammenwerferPlugin.Flammen
             {
                 List<char> newShiftNums = CalculateShiftNumsAndMappings(CalculateBytePositions(newChars));
 
+                // The number of shift_nums doesn't change - the algorithm ends
                 if (newShiftNums.Count == shiftNumsCount)
                 {
                     shiftNums = newShiftNums;
                     break;
                 }
 
+                // Otherwise, update the number of shift_nums and repeat
                 shiftNumsCount = newShiftNums.Count;
             }
 
             // Reconstruct section with new characters and shift numbers
             List<char> updatedSection = new List<char>();
             
-            // Add initial ASCII section
-            updatedSection.AddRange(section.Take(HISTOGRAM_INITIAL_SECTION_SIZE));
+            // Add original ASCII section
+            updatedSection.AddRange(section.Take(HistogramInitialSectionSize));
             
-            // Add calculated shift numbers
+            // Add calculated shift_nums
             updatedSection.AddRange(shiftNums);
             
-            // Add middle section
+            // Add section from shiftNumsIndex to insertedStart
             updatedSection.AddRange(section.Skip(shiftNumsIndex).Take(insertedStart - shiftNumsIndex));
             
-            // Add new characters
+            // Add new chars
             updatedSection.AddRange(newChars);
             
             // Add remaining section
@@ -277,7 +276,7 @@ namespace FlammenwerferPlugin.Flammen
         /// </summary>
         /// <param name="histogramChunk">The histogram chunk containing character mappings.</param>
         /// <param name="stringsBinaryChunk">The strings binary chunk containing encoded strings.</param>
-        /// <returns>Dictionary mapping string hash IDs to decoded strings.</returns>
+        /// <returns>Dictionary mapping string hash to decoded strings.</returns>
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
         /// <exception cref="InvalidDataException">Thrown when chunk format is invalid.</exception>
         public static Dictionary<uint, string> ReadStrings(ChunkAssetEntry histogramChunk, ChunkAssetEntry stringsBinaryChunk)
@@ -288,7 +287,7 @@ namespace FlammenwerferPlugin.Flammen
                 throw new ArgumentNullException(nameof(stringsBinaryChunk));
 
             // Read histogram chunk
-            List<ushort> histogramSection = ReadHistogramSection(histogramChunk);
+            List<ushort> histogramSection = ReadHistogram(histogramChunk);
 
             // Read strings binary chunk
             return ReadStringsBinary(stringsBinaryChunk, histogramSection);
@@ -297,15 +296,15 @@ namespace FlammenwerferPlugin.Flammen
         /// <summary>
         /// Reads the histogram section from a chunk.
         /// </summary>
-        private static List<ushort> ReadHistogramSection(ChunkAssetEntry histogramChunk)
+        private static List<ushort> ReadHistogram(ChunkAssetEntry histogramChunk)
         {
             List<ushort> histogramSection = new List<ushort>();
             
             using (NativeReader reader = new NativeReader(App.AssetManager.GetChunk(histogramChunk)))
             {
                 uint magic = reader.ReadUInt();
-                if (magic != HISTOGRAM_MAGIC)
-                    throw new InvalidDataException($"Invalid histogram chunk. Expected magic 0x{HISTOGRAM_MAGIC:X8}, got 0x{magic:X8}.");
+                if (magic != HistogramMagic)
+                    throw new InvalidDataException($"Magic failed, invalid histogram chunk. Got {magic.ToString("X")}.");
 
                 uint fileSize = reader.ReadUInt();
                 uint dataOffSize = reader.ReadUInt();
@@ -331,8 +330,8 @@ namespace FlammenwerferPlugin.Flammen
             {
                 // Read and validate header
                 uint magic = reader.ReadUInt();
-                if (magic != STRINGS_BINARY_MAGIC)
-                    throw new InvalidDataException($"Invalid strings binary chunk. Expected magic 0x{STRINGS_BINARY_MAGIC:X8}, got 0x{magic:X8}.");
+                if (magic != StringMagic)
+                    throw new InvalidDataException($"Magic failed, invalid strings binary chunk. Got {magic.ToString("X")}.");
 
                 uint fileSize = reader.ReadUInt();
                 uint listSize = reader.ReadUInt();
@@ -396,8 +395,8 @@ namespace FlammenwerferPlugin.Flammen
             using (NativeReader reader = new NativeReader(App.AssetManager.GetChunk(histogramChunk)))
             {
                 histogramMagic = reader.ReadUInt();
-                if (histogramMagic != HISTOGRAM_MAGIC)
-                    throw new InvalidDataException($"Invalid histogram chunk. Expected magic 0x{HISTOGRAM_MAGIC:X8}, got 0x{histogramMagic:X8}.");
+                if (histogramMagic != HistogramMagic)
+                    throw new InvalidDataException($"Magic failed, invalid histogram chunk. Got {histogramMagic.ToString("X")}.");
 
                 histogramFileSize = reader.ReadUInt();
                 histogramDataOffSize = reader.ReadUInt();
@@ -422,8 +421,8 @@ namespace FlammenwerferPlugin.Flammen
             {
                 // Read and validate header
                 stringMagic = reader.ReadUInt();
-                if (stringMagic != STRINGS_BINARY_MAGIC)
-                    throw new InvalidDataException($"Invalid strings binary chunk. Expected magic 0x{STRINGS_BINARY_MAGIC:X8}, got 0x{stringMagic:X8}.");
+                if (stringMagic != StringMagic)
+                    throw new InvalidDataException($"Magic failed, invalid strings binary chunk. Got {stringMagic.ToString("X")}.");
 
                 stringFileSize = reader.ReadUInt();
                 stringListSize = reader.ReadUInt();
@@ -462,22 +461,23 @@ namespace FlammenwerferPlugin.Flammen
             {
                 stringList[data.Key] = data.Value;
             }
+            stringList.OrderBy(pair => pair.Key);
 
             // Write histogram chunk
-            newHistogramData = WriteHistogramChunk(histogramMagic, histogramDataOffSize, histogramSection, out histogramFileSize);
+            newHistogramData = WriteHistogramChunk(histogramDataOffSize, histogramSection, out histogramFileSize);
 
             // Write string chunk
-            newStringData = WriteStringChunk(stringMagic, stringSection, stringList, histogramSection);
+            newStringData = WriteStringChunk(stringSection, stringList, histogramSection);
         }
 
         /// <summary>
         /// Writes the histogram chunk data.
         /// </summary>
-        private static byte[] WriteHistogramChunk(uint magic, uint dataOffSize, List<char> section, out uint fileSize)
+        private static byte[] WriteHistogramChunk(uint dataOffSize, List<char> section, out uint fileSize)
         {
             using (NativeWriter writer = new NativeWriter(new MemoryStream()))
             {
-                writer.Write(magic);
+                writer.Write(HistogramMagic);
                 writer.Write(0xDEADBEEF); // Placeholder for file size
                 writer.Write(dataOffSize);
 
@@ -488,7 +488,7 @@ namespace FlammenwerferPlugin.Flammen
                     {
                         writer.Write(charCode);
                     }
-                    // Characters with code > 0xFFFF are silently skipped
+                    // Skipped char > 0xFFFF
                 }
 
                 // Update file size
@@ -503,17 +503,17 @@ namespace FlammenwerferPlugin.Flammen
         /// <summary>
         /// Writes the strings binary chunk data.
         /// </summary>
-        private static byte[] WriteStringChunk(uint magic, string section, Dictionary<uint, string> stringList, List<char> histogramSection)
+        private static byte[] WriteStringChunk(string section, Dictionary<uint, string> stringList, List<char> histogramSection)
         {
             using (NativeWriter writer = new NativeWriter(new MemoryStream()))
             {
                 // Calculate offsets
                 uint listSize = (uint)stringList.Count;
-                uint dataOffset = DEFAULT_DATA_OFFSET;
-                uint stringsOffset = dataOffset + (listSize * HASH_PAIR_SIZE);
+                uint dataOffset = StringDefaultDataOffset;
+                uint stringsOffset = dataOffset + (listSize * StringHashPairSize);
 
                 // Write header
-                writer.Write(magic);
+                writer.Write(StringMagic);
                 writer.Write(0xDEADBEEF); // Placeholder for file size
                 writer.Write(listSize);
                 writer.Write(dataOffset);
@@ -525,7 +525,14 @@ namespace FlammenwerferPlugin.Flammen
                     writer.Write((byte)0x00);
 
                 // Get histogram shifts for encoding
-                List<int> histogramShifts = GetHistogramShifts(histogramSection);
+                List<int> histogramShifts = new List<int>();
+                for (int i = HistogramShiftEndIndex; i > HistogramAsciiThreshold; i--)
+                {
+                    if (histogramSection[i] < HistogramAsciiThreshold)
+                    {
+                        histogramShifts.Add(i);
+                    }
+                }
 
                 // Write hash pairs and encode strings
                 using (NativeWriter stringBuffer = new NativeWriter(new MemoryStream()))
@@ -548,24 +555,6 @@ namespace FlammenwerferPlugin.Flammen
 
                 return writer.ToByteArray();
             }
-        }
-
-        /// <summary>
-        /// Extracts shift indices from the histogram section.
-        /// </summary>
-        private static List<int> GetHistogramShifts(List<char> histogramSection)
-        {
-            List<int> shifts = new List<int>();
-            
-            for (int i = HISTOGRAM_SHIFT_END_INDEX; i > ASCII_THRESHOLD; i--)
-            {
-                if ((int)histogramSection[i] < ASCII_THRESHOLD)
-                {
-                    shifts.Add(i);
-                }
-            }
-            
-            return shifts;
         }
     }
 }
