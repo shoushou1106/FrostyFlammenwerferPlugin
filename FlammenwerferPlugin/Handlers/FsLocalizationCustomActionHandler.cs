@@ -89,8 +89,8 @@ namespace FlammenwerferPlugin.Handlers
 
                     // Modify Chunks
                     Flammen.Flammen.WriteAll(histogramEntry, stringChunkEntry, modFs.strings,
-                    out byte[] newHistogramData,
-                    out byte[] newStringData);
+                        out byte[] newHistogramData,
+                        out byte[] newStringData);
 
                     // Process Histogram Chunk
                     localizedText.HistogramChunkSize = (uint)newHistogramData.Length;
@@ -158,13 +158,21 @@ namespace FlammenwerferPlugin.Handlers
         #endregion
     }
 
+    /// <summary>
+    /// Extension methods for NativeWriter to support localization string operations.
+    /// </summary>
     public static class WriterStringExtension
     {
+        /// <summary>
+        /// Writes a null-terminated string with one byte per character.
+        /// </summary>
+        /// <param name="writer">The writer to write to.</param>
+        /// <param name="str">The string to write.</param>
         public static void WriteNullTerminatedOneBytePerCharString(this NativeWriter writer, string str)
         {
-            for (int i = 0; i < str.Length; i++)
+            foreach (char c in str)
             {
-                writer.Write((byte)str[i]);
+                writer.Write((byte)c);
             }
             writer.Write((byte)0x00);
         }
