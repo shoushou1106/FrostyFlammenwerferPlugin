@@ -40,10 +40,6 @@
       <Private>false</Private>
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
-	<ProjectReference Include="..\..\FrostyToolsuite\FrostyHash\FrostyHash.vcxproj">
-	  <Private>false</Private>
-	  <PrivateAssets>all</PrivateAssets>
-	</ProjectReference>
     <ProjectReference Include="..\..\FrostyToolsuite\FrostyPlugin\FrostyCore.csproj">
       <Private>false</Private>
       <PrivateAssets>all</PrivateAssets>
