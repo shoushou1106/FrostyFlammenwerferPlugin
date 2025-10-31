@@ -88,7 +88,7 @@ namespace FlammenwerferPlugin.Handlers
                     ChunkAssetEntry newStringChunkEntry = new ChunkAssetEntry();
 
                     // Modify Chunks
-                    Flammen.Flammen.WriteAll(histogramEntry, stringChunkEntry, modFs.strings,
+                    Flammen.Flammen.WriteAll(am, histogramEntry, stringChunkEntry, modFs.strings,
                         out byte[] newHistogramData,
                         out byte[] newStringData);
 

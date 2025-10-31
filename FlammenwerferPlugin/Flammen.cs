@@ -377,7 +377,7 @@ namespace FlammenwerferPlugin.Flammen
         /// <param name="newStringData">Output parameter containing the new strings binary chunk data.</param>
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
         /// <exception cref="InvalidDataException">Thrown when chunk format is invalid.</exception>
-        public static void WriteAll(ChunkAssetEntry histogramChunk, ChunkAssetEntry stringsBinaryChunk, Dictionary<uint, string> modifiedData, out byte[] newHistogramData, out byte[] newStringData)
+        public static void WriteAll(AssetManager am, ChunkAssetEntry histogramChunk, ChunkAssetEntry stringsBinaryChunk, Dictionary<uint, string> modifiedData, out byte[] newHistogramData, out byte[] newStringData)
         {
             if (histogramChunk == null)
                 throw new ArgumentNullException(nameof(histogramChunk));
@@ -392,7 +392,7 @@ namespace FlammenwerferPlugin.Flammen
             uint histogramDataOffSize;
             List<char> histogramSection = new List<char>();
             
-            using (NativeReader reader = new NativeReader(App.AssetManager.GetChunk(histogramChunk)))
+            using (NativeReader reader = new NativeReader(am.GetChunk(histogramChunk)))
             {
                 histogramMagic = reader.ReadUInt();
                 if (histogramMagic != HistogramMagic)
@@ -417,7 +417,7 @@ namespace FlammenwerferPlugin.Flammen
             string stringSection;
             Dictionary<uint, string> stringList = new Dictionary<uint, string>();
             
-            using (NativeReader reader = new NativeReader(App.AssetManager.GetChunk(stringsBinaryChunk)))
+            using (NativeReader reader = new NativeReader(am.GetChunk(stringsBinaryChunk)))
             {
                 // Read and validate header
                 stringMagic = reader.ReadUInt();
