@@ -51,4 +51,5 @@
 7. Plugin is located in `FrostyFlammenwerferPlugin\FlammenwerferPlugin\bin\`. Ignore other files e.g. FrostyHash.dll<br><img width="531" height="230" alt="image" src="https://github.com/user-attachments/assets/3c286c81-6036-4576-95fe-f30a4f9f8440" />
 
 
-
+## Special Thanks
+- [NFSLYY](https://space.bilibili.com/14734025) for testing
