@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
+//using FrostySdk.Managers.Entries; Uncomment this line [For 1.0.7]
+
 //namespace FsLocalizationPlugin.Handlers
 // Frosty cannot detect a different namespace
 namespace FsLocalizationPlugin
@@ -102,7 +104,7 @@ namespace FsLocalizationPlugin
                     newHistogramChunkEntry.Size = newHistogramData.Length;
                     newHistogramChunkEntry.H32 = Fnv1.HashString(origEntry.Name.ToLower());
                     newHistogramChunkEntry.FirstMip = -1;
-                    newHistogramChunkEntry.IsTocChunk = true;
+                    newHistogramChunkEntry.IsTocChunk = true; // Comment this line [For 1.0.7]
 
                     runtimeResources.AddResource(new RuntimeChunkResource(newHistogramChunkEntry), newHistogramData);
 
@@ -117,7 +119,7 @@ namespace FsLocalizationPlugin
                     newStringChunkEntry.Size = newStringData.Length;
                     newStringChunkEntry.H32 = Fnv1.HashString(origEntry.Name.ToLower());
                     newStringChunkEntry.FirstMip = -1;
-                    newStringChunkEntry.IsTocChunk = true;
+                    newStringChunkEntry.IsTocChunk = true; // Comment this line [For 1.0.7]
 
                     runtimeResources.AddResource(new RuntimeChunkResource(newStringChunkEntry), newStringData);
                 }

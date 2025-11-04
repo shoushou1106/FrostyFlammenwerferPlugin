@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+//using FrostySdk.Managers.Entries; Uncomment this line [For 1.0.7]
+
 //namespace FsLocalizationPlugin.Resources
 // Frosty cannot detect a different namespace
 namespace FsLocalizationPlugin
