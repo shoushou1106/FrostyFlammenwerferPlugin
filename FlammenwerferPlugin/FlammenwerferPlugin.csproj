@@ -4,11 +4,20 @@
     <Platforms>x64</Platforms>
     <TargetFrameworks>net48</TargetFrameworks>
     <AssemblyTitle>FlammenwerferPlugin</AssemblyTitle>
-    <Product>FlammenwerferPlugin</Product>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Product>Frosty Flammenwerfer Plugin</Product>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
     <OutputType>Library</OutputType>
+    <Title>Frosty Flammenwerfer Plugin</Title>
+    <Version>0.1.9-Beta.0.2.0</Version>
+    <FileVersion>0.1.9-Beta.0.2.0</FileVersion>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Authors>shoushou1106</Authors>
+    <PackageProjectUrl>https://github.com/shoushou1106/FrostyFlammenwerferPlugin/</PackageProjectUrl>
+    <Copyright>GPL-3.0</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/shoushou1106/FrostyFlammenwerferPlugin/</RepositoryUrl>
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Developer - Debug|x64' ">
@@ -36,6 +45,13 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\..\FrostyToolsuite\FrostyControls\FrostyControls.csproj">
       <Private>false</Private>
       <PrivateAssets>all</PrivateAssets>
@@ -48,6 +64,33 @@
       <Private>false</Private>
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   
 </Project>
