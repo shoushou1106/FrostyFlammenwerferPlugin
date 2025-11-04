@@ -1,5 +1,4 @@
-﻿using FlammenwerferPlugin.Resources;
-using Frosty.Core;
+﻿using Frosty.Core;
 using Frosty.Core.IO;
 using Frosty.Core.Mod;
 using Frosty.Hash;
@@ -12,7 +11,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace FlammenwerferPlugin.Handlers
+//namespace FsLocalizationPlugin.Handlers
+// Frosty cannot detect a different namespace
+namespace FsLocalizationPlugin
 {
     public class FsLocalizationCustomActionHandler : ICustomActionHandler
     {

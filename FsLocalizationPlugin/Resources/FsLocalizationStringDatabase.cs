@@ -1,4 +1,4 @@
-﻿using FlammenwerferPlugin.Windows;
+﻿using FsLocalizationPlugin.Windows;
 using Frosty.Core;
 using FrostySdk.Ebx;
 using FrostySdk.IO;
@@ -8,7 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FlammenwerferPlugin.Resources
+//namespace FsLocalizationPlugin.Resources
+// Frosty cannot detect a different namespace
+namespace FsLocalizationPlugin
 {
     /// <summary>
     /// Provides utility methods for localization string operations.

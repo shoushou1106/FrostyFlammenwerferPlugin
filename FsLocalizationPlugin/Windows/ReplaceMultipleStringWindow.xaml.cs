@@ -5,13 +5,13 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-using FlammenwerferPlugin.Resources;
+using FsLocalizationPlugin;
 using Frosty.Controls;
 using Frosty.Core;
 using Frosty.Core.Windows;
 using FrostySdk.Interfaces;
 
-namespace FlammenwerferPlugin.Windows
+namespace FsLocalizationPlugin.Windows
 {
     public partial class ReplaceMultipleStringWindow : FrostyDockableWindow
     {

@@ -1,5 +1,4 @@
-﻿using FlammenwerferPlugin.Handlers;
-using FlammenwerferPlugin.Resources;
+﻿using FsLocalizationPlugin;
 using Frosty.Core.Attributes;
 using FrostySdk;
 using System.Runtime.InteropServices;
@@ -20,7 +19,7 @@ using System.Windows;
 )]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("D737E758-32D2-4533-ADF3-F274C9E7BCEB")]
+[assembly: Guid("4b612468-9b6a-4304-88a5-055c3575eb3d")]
 
 [assembly: PluginDisplayName("Flammenwerfer")]
 [assembly: PluginAuthor("shoushou1106")]

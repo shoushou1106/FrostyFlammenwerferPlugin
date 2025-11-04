@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace FlammenwerferPlugin.Flammen
+namespace FsLocalizationPlugin.Flammen
 {
     /// <summary>
     /// Provides functionality for encoding and decoding localized strings using histogram-based compression.
