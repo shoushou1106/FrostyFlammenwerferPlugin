@@ -23,7 +23,7 @@ using System.Windows;
 
 [assembly: PluginDisplayName("Flammenwerfer")]
 [assembly: PluginAuthor("shoushou1106")]
-[assembly: PluginVersion("0.1.9-Beta.0.2.0")]
+[assembly: PluginVersion("0.1.9-Beta.0.2.1")]
 
 [assembly: PluginNotValidForProfile((int)ProfileVersion.DragonAgeInquisition)]
 [assembly: PluginNotValidForProfile((int)ProfileVersion.MassEffectAndromeda)]
