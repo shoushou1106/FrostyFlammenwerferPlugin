@@ -8,13 +8,13 @@
 `Flammenwerfer Plugin` is a [Frosty v1](https://github.com/CadeEvs/FrostyToolsuite) plugin adaptation of [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/).
 
 ## About
-- **FlammenwerferPlugin** Is modified from the `FsLocalizationPlugin` (Sorry for GalaxyMan2015 and Mophead), and designed to replace it. They are compatible with each other's projects and mods, but cannot be used at the same time. This plugin supports automatically modifying the histogram to allowing the game to display unsupported characters, and merging multiple mods that modify LocalizedString, even if they were exported with `FsLocalizationPlugin`.
+- **FlammenwerferPlugin** is modified from the `FsLocalizationPlugin` (Sorry for GalaxyMan2015 and Mophead), and designed to replace it. They are compatible with each other's projects and mods, but cannot be used at the same time. This plugin supports automatically modifying the histogram to allowing the game to display unsupported characters, and merging multiple mods that modify LocalizedString, even if they were exported with `FsLocalizationPlugin`.
 - Feel free to include this plugin with your mod distribution, but it is better to indicate the GitHub link to this repo and [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/), also remember to keep it updated.
 
 ## Install
 - Delete or disable `FsLocalizationPlugin.dll` from your `Plugins` folder under **Frosty**.
   - It's recommanded to disable it by rename to `FsLocalizationPlugin.dll.disable` or other suffix that is not `.dll`
-- Download `FlammenwerferPlugin.dll` from [GitHub Release](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
+- Download plugin from [GitHub Release](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
 - Place the downloaded file in the `Plugins` folder under **Frosty**.
 
 ## Todo
@@ -23,6 +23,9 @@
 - [ ] Export chunk
 
 ## Build
+> [!WARNING]
+> The project structure is changed and I dont have time to change the screenshots, please DO NOT trust the screenshot in this document and text shall prevail.
+
 > [!TIP]
 > Due to Frosty have a lot of community fork, you may need to build your own version of plugin.
 
@@ -37,7 +40,7 @@
 > [!NOTE]
 > The solution requires FrostyCore, FrostySdk, FrostyControl, and FrostyHash.
 
-3. Open `FlammenwerferPlugin/Properties/AssemblyInfo.cs`<br><img width="284" height="121" alt="image" src="https://github.com/user-attachments/assets/fe3a83a0-18cd-40e7-b1d9-c9c876ef8ded" />
+3. Open `FsLocalizationPlugin/Properties/AssemblyInfo.cs`<br><img width="284" height="121" alt="image" src="https://github.com/user-attachments/assets/fe3a83a0-18cd-40e7-b1d9-c9c876ef8ded" />
 
 4. Change plugin name<br><img width="843" height="97" alt="image" src="https://github.com/user-attachments/assets/768471c6-d9f7-495a-aa92-1c7539b7e22d" />
 
@@ -46,9 +49,9 @@
 
 5. Change configuration from the toolbar(at the top). Use `Release - Final` for normal release, `Developer - Debug` for pre-release. And make sure platform is `x64`<br><img width="291" height="223" alt="image" src="https://github.com/user-attachments/assets/225875ef-d5c2-469d-b84e-aca02befafb6" />
 
-6. Right click FlammenwerferPlugin in the Solution Explorer, and click **Rebuild** <br><img width="421" height="278" alt="image" src="https://github.com/user-attachments/assets/a549fba5-2ff7-49ac-96b2-4f75c9aa449d" />
+6. Right click FsLocalizationPlugin in the Solution Explorer, and click **Rebuild** <br><img width="421" height="278" alt="image" src="https://github.com/user-attachments/assets/a549fba5-2ff7-49ac-96b2-4f75c9aa449d" />
 
-7. Plugin is located in `FrostyFlammenwerferPlugin\FlammenwerferPlugin\bin\`. Ignore other files e.g. FrostyHash.dll<br><img width="531" height="230" alt="image" src="https://github.com/user-attachments/assets/3c286c81-6036-4576-95fe-f30a4f9f8440" />
+7. Plugin is located in `FrostyFlammenwerferPlugin\FsLocalizationPlugin\bin\`. Ignore other files e.g. FrostyHash.dll<br><img width="531" height="230" alt="image" src="https://github.com/user-attachments/assets/3c286c81-6036-4576-95fe-f30a4f9f8440" />
 
 
 ## Special Thanks
