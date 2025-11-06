@@ -148,8 +148,8 @@ namespace FsLocalizationPlugin.Flammen
                             }
                         }
 
-                        // If no valid shift found, skip the character (similar to missing character handling)
-                        // This makes encoding more robust and consistent
+                        // If no shift can encode this character (index is beyond shift range),
+                        // skip it - consistent with how missing characters are handled at line 122
                         if (!shiftFound) 
                         {
                             continue;
