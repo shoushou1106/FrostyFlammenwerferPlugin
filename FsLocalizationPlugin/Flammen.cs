@@ -91,9 +91,12 @@ namespace FsLocalizationPlugin.Flammen
         /// <param name="str">String to encode</param>
         /// <param name="shifts">The list of shift indices for multi-byte character encoding.</param>
         /// <param name="section">Histogram</param>
-        /// <returns>The encoded byte array with null terminator.</returns>
+        /// <returns>The encoded byte array with null terminator. Characters that cannot be encoded are silently skipped.</returns>
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when a character cannot be encoded.</exception>
+        /// <remarks>
+        /// Characters not in the histogram or without valid shift mappings are skipped during encoding.
+        /// Use AddCharsToHistogram to expand the histogram if needed.
+        /// </remarks>
         public static byte[] EncodeString(string str, List<int> shifts, List<char> section)
         {
             if (str == null)
