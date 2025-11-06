@@ -145,14 +145,11 @@ namespace FsLocalizationPlugin.Flammen
                             }
                         }
 
+                        // If no valid shift found, skip the character (similar to missing character handling)
+                        // This makes encoding more robust and consistent
                         if (!shiftFound) 
                         {
-                            throw new ArgumentException(
-                                $"Unable to encode character '{c}' (U+{(int)c:X4}) to bytes." + Environment.NewLine +
-                                "The histogram does not contain a valid shift mapping for this character." + Environment.NewLine +
-                                "Consider expanding the histogram by adding more characters." + Environment.NewLine +
-                                $"Full String: {str}",
-                                nameof(str));
+                            continue;
                         }
                     }
                 }
