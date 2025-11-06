@@ -91,12 +91,9 @@ namespace FsLocalizationPlugin.Flammen
         /// <param name="str">String to encode</param>
         /// <param name="shifts">The list of shift indices for multi-byte character encoding.</param>
         /// <param name="section">Histogram</param>
-        /// <returns>The encoded byte array with null terminator. Characters that cannot be encoded are silently skipped.</returns>
+        /// <returns>The encoded byte array with null terminator.</returns>
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        /// <remarks>
-        /// Characters not in the histogram or without valid shift mappings are skipped during encoding.
-        /// Use AddCharsToHistogram to expand the histogram if needed.
-        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown when a character cannot be encoded.</exception>
         public static byte[] EncodeString(string str, List<int> shifts, List<char> section)
         {
             if (str == null)
@@ -148,11 +145,14 @@ namespace FsLocalizationPlugin.Flammen
                             }
                         }
 
-                        // If no shift can encode this character (index is beyond shift range),
-                        // skip it - consistent with how missing characters are handled at line 122
                         if (!shiftFound) 
                         {
-                            continue;
+                            throw new ArgumentException(
+                                $"Unable to encode character '{c}' (U+{(int)c:X4}) to bytes." + Environment.NewLine +
+                                "The histogram does not contain a valid shift mapping for this character." + Environment.NewLine +
+                                "Consider expanding the histogram by adding more characters." + Environment.NewLine +
+                                $"Full String: {str}",
+                                nameof(str));
                         }
                     }
                 }
@@ -455,15 +455,16 @@ namespace FsLocalizationPlugin.Flammen
                 }
             }
 
-            // Add new characters to histogram
-            AddCharsToHistogram(modifiedData.Values, ref histogramDataOffSize, ref histogramSection);
-
             // Merge modified strings with existing strings
             foreach (KeyValuePair<uint, string> data in modifiedData)
             {
                 stringList[data.Key] = data.Value;
             }
             stringList.OrderBy(pair => pair.Key);
+
+            // Add all characters from all strings to histogram to ensure they can be encoded
+            // This fixes the issue where characters exist in histogram but lack proper shift mappings
+            AddCharsToHistogram(stringList.Values, ref histogramDataOffSize, ref histogramSection);
 
             // Write histogram chunk
             newHistogramData = WriteHistogramChunk(histogramDataOffSize, histogramSection, out histogramFileSize);
