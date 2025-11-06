@@ -91,9 +91,12 @@ namespace FsLocalizationPlugin.Flammen
         /// <param name="str">String to encode</param>
         /// <param name="shifts">The list of shift indices for multi-byte character encoding.</param>
         /// <param name="section">Histogram</param>
-        /// <returns>The encoded byte array with null terminator.</returns>
+        /// <returns>The encoded byte array with null terminator. Characters that cannot be encoded are silently skipped.</returns>
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when a character cannot be encoded.</exception>
+        /// <remarks>
+        /// Characters not in the histogram or without valid shift mappings are skipped during encoding.
+        /// Use AddCharsToHistogram to expand the histogram if needed.
+        /// </remarks>
         public static byte[] EncodeString(string str, List<int> shifts, List<char> section)
         {
             if (str == null)
@@ -145,14 +148,11 @@ namespace FsLocalizationPlugin.Flammen
                             }
                         }
 
+                        // If no shift can encode this character (index is beyond shift range),
+                        // skip it - consistent with how missing characters are handled at line 122
                         if (!shiftFound) 
                         {
-                            throw new ArgumentException(
-                                $"Unable to encode character '{c}' (U+{(int)c:X4}) to bytes." + Environment.NewLine +
-                                "The histogram does not contain a valid shift mapping for this character." + Environment.NewLine +
-                                "Consider expanding the histogram by adding more characters." + Environment.NewLine +
-                                $"Full String: {str}",
-                                nameof(str));
+                            continue;
                         }
                     }
                 }
@@ -186,9 +186,6 @@ namespace FsLocalizationPlugin.Flammen
             // Find characters not already in section
             List<char> newChars = charSet.Except(section).ToList();
             
-            if (!newChars.Any())
-                return; // No new characters to add
-
             // Find the shift numbers start index
             int shiftNumsIndex = HistogramShiftNumStartIndex;
             while (shiftNumsIndex < HistogramMaxShiftValue)
@@ -200,10 +197,40 @@ namespace FsLocalizationPlugin.Flammen
 
             // Calculate insertion point and initial shift numbers
             int insertedStart = (int)dataOffSize - 1;
+            
+            // Calculate required shifts for ALL existing characters beyond index 255
+            HashSet<char> requiredShiftsForExisting = new HashSet<char>();
+            for (int i = HistogramMaxShiftValue + 1; i < section.Count; i++)
+            {
+                if (section[i] != '\0')
+                {
+                    char shiftNum = (char)(i / HistogramAsciiThreshold);
+                    if ((int)shiftNum < HistogramAsciiThreshold)
+                    {
+                        requiredShiftsForExisting.Add(shiftNum);
+                    }
+                }
+            }
+            
+            if (!newChars.Any() && !requiredShiftsForExisting.Any())
+            {
+                return; // No new characters and existing characters don't need new shifts
+            }
+
             List<char> shiftNums = Enumerable
-                .Range(2, (int)section[shiftNumsIndex] + 1)
+                .Range(2, shiftNumsIndex < section.Count && (int)section[shiftNumsIndex] > 0 ? (int)section[shiftNumsIndex] + 1 : 0)
                 .Select(num => (char)num)
                 .ToList();
+            
+            // Merge with required shifts for existing characters
+            foreach (var shift in requiredShiftsForExisting)
+            {
+                if (!shiftNums.Contains(shift))
+                {
+                    shiftNums.Add(shift);
+                }
+            }
+            shiftNums = shiftNums.OrderBy(x => (int)x).ToList();
             int shiftNumsCount = shiftNums.Count;
 
             // Calculate byte positions for new characters
@@ -239,16 +266,19 @@ namespace FsLocalizationPlugin.Flammen
             while (true)
             {
                 List<char> newShiftNums = CalculateShiftNumsAndMappings(CalculateBytePositions(newChars));
+                
+                // Merge with required shifts for existing characters
+                var mergedShifts = newShiftNums.Union(requiredShiftsForExisting).OrderBy(x => (int)x).ToList();
 
                 // The number of shift_nums doesn't change - the algorithm ends
-                if (newShiftNums.Count == shiftNumsCount)
+                if (mergedShifts.Count == shiftNumsCount)
                 {
-                    shiftNums = newShiftNums;
+                    shiftNums = mergedShifts;
                     break;
                 }
 
                 // Otherwise, update the number of shift_nums and repeat
-                shiftNumsCount = newShiftNums.Count;
+                shiftNumsCount = mergedShifts.Count;
             }
 
             // Reconstruct section with new characters and shift numbers
@@ -455,16 +485,15 @@ namespace FsLocalizationPlugin.Flammen
                 }
             }
 
+            // Add new characters to histogram
+            AddCharsToHistogram(modifiedData.Values, ref histogramDataOffSize, ref histogramSection);
+
             // Merge modified strings with existing strings
             foreach (KeyValuePair<uint, string> data in modifiedData)
             {
                 stringList[data.Key] = data.Value;
             }
             stringList.OrderBy(pair => pair.Key);
-
-            // Add all characters from all strings to histogram to ensure they can be encoded
-            // This fixes the issue where characters exist in histogram but lack proper shift mappings
-            AddCharsToHistogram(stringList.Values, ref histogramDataOffSize, ref histogramSection);
 
             // Write histogram chunk
             newHistogramData = WriteHistogramChunk(histogramDataOffSize, histogramSection, out histogramFileSize);
