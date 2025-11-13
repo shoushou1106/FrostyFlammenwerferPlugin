@@ -16,6 +16,7 @@
   - It's recommanded to disable it by rename to `FsLocalizationPlugin.dll.disable` or other suffix that is not `.dll`
 - Download plugin from [GitHub Release](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
 - Place the downloaded file in the `Plugins` folder under **Frosty**.
+- (Optional) If you encountered any problems, try delete `Caches` folder under **Frosty**
 
 ## Todo
 - [x] Migrate all features
