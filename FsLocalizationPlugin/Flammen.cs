@@ -528,7 +528,7 @@ namespace FsLocalizationPlugin.Flammen
 
                 // Get histogram shifts for encoding
                 List<int> histogramShifts = new List<int>();
-                for (int i = HistogramShiftEndIndex; i > HistogramAsciiThreshold; i--)
+                for (int i = HistogramShiftEndIndex; i >= HistogramAsciiThreshold; i--)
                 {
                     if (histogramSection[i] < HistogramAsciiThreshold)
                     {
