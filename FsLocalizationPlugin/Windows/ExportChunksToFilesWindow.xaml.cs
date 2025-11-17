@@ -138,9 +138,9 @@ namespace FsLocalizationPlugin.Windows
                 {
                     Language = lang,
                     ExportBinary = false,
-                    BinaryPath = Config.Get($"LocalizedStrings_BinaryChunkExportPath", string.Empty),
+                    BinaryPath = Config.Get($"LocalizedStrings_BinaryChunkExportPath", string.Empty), // Compatible with FrostySaveFileDialog key
                     ExportHistogram = false,
-                    HistogramPath = Config.Get($"LocalizedStrings_HistogramChunkExportPath", string.Empty)
+                    HistogramPath = Config.Get($"LocalizedStrings_HistogramChunkExportPath", string.Empty) // Compatible with FrostySaveFileDialog key
                 };
 
                 if (!string.IsNullOrWhiteSpace(opt.BinaryPath))

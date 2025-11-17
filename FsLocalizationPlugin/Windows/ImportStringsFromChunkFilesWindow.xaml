@@ -13,6 +13,8 @@
         x:Name="importStringsFromChunkFilesWindow"
         WindowStartupLocation="CenterOwner"
                            AllowDrop="True"
+        DragEnter="Window_DragEnter"
+        DragLeave="Window_DragLeave"
         >
 
     <Window.Resources>
@@ -30,13 +32,13 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="{StaticResource ListBackground}"/>
-        <StackPanel x:Name="MainStackPanel" Visibility="Visible" Grid.Row="0" Margin="5, 10, 5, 10">
+        <StackPanel x:Name="MainStackPanel" Grid.Row="0" Margin="5, 10, 5, 10">
             <WrapPanel Orientation="Horizontal" Margin="3">
                 <Label Width="Auto">
                     <Label.Content>
                         <StackPanel Orientation="Horizontal">
                             <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Database.png"
-                    RenderOptions.BitmapScalingMode="HighQuality"/>
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
                             <TextBlock Foreground="{StaticResource FontColor}" Text="Binary Strings: "/>
                         </StackPanel>
                     </Label.Content>
@@ -45,7 +47,7 @@
                     <Button.Content>
                         <StackPanel Orientation="Horizontal">
                             <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
-                    RenderOptions.BitmapScalingMode="HighQuality"/>
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
                             <TextBlock Foreground="{StaticResource FontColor}" Text="Browse"/>
                         </StackPanel>
                     </Button.Content>
@@ -72,7 +74,7 @@
                     <Label.Content>
                         <StackPanel Orientation="Horizontal">
                             <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Grid.png"
-        RenderOptions.BitmapScalingMode="HighQuality"/>
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
                             <TextBlock Foreground="{StaticResource FontColor}" Text="Histogram: "/>
                         </StackPanel>
                     </Label.Content>
@@ -81,7 +83,7 @@
                     <Button.Content>
                         <StackPanel Orientation="Horizontal">
                             <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
-        RenderOptions.BitmapScalingMode="HighQuality"/>
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
                             <TextBlock Foreground="{StaticResource FontColor}" Text="Browse"/>
                         </StackPanel>
                     </Button.Content>
@@ -181,7 +183,7 @@
                 </WrapPanel>
             </StackPanel>
         </StackPanel>
-        <Grid Grid.Row="1" Height="38">
+        <Grid x:Name="NormalFooterGrid" Grid.Row="1" Height="38">
             <Grid Margin="5">
                 <DockPanel LastChildFill="False">
                     <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Click="CancelButton_Click">
@@ -199,7 +201,7 @@
                         <Button.Content>
                             <StackPanel Orientation="Horizontal">
                                 <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Import.png"
-                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
                                 <TextBlock Foreground="{StaticResource FontColor}" Text="Import"/>
                             </StackPanel>
                         </Button.Content>
@@ -216,6 +218,61 @@
                         </Button.Content>
                     </Button>
 
+                </DockPanel>
+            </Grid>
+        </Grid>
+
+        <Grid x:Name="DragOverlayGrid" Grid.Row="0" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="1"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid x:Name="BinaryDropZone" Grid.Column="0" AllowDrop="True" Drop="BinaryDropZone_Drop" Background="{StaticResource ListBackground}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="1" Text="Drop here for" Foreground="{StaticResource FontColor}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="2" Text="Binary Strings" Foreground="{StaticResource FontColor}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+            <Border Grid.Column="1" Background="{StaticResource ControlBackground}"/>
+            <Grid x:Name="HistogramDropZone" Grid.Column="2" AllowDrop="True" Drop="HistogramDropZone_Drop" Background="{StaticResource ListBackground}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="1" Text="Drop here for" Foreground="{StaticResource FontColor}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="2" Text="Histogram" Foreground="{StaticResource FontColor}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+        </Grid>
+
+        <Grid x:Name="DragFooterGrid" Grid.Row="1" Height="38" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid Margin="5">
+                <DockPanel LastChildFill="False">
+                    <Button x:Name="BackFromDragButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Click="BackFromDragButton_Click">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0,1,5,0" Text="&#xE72B;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Back"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
                 </DockPanel>
             </Grid>
         </Grid>
