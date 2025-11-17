@@ -56,7 +56,19 @@ namespace FsLocalizationPlugin
 
         public IEnumerable<string> GetResourceActions(string name, byte[] data)
         {
-            return new List<string>();
+            ModifiedFsLocalizationAsset newFs = (ModifiedFsLocalizationAsset)ModifiedResource.Read(data);
+            List<string> actions = new List<string>();
+            string AssetName = name;
+            foreach (uint stringId in newFs.EnumerateStrings())
+            {
+                string resourceName = stringId.ToString("x8");
+                string resourceType = "ebx";
+                string action = "Add";
+
+                actions.Add(AssetName + " [" + resourceName + "];" + resourceType + ";" + action);
+            }
+
+            return actions;
         }
 
         public object Load(object existing, byte[] newData)
