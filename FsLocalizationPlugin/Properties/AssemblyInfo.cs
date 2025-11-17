@@ -22,7 +22,7 @@ using System.Windows;
 [assembly: Guid("4b612468-9b6a-4304-88a5-055c3575eb3d")]
 
 [assembly: PluginDisplayName("Flammenwerfer")] // Comment this line [For 1.0.7]
-//[assembly: PluginDisplayName("Flammenwerfer for 1.0.7")] Uncomment this line [For 1.0.7]
+//[assembly: PluginDisplayName("Flammenwerfer for 1.0.7")] // Uncomment this line [For 1.0.7]
 [assembly: PluginAuthor("shoushou1106")]
 [assembly: PluginVersion("0.2.2")]
 
