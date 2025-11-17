@@ -11,7 +11,7 @@ namespace FsLocalizationPlugin.Extensions
         public override string SubLevelMenuName => "Flammenwerfer";
 
         public override string MenuItemName => "Add String (WIP)";
-        public override ImageSource Icon => new ImageSourceConverter().ConvertFromString("pack://application:,,,/FrostyEditor;component/Images/Export.png") as ImageSource;
+        public override ImageSource Icon => new ImageSourceConverter().ConvertFromString("pack://application:,,,/FrostyEditor;component/Images/Add.png") as ImageSource;
 
         public override RelayCommand MenuItemClicked => new RelayCommand((o) =>
         {
