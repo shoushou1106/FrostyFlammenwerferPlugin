@@ -10,6 +10,9 @@
 ## About
 - **FlammenwerferPlugin** is modified from the `FsLocalizationPlugin` (Sorry for GalaxyMan2015 and Mophead), and designed to replace it. They are compatible with each other's projects and mods, but cannot be used at the same time. This plugin supports automatically modifying the histogram to allowing the game to display unsupported characters, and merging multiple mods that modify LocalizedString, even if they were exported with `FsLocalizationPlugin`.
 - Feel free to include this plugin with your mod distribution, but it is better to indicate the GitHub link to this repo and [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/), also remember to keep it updated.
+- Support export chunks to files
+- Support import strings from chunk files
+- Support delete strings (Experimental)
 
 ## Install
 - Delete or disable `FsLocalizationPlugin.dll` from your `Plugins` folder under **Frosty**.
@@ -17,11 +20,6 @@
 - Download plugin from [GitHub Release](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
 - Place the downloaded file in the `Plugins` folder under **Frosty**.
 - (Optional) If you encountered any problems, try delete `Caches` folder under **Frosty**
-
-## Todo
-- [x] Migrate all features
-- [ ] Show diff
-- [ ] Export chunk
 
 ## Build
 > [!WARNING]
