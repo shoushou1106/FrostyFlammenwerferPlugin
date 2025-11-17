@@ -40,3 +40,4 @@ using Frosty.Core;
 [assembly: RegisterLocalizedStringDatabase(typeof(FsLocalizationStringDatabase))]
 
 [assembly: RegisterMenuExtension(typeof(ExportChunksToFilesMenuExtension), PluginManagerType.Editor)]
+[assembly: RegisterMenuExtension(typeof(ImportStringsFromChunkFilesMenuExtension), PluginManagerType.Editor)]

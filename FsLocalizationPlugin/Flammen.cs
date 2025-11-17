@@ -288,6 +288,35 @@ namespace FsLocalizationPlugin.Flammen
             if (stringsBinaryChunk == null)
                 throw new ArgumentNullException(nameof(stringsBinaryChunk));
 
+            List<ushort> histogramSection;
+            // Read histogram chunk
+            using (var stream = App.AssetManager.GetChunk(histogramChunk))
+            {
+                histogramSection = ReadHistogram(stream);
+            }
+
+            // Read strings binary chunk
+            using (var stream = App.AssetManager.GetChunk(stringsBinaryChunk))
+            {
+                return ReadStringsBinary(stream, histogramSection);
+            }
+        }
+
+        /// <summary>
+        /// Reads and decodes all localized strings from histogram and strings binary chunks.
+        /// </summary>
+        /// <param name="histogramChunk">The histogram chunk containing character mappings.</param>
+        /// <param name="stringsBinaryChunk">The strings binary chunk containing encoded strings.</param>
+        /// <returns>Dictionary mapping string hash to decoded strings.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
+        /// <exception cref="InvalidDataException">Thrown when chunk format is invalid.</exception>
+        public static Dictionary<uint, string> ReadStrings(Stream histogramChunk, Stream stringsBinaryChunk)
+        {
+            if (histogramChunk == null)
+                throw new ArgumentNullException(nameof(histogramChunk));
+            if (stringsBinaryChunk == null)
+                throw new ArgumentNullException(nameof(stringsBinaryChunk));
+
             // Read histogram chunk
             List<ushort> histogramSection = ReadHistogram(histogramChunk);
 
@@ -298,11 +327,11 @@ namespace FsLocalizationPlugin.Flammen
         /// <summary>
         /// Reads the histogram section from a chunk.
         /// </summary>
-        private static List<ushort> ReadHistogram(ChunkAssetEntry histogramChunk)
+        private static List<ushort> ReadHistogram(Stream histogramChunk)
         {
             List<ushort> histogramSection = new List<ushort>();
             
-            using (NativeReader reader = new NativeReader(App.AssetManager.GetChunk(histogramChunk)))
+            using (NativeReader reader = new NativeReader(histogramChunk))
             {
                 uint magic = reader.ReadUInt();
                 if (magic != HistogramMagic)
@@ -324,11 +353,11 @@ namespace FsLocalizationPlugin.Flammen
         /// <summary>
         /// Reads and decodes strings from the strings binary chunk.
         /// </summary>
-        private static Dictionary<uint, string> ReadStringsBinary(ChunkAssetEntry stringsBinaryChunk, List<ushort> histogramSection)
+        private static Dictionary<uint, string> ReadStringsBinary(Stream stringsBinaryChunk, List<ushort> histogramSection)
         {
             Dictionary<uint, string> stringList = new Dictionary<uint, string>();
             
-            using (NativeReader reader = new NativeReader(App.AssetManager.GetChunk(stringsBinaryChunk)))
+            using (NativeReader reader = new NativeReader(stringsBinaryChunk))
             {
                 // Read and validate header
                 uint magic = reader.ReadUInt();
