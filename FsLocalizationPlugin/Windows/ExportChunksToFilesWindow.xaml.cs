@@ -197,7 +197,7 @@ namespace FsLocalizationPlugin.Windows
 
         private void UnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            FrostyExceptionBox.Show(e.Exception, "Export Chunks to Files - Flammenwerfer Plugin");
+            FrostyExceptionBox.Show(e.Exception, "Export Chunks to Files - Flammenwerfer");
             DialogResult = false;
             Close();
         }

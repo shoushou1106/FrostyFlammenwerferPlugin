@@ -129,7 +129,7 @@ namespace FsLocalizationPlugin.Windows
 
         private void UnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            FrostyExceptionBox.Show(e.Exception, "Import Strings from Chunk Files - Flammenwerfer Plugin");
+            FrostyExceptionBox.Show(e.Exception, "Import Strings from Chunk Files - Flammenwerfer");
             DialogResult = false;
             Close();
         }
@@ -196,17 +196,17 @@ namespace FsLocalizationPlugin.Windows
             // Validation
             if (!File.Exists(HistogramFilePath) && !File.Exists(BinaryFilePath))
             {
-                FrostyMessageBox.Show("Histogram file and Binary Strings file not found", "Import Strings from Chunk Files - Flammenwerfer Plugin", MessageBoxButton.OK);
+                FrostyMessageBox.Show("Histogram file and Binary Strings file not found", "Import Strings from Chunk Files - Flammenwerfer", MessageBoxButton.OK);
                 return;
             }
             if (!File.Exists(HistogramFilePath))
             {
-                FrostyMessageBox.Show("Histogram file not found", "Import Strings from Chunk Files - Flammenwerfer Plugin", MessageBoxButton.OK);
+                FrostyMessageBox.Show("Histogram file not found", "Import Strings from Chunk Files - Flammenwerfer", MessageBoxButton.OK);
                 return;
             }
             if (!File.Exists(BinaryFilePath))
             {
-                FrostyMessageBox.Show("Binary Strings file not found", "Import Strings from Chunk Files - Flammenwerfer Plugin", MessageBoxButton.OK);
+                FrostyMessageBox.Show("Binary Strings file not found", "Import Strings from Chunk Files - Flammenwerfer", MessageBoxButton.OK);
                 return;
             }
 
