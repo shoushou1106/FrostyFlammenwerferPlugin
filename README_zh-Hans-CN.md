@@ -9,7 +9,7 @@
 `Flammenwerfer Plugin` 是 [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/) 的 [Frosty v1](https://github.com/CadeEvs/FrostyToolsuite) 插件移植版。
 
 ## 关于
-- 此插件从 `FsLocalizationPlugin` 修改而来（对不起，GalaxyMan2015 和 Mophead），并旨在代替它。它们不能同时使用，但是兼容对方的工程和 Mod。
+- 此插件从 `FsLocalizationPlugin` 修改而来（对不起，GalaxyMan2015 和 Mophead），并旨在代替它。它们兼容对方的工程和 Mod，但不能同时使用。
 - 此插件支持自动修改码表（Histogram）从而让游戏显示不支持的字符。即使 Mod 是用 `FsLocalizationPlugin` 导出的，或者工程是用 `FsLocalizationPlugin` 保存的。反之亦然，但 `FsLocalizationPlugin` 不支持修改码表。
 - 欢迎将此插件随附您的 Mod 一起分发，但最好标注此 GitHub 仓库链接，并保持更新。记得遵守 GPL-3.0。
 - 支持将字符串导出成 Chunk。
