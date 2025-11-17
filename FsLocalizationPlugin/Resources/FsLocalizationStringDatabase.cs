@@ -100,14 +100,7 @@ namespace FsLocalizationPlugin
         /// <param name="id">The hash ID of the string to remove.</param>
         public void RemoveString(uint id)
         {
-            if (strings.ContainsKey(id))
-            {
-                strings.Remove(id);
-            }
-            else
-            {
-                App.Logger.Log("String " + id.ToString("X") + " is not a modified string");
-            }
+            strings.Remove(id);
         }
 
         public string GetString(uint id)
@@ -311,6 +304,12 @@ namespace FsLocalizationPlugin
         public bool isStringEdited(uint id)
         {
             return loadedDatabase.EnumerateStrings().Contains(id);
+        }
+
+        public void RemoveString(uint id)
+        {
+            loadedDatabase.RemoveString(id);
+            App.AssetManager.ModifyEbx(App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid).Name, loadedDatabase);
         }
     }
 }
