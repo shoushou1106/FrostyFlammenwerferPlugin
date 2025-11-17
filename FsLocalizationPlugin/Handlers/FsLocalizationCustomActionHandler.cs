@@ -100,8 +100,18 @@ namespace FsLocalizationPlugin
                     ChunkAssetEntry newHistogramChunkEntry = new ChunkAssetEntry();
                     ChunkAssetEntry newStringChunkEntry = new ChunkAssetEntry();
 
+                    List<uint> stringsToRemove = new List<uint>();
+                    try
+                    {
+                        stringsToRemove = modFs.stringsToRemove;
+                    }
+                    catch
+                    {
+                        stringsToRemove = new List<uint>();
+                    }
+
                     // Modify Chunks
-                    Flammen.Flammen.WriteAll(am, histogramEntry, stringChunkEntry, modFs.strings, modFs.stringsToRemove,
+                    Flammen.Flammen.WriteAll(am, histogramEntry, stringChunkEntry, modFs.strings, stringsToRemove,
                         out byte[] newHistogramData,
                         out byte[] newStringData);
 
