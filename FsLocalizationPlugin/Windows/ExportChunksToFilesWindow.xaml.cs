@@ -149,7 +149,7 @@ namespace FsLocalizationPlugin.Windows
                 }
                 if (!string.IsNullOrWhiteSpace(opt.HistogramPath))
                 {
-                    opt.BinaryPath += $"\\{lang}_HistogramChunk.chunk";
+                    opt.HistogramPath += $"\\{lang}_HistogramChunk.chunk";
                 }
 
                 // Track changes to re-evaluate CanExport
@@ -321,7 +321,7 @@ namespace FsLocalizationPlugin.Windows
                             ChunkAssetEntry histogramEntry = App.AssetManager.GetChunkEntry(localizedText.HistogramChunk);
                             ChunkAssetEntry stringChunkEntry = App.AssetManager.GetChunkEntry(localizedText.BinaryChunk);
 
-                            Flammen.Flammen.WriteAll(App.AssetManager, histogramEntry, stringChunkEntry, modifiedData,
+                            Flammen.Flammen.WriteAll(App.AssetManager, histogramEntry, stringChunkEntry, modifiedData, new List<uint>(),
                                 out byte[] newHistogramData,
                                 out byte[] newStringData);
 

@@ -44,6 +44,8 @@ namespace FsLocalizationPlugin
     {
         public Dictionary<uint, string> strings = new Dictionary<uint, string>();
 
+        public List<uint> stringsToRemove = new List<uint>();
+
         public ModifiedFsLocalizationAsset()
         {
         }
@@ -96,12 +98,22 @@ namespace FsLocalizationPlugin
         }
 
         /// <summary>
-        /// Removes a string with the specified ID.
+        /// Revert a string with the specified ID.
         /// </summary>
-        /// <param name="id">The hash ID of the string to remove.</param>
+        /// <param name="id">The hash ID of the string to revert.</param>
         public void RemoveString(uint id)
         {
             strings.Remove(id);
+        }
+
+        /// <summary>
+        /// Remove a string with the specified ID.
+        /// </summary>
+        /// <param name="id">The hash ID of the string to remove.</param>
+        public void DeleteString(uint id)
+        {
+            strings.Remove(id);
+            stringsToRemove.Add(id);
         }
 
         public string GetString(uint id)
@@ -156,6 +168,10 @@ namespace FsLocalizationPlugin
         {
             modified.RemoveString(id);
         }
+        public void DeleteString(uint id)
+        {
+            modified.DeleteString(id);
+        }
 
         public IEnumerable<uint> EnumerateStrings()
         {
@@ -165,6 +181,11 @@ namespace FsLocalizationPlugin
         public Dictionary<uint, string> GetStrings()
         {
             return modified.strings;
+        }
+
+        public List<uint> GetStringsToRemove()
+        {
+            return modified.stringsToRemove;
         }
     }
 
@@ -225,6 +246,10 @@ namespace FsLocalizationPlugin
                 {
                     // only load if chunk exists
                     strings = strings.Concat(Flammen.Flammen.ReadStrings(histogramEntry, chunkEntry)).ToDictionary(k => k.Key, v => v.Value);
+                    foreach (uint key in loadedDatabase.GetStringsToRemove())
+                    {
+                        strings.Remove(key);
+                    }
                 }
             }
         }
@@ -307,9 +332,10 @@ namespace FsLocalizationPlugin
             return loadedDatabase.EnumerateStrings().Contains(id);
         }
 
-        public void RemoveString(uint id)
+        public void DeleteString(uint id)
         {
-            loadedDatabase.RemoveString(id);
+            loadedDatabase.DeleteString(id);
+            strings.Remove(id);
             App.AssetManager.ModifyEbx(App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid).Name, loadedDatabase);
         }
     }

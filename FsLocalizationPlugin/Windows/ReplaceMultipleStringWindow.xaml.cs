@@ -136,7 +136,7 @@ namespace FsLocalizationPlugin.Windows
                                 {
                                     if (Regex.IsMatch(value, CurrentValueTextBox.Text))
                                     {
-                                        db.RemoveString(stringid);
+                                        db.DeleteString(stringid);
                                         totalDelete++;
                                     }
                                 }
@@ -144,7 +144,7 @@ namespace FsLocalizationPlugin.Windows
                                 {
                                     if (Regex.IsMatch(value, pattern, options))
                                     {
-                                        db.RemoveString(stringid);
+                                        db.DeleteString(stringid);
                                         totalDelete++;
                                     }
                                 }
@@ -157,7 +157,7 @@ namespace FsLocalizationPlugin.Windows
                                 {
                                     if (Regex.IsMatch(value, CurrentValueTextBox.Text))
                                     {
-                                        db.RemoveString(stringid);
+                                        db.DeleteString(stringid);
                                         totalDelete++;
                                     }
                                 }
@@ -165,7 +165,7 @@ namespace FsLocalizationPlugin.Windows
                                 {
                                     if (Regex.IsMatch(value, pattern, options))
                                     {
-                                        db.RemoveString(stringid);
+                                        db.DeleteString(stringid);
                                         totalDelete++;
                                     }
                                 }
@@ -178,8 +178,8 @@ namespace FsLocalizationPlugin.Windows
 
             }
 
-            App.Logger.LogWarning("Deleted strings cannot be reverted. You need to revert the whole database to get them back.");
-            App.Logger.Log($"Deleted {totalDelete} strings");
+            App.Logger.LogWarning("Removed strings cannot be reverted. You need to revert the whole database to get them back. This is a experimental function.");
+            App.Logger.Log($"Removed {totalDelete} strings");
             DialogResult = true;
             Close();
         }

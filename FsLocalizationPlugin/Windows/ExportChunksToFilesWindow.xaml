@@ -29,7 +29,7 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="{StaticResource ListBackground}"/>
-        <Label x:Name="NoModifiedLanguageFoundLable" Visibility="Collapsed" Grid.Row="0" Margin="5, 10, 5, 10" Content="No modified language found. This window is designed to export modified language. Please close this window."/>
+        <TextBlock x:Name="NoModifiedLanguageFoundLable" Visibility="Collapsed" Grid.Row="0" Foreground="{StaticResource FontColor}" Margin="5, 10, 5, 10" TextWrapping="WrapWithOverflow" Text="No modified language found. This window is designed to export modified strings. Please close this window."/>
         <StackPanel x:Name="MainStackPanel" Visibility="Visible" Grid.Row="0" Margin="5, 10, 5, 10">
             <WrapPanel Orientation="Horizontal" Margin="3">
                 <Label Width="Auto">

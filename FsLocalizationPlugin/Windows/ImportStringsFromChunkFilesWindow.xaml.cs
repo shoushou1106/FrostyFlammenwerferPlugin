@@ -63,8 +63,6 @@ namespace FsLocalizationPlugin.Windows
             }
         }
 
-        public List<ComboBoxItem> LanguagesComboBoxItems { get; set; }
-
         public bool CanImport => !string.IsNullOrEmpty(BinaryFilePath) && !string.IsNullOrEmpty(HistogramFilePath);
 
         public ImportStringsFromChunkFilesWindow(Window owner)
@@ -80,20 +78,9 @@ namespace FsLocalizationPlugin.Windows
 
             Dispatcher.UnhandledException += UnhandledException;
 
-            LanguagesComboBoxItems = new List<ComboBoxItem>();
-            foreach (string lang in GetLocalizedLanguages())
-            {
-                LanguagesComboBoxItems.Add(new ComboBoxItem()
-                {
-                    Name = lang,
-                    Content = lang,
-                });
-            }
-
-            // Set manually to avoid exception
-            LanguageComboBox.ItemsSource = LanguagesComboBoxItems;
-            if (LanguagesComboBoxItems.Count > 0)
-                LanguageComboBox.SelectedIndex = 0;
+            LanguageComboBox.Items.Clear();
+            GetLocalizedLanguages().ForEach(x => LanguageComboBox.Items.Add(x));
+            LanguageComboBox.SelectedIndex = LanguageComboBox.Items.IndexOf(Config.Get<string>("Language", "English", ConfigScope.Game));
         }
 
         public static List<string> GetLocalizedLanguages()
@@ -227,7 +214,7 @@ namespace FsLocalizationPlugin.Windows
                     bool noOverwriteSameStringsCheckBox = false;
                     Dispatcher.Invoke(() =>
                     {
-                        lang = (LanguageComboBox.SelectedItem as ComboBoxItem).Name ?? "English";
+                        lang = LanguageComboBox.SelectedItem.ToString() ?? "English";
                         noImportEmptyOrNullCheckBox = NoImportEmptyOrNullCheckBox.IsChecked ?? false;
                         deleteExistStringsCheckBox = DeleteExistStringsCheckBox.IsChecked ?? false;
                         noOverwriteSameStringsCheckBox = NoOverwriteSameStringsCheckBox.IsChecked ?? false;
@@ -244,11 +231,11 @@ namespace FsLocalizationPlugin.Windows
                         ReportProgress(task.TaskLogger, 0, 1, currentPart: 1, totalParts);
                         cancelToken.Token.ThrowIfCancellationRequested();
                         Thread.Sleep(1);
-                        App.Logger.LogWarning("Deleted strings cannot be reverted. You need to revert the whole database to get them back.");
+                        App.Logger.LogWarning("Removed strings cannot be reverted. You need to revert the whole database to get them back. This is a experimental function.");
                         int totalDelete = db.EnumerateStrings().Count();
                         foreach (uint id in db.EnumerateStrings())
                         {
-                            (db as FsLocalizationStringDatabase).RemoveString(id);
+                            (db as FsLocalizationStringDatabase).DeleteString(id);
                             cancelToken.Token.ThrowIfCancellationRequested();
                             ReportProgress(task.TaskLogger, ++currentDelete, totalDelete, currentPart: 1, totalParts);
                         }
@@ -293,7 +280,7 @@ namespace FsLocalizationPlugin.Windows
                     if (currentDelete == 0)
                         App.Logger.Log($"Import strings from chunk files completed. Imported {actualImportedCount} strings to language {lang}");
                     else
-                        App.Logger.Log($"Import strings from chunk files completed. Deleted {currentDelete} strings, imported {actualImportedCount} strings to language {lang}");
+                        App.Logger.Log($"Import strings from chunk files completed. Removed {currentDelete} strings, imported {actualImportedCount} strings to language {lang}");
                 }
                 catch (OperationCanceledException)
                 {

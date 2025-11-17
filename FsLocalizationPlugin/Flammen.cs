@@ -408,7 +408,7 @@ namespace FsLocalizationPlugin.Flammen
         /// <param name="newStringData">Output parameter containing the new strings binary chunk data.</param>
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
         /// <exception cref="InvalidDataException">Thrown when chunk format is invalid.</exception>
-        public static void WriteAll(AssetManager am, ChunkAssetEntry histogramChunk, ChunkAssetEntry stringsBinaryChunk, Dictionary<uint, string> modifiedData, out byte[] newHistogramData, out byte[] newStringData)
+        public static void WriteAll(AssetManager am, ChunkAssetEntry histogramChunk, ChunkAssetEntry stringsBinaryChunk, Dictionary<uint, string> modifiedData, List<uint> stringToRemove, out byte[] newHistogramData, out byte[] newStringData)
         {
             if (histogramChunk == null)
                 throw new ArgumentNullException(nameof(histogramChunk));
@@ -491,6 +491,10 @@ namespace FsLocalizationPlugin.Flammen
             foreach (KeyValuePair<uint, string> data in modifiedData)
             {
                 stringList[data.Key] = data.Value;
+            }
+            foreach (uint id in stringToRemove)
+            {
+                stringList.Remove(id);
             }
             stringList.OrderBy(pair => pair.Key);
 
