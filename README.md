@@ -3,7 +3,7 @@
   
   
 # Frosty Flammenwerfer Plugin
-**English** | [简体中文（中国）](./README_zh-Hans-CN.md)
+**English (United States)** | [简体中文（中国）](./README_zh-Hans-CN.md)
 > 🔥 ***Flammenwerfer Plugin***, where ❄️ ***Frosty*** meets the dance of inferno.
 
 `Flammenwerfer Plugin` is a [Frosty v1](https://github.com/CadeEvs/FrostyToolsuite) plugin adaptation of [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/).
