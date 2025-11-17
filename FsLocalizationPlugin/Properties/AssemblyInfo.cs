@@ -44,3 +44,4 @@ using Frosty.Core;
 [assembly: RegisterMenuExtension(typeof(ReplaceMultipleStringMenuExtension), PluginManagerType.Editor)]
 [assembly: RegisterMenuExtension(typeof(ImportStringsFromChunkFilesMenuExtension), PluginManagerType.Editor)]
 [assembly: RegisterMenuExtension(typeof(ExportChunksToFilesMenuExtension), PluginManagerType.Editor)]
+[assembly: RegisterMenuExtension(typeof(CheckCompatibilityMenuExtension), PluginManagerType.Editor)]
