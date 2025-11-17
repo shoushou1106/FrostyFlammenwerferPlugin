@@ -101,7 +101,7 @@
                          IsReadOnly="True"
                     >
                     <TextBox.Style>
-                        <Style TargetType="TextBox">
+                        <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
                             <Setter Property="Visibility" Value="Collapsed"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding ShowIdToHash, RelativeSource={RelativeSource AncestorType=Window}, UpdateSourceTrigger=PropertyChanged}" Value="True">

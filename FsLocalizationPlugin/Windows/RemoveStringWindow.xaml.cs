@@ -37,6 +37,8 @@ namespace FsLocalizationPlugin.Windows
                     OnPropertyChanged(nameof(HashOrId));
                     OnPropertyChanged(nameof(StringValue));
                     OnPropertyChanged(nameof(PreviewTextBoxBorderBrush));
+                    OnPropertyChanged(nameof(ShowIdToHash));
+                    OnPropertyChanged(nameof(IdToHash));
                     OnPropertyChanged(nameof(CanRemove));
                 }
             }
