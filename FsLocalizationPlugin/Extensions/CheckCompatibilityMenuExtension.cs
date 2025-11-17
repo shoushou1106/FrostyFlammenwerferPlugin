@@ -11,7 +11,7 @@ namespace FsLocalizationPlugin.Extensions
 
         public override string SubLevelMenuName => "Flammenwerfer";
 
-        public override string MenuItemName => "Check Compatibility";
+        public override string MenuItemName => "Check Compatibility (WIP)";
         public override ImageSource Icon => new ImageSourceConverter().ConvertFromString("pack://application:,,,/FsLocalizationPlugin;component/Images/Tick_White.png") as ImageSource;
 
         public override RelayCommand MenuItemClicked => new RelayCommand((o) =>
