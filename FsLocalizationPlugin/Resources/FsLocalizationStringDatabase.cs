@@ -7,6 +7,7 @@ using FrostySdk.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 
 //using FrostySdk.Managers.Entries; // Uncomment this line [For 1.0.7]
 
@@ -291,13 +292,13 @@ namespace FsLocalizationPlugin
 
         public void AddStringWindow()
         {
-            AddStringWindow win = new AddStringWindow();
+            AddStringWindow win = new AddStringWindow(Application.Current.MainWindow);
             win.ShowDialog();
         }
 
         public void BulkReplaceWindow()
         {
-            ReplaceMultipleStringWindow win = new ReplaceMultipleStringWindow();
+            ReplaceMultipleStringWindow win = new ReplaceMultipleStringWindow(Application.Current.MainWindow);
             win.ShowDialog();
         }
 
