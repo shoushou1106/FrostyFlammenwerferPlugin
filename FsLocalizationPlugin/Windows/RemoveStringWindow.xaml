@@ -1,4 +1,4 @@
-﻿<ctrl:FrostyDockableWindow x:Class="FsLocalizationPlugin.Windows.ImportStringsFromChunkFilesWindow"
+﻿<ctrl:FrostyDockableWindow x:Class="FsLocalizationPlugin.Windows.RemoveStringWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,8 +9,8 @@
         xmlns:fdev="FrostyDeveloper"
         mc:Ignorable="d"
         UseLayoutRounding="True"
-        Title="Import Strings from Chunk Files - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
-        x:Name="importStringsFromChunkFilesWindow"
+        Title="Remove String - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
+        x:Name="removeStringWindow"
         WindowStartupLocation="CenterOwner"
                            AllowDrop="True"
         >
@@ -145,7 +145,7 @@
                         <Label Width="Auto">
                             <Label.Content>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Foreground="{StaticResource FontColor}" Text="Remove all existing strings: "/>
+                                    <TextBlock Foreground="{StaticResource FontColor}" Text="Delete all existing strings: "/>
                                 </StackPanel>
                             </Label.Content>
                         </Label>

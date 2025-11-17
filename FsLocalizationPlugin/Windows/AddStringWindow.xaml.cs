@@ -12,10 +12,10 @@ namespace FsLocalizationPlugin.Windows
 
         public FsLocalizationStringDatabase db = LocalizedStringDatabase.Current as FsLocalizationStringDatabase;
 
-        public AddStringWindow()
+        public AddStringWindow(Window owner)
         {
             InitializeComponent();
-            Owner = Application.Current.MainWindow;
+            Owner = owner;
         }
 
         private void cancelButton_Click(object sender, RoutedEventArgs e)

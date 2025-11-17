@@ -39,5 +39,8 @@ using Frosty.Core;
 [assembly: RegisterCustomHandler(CustomHandlerType.Ebx, typeof(FsLocalizationCustomActionHandler), ebxType: "UITextDatabase")]
 [assembly: RegisterLocalizedStringDatabase(typeof(FsLocalizationStringDatabase))]
 
-[assembly: RegisterMenuExtension(typeof(ExportChunksToFilesMenuExtension), PluginManagerType.Editor)]
+[assembly: RegisterMenuExtension(typeof(AddStringMenuExtension), PluginManagerType.Editor)]
+[assembly: RegisterMenuExtension(typeof(RemoveStringMenuExtension), PluginManagerType.Editor)]
+[assembly: RegisterMenuExtension(typeof(ReplaceMultipleStringMenuExtension), PluginManagerType.Editor)]
 [assembly: RegisterMenuExtension(typeof(ImportStringsFromChunkFilesMenuExtension), PluginManagerType.Editor)]
+[assembly: RegisterMenuExtension(typeof(ExportChunksToFilesMenuExtension), PluginManagerType.Editor)]

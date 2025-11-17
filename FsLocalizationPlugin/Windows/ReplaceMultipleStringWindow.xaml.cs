@@ -18,23 +18,16 @@ namespace FsLocalizationPlugin.Windows
         public string ProfileName { get; set; }
 
         public FsLocalizationStringDatabase db = LocalizedStringDatabase.Current as FsLocalizationStringDatabase;
-        public ReplaceMultipleStringWindow()
+        public ReplaceMultipleStringWindow(Window owner)
         {
             InitializeComponent();
-            Owner = Application.Current.MainWindow;
+            Owner = owner;
         }
 
         private void cancelButton_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
             Close();
-        }
-        private uint HashStringId(string stringId)
-        {
-            uint result = 0xFFFFFFFF;
-            for (int i = 0; i < stringId.Length; i++)
-                result = stringId[i] + 33 * result;
-            return result;
         }
         
         private void addButton_Click(object sender, RoutedEventArgs e)
