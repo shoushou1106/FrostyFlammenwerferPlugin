@@ -9,18 +9,20 @@
 `Flammenwerfer Plugin` is a [Frosty v1](https://github.com/CadeEvs/FrostyToolsuite) plugin adaptation of [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/).
 
 ## About
-- **FlammenwerferPlugin** is modified from the `FsLocalizationPlugin` (Sorry for GalaxyMan2015 and Mophead), and designed to replace it. They are compatible with each other's projects and mods, but cannot be used at the same time. This plugin supports automatically modifying the histogram to allowing the game to display unsupported characters, and merging multiple mods that modify LocalizedString, even if they were exported with `FsLocalizationPlugin`.
-- Feel free to include this plugin with your mod distribution, but it is better to indicate the GitHub link to this repo and [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/), also remember to keep it updated.
-- Support export chunks to files
-- Support import strings from chunk files
-- Support delete strings (Experimental)
+- **FlammenwerferPlugin** is modified from the `FsLocalizationPlugin` (Sorry for GalaxyMan2015 and Mophead), and designed to replace it. They are compatible with each other's projects and mods, but cannot be used at the same time.
+- This plugin supports automatically modifying histogram to allowing the game to display unsupported characters。Even the mod were exported by `FsLocalizationPlugin`, or project is saved by `FsLocalizationPlugin`, vice versa, but `FsLocalizationPlugin` do not support modifying histogram.
+- Feel free to include this plugin with your mod distribution, but it is better to indicate the GitHub link to this repo and keep it updated. Remember to follow GPL-3.0.
+- Support export chunks to files.
+- Support import strings from chunk files.
+- Support delete strings (Experimental).
 
 ## Install
-- Delete or disable `FsLocalizationPlugin.dll` from your `Plugins` folder under **Frosty**.
-  - It's recommanded to disable it by rename to `FsLocalizationPlugin.dll.disable` or other suffix that is not `.dll`
-- Download plugin from [GitHub Release](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
-- Place the downloaded file in the `Plugins` folder under **Frosty**.
-- (Optional) If you encountered any problems, try delete `Caches` folder under **Frosty**
+1. Download plugin from [GitHub Release](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
+  - Download `pdb` if you need to debug. Place it with `dll`.
+2. Delete or disable `FsLocalizationPlugin.dll` from your `Plugins` folder under **Frosty**.
+  - It's recommanded to disable it by add `.disable` or other suffix that is not `.dll`. E.g. `FsLocalizationPlugin.dll.disable`
+3. Place the downloaded file in the `Plugins` folder under **Frosty**.
+4. (Optional) If you encountered any problems by install this, try delete `Caches` folder under **Frosty**
 
 ## Build
 > [!WARNING]
@@ -45,13 +47,13 @@
 4. Change plugin name<br><img width="843" height="97" alt="image" src="https://github.com/user-attachments/assets/768471c6-d9f7-495a-aa92-1c7539b7e22d" />
 
 > [!IMPORTANT]
-> Add some marks to distinguish your version from my release. This will help avoid confusion, especially when you're distributing(post to internet).
+> Add some marks to distinguish your version from my release. This will help avoid confusion, especially when you're distributing.
 
 5. Change configuration from the toolbar(at the top). Use `Release - Final` for normal release, `Developer - Debug` for pre-release. And make sure platform is `x64`<br><img width="291" height="223" alt="image" src="https://github.com/user-attachments/assets/225875ef-d5c2-469d-b84e-aca02befafb6" />
 
 6. Right click FsLocalizationPlugin in the Solution Explorer, and click **Rebuild** <br><img width="421" height="278" alt="image" src="https://github.com/user-attachments/assets/a549fba5-2ff7-49ac-96b2-4f75c9aa449d" />
 
-7. Plugin is located in `FrostyFlammenwerferPlugin\FsLocalizationPlugin\bin\`. Ignore other files e.g. FrostyHash.dll<br><img width="531" height="230" alt="image" src="https://github.com/user-attachments/assets/3c286c81-6036-4576-95fe-f30a4f9f8440" />
+7. Plugin is located in `FrostyFlammenwerferPlugin\FsLocalizationPlugin\bin\`. Ignore other files, e.g. FrostyHash.dll<br><img width="531" height="230" alt="image" src="https://github.com/user-attachments/assets/3c286c81-6036-4576-95fe-f30a4f9f8440" />
 
 
 ## Special Thanks
