@@ -24,7 +24,7 @@ using System.Windows;
 [assembly: PluginDisplayName("Flammenwerfer")] // Comment this line [For 1.0.7]
 //[assembly: PluginDisplayName("Flammenwerfer for 1.0.7")] Uncomment this line [For 1.0.7]
 [assembly: PluginAuthor("shoushou1106")]
-[assembly: PluginVersion("0.1.9-Beta.0.2.2")]
+[assembly: PluginVersion("0.2.2")]
 
 [assembly: PluginNotValidForProfile((int)ProfileVersion.DragonAgeInquisition)]
 [assembly: PluginNotValidForProfile((int)ProfileVersion.MassEffectAndromeda)]
