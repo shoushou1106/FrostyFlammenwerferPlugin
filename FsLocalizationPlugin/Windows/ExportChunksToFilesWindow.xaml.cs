@@ -24,8 +24,6 @@ namespace FsLocalizationPlugin.Windows
     public partial class ExportChunksToFilesWindow : FrostyDockableWindow, INotifyPropertyChanged
     {
 
-        #region - Window -
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged(string propertyName)
@@ -140,10 +138,19 @@ namespace FsLocalizationPlugin.Windows
                 {
                     Language = lang,
                     ExportBinary = false,
-                    BinaryPath = Config.Get($"LocalizedStrings_{lang}_BinaryExportPath", string.Empty),
+                    BinaryPath = Config.Get($"LocalizedStrings_BinaryChunkExportPath", string.Empty),
                     ExportHistogram = false,
-                    HistogramPath = Config.Get($"LocalizedStrings_{lang}_HistogramExportPath", string.Empty)
+                    HistogramPath = Config.Get($"LocalizedStrings_HistogramChunkExportPath", string.Empty)
                 };
+
+                if (!string.IsNullOrWhiteSpace(opt.BinaryPath))
+                {
+                    opt.BinaryPath += $"\\{lang}_BinaryStringsChunk.chunk";
+                }
+                if (!string.IsNullOrWhiteSpace(opt.HistogramPath))
+                {
+                    opt.BinaryPath += $"\\{lang}_HistogramChunk.chunk";
+                }
 
                 // Track changes to re-evaluate CanExport
                 opt.PropertyChanged += (s, e) => OnPropertyChanged(nameof(CanExport));
@@ -156,7 +163,7 @@ namespace FsLocalizationPlugin.Windows
             }
         }
 
-        private HashSet<string> GetModifiedLocalizedLanguages()
+        private List<string> GetModifiedLocalizedLanguages()
         {
             HashSet<string> languages = new HashSet<string>();
             foreach (EbxAssetEntry entry in App.AssetManager.EnumerateEbx("LocalizationAsset"))
@@ -185,7 +192,7 @@ namespace FsLocalizationPlugin.Windows
                 languages.Add("NoModifiedLanguageFound");
             }
 
-            return languages;
+            return languages.ToList();
         }
 
         private void UnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
@@ -209,9 +216,9 @@ namespace FsLocalizationPlugin.Windows
             var button = sender as Button;
             var kind = button != null ? (button.Tag as string) : null; // "Binary" or "Histogram"
 
-            FrostySaveFileDialog saveFileDialog = new FrostySaveFileDialog($"Export {SelectedLanguageOption.Language} {kind}",
+            FrostySaveFileDialog saveFileDialog = new FrostySaveFileDialog($"Export {SelectedLanguageOption.Language} {kind} Chunk",
                 "Chunk file (*.chunk)|*.chunk|Binary file (*.bin)|*.bin|All files (*.*)|*.*",
-                $"LocalizedStrings_{SelectedLanguageOption.Language}_{kind}");
+                $"LocalizedStrings_{kind}Chunk", $"{SelectedLanguageOption.Language}_{kind}.chunk", true);
             if (saveFileDialog.ShowDialog())
             {
                 if (kind == "Binary")
@@ -366,8 +373,6 @@ namespace FsLocalizationPlugin.Windows
             DialogResult = true;
             Close();
         }
-
-        #endregion
 
     }
 }

@@ -9,7 +9,7 @@
         xmlns:fdev="FrostyDeveloper"
         mc:Ignorable="d"
         UseLayoutRounding="True"
-        Title="Export Chunks to Files - Flammenwerfer Plugin" SizeToContent="Height" MaxHeight="850" Width="400"
+        Title="Export Chunks to Files - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
         x:Name="exportChunksToFilesWindow"
         WindowStartupLocation="CenterOwner"
         >
