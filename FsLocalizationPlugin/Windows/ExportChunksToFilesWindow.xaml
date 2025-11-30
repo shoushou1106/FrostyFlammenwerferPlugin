@@ -30,7 +30,21 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="{StaticResource ListBackground}"/>
-        <TextBlock x:Name="NoModifiedLanguageFoundLable" Visibility="Collapsed" Grid.Row="0" Foreground="{StaticResource FontColor}" Margin="5, 10, 5, 10" TextWrapping="WrapWithOverflow" Text="No modified language found. This window is designed to export modified strings. Please close this window."/>
+        <Label x:Name="NoModifiedLanguageFoundLable" Visibility="Collapsed" Grid.Row="0"  Margin="5, 10, 5, 10">
+            <Label.Content>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Margin="0, 1, 5, 0" Text="&#xE783;" 
+                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       Foreground="Red"/>
+                    <TextBlock Grid.Column="1" Foreground="Red" TextWrapping="WrapWithOverflow" Text="No modified language found. This window is designed to export modified strings. Please close this window."/>
+                </Grid>
+            </Label.Content>
+        </Label>
         <StackPanel x:Name="MainStackPanel" Visibility="Visible" Grid.Row="0" Margin="5, 10, 5, 10">
             <WrapPanel Orientation="Horizontal" Margin="3">
                 <Label Width="Auto">
