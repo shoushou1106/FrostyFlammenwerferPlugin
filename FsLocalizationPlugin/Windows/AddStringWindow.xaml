@@ -12,6 +12,7 @@
         Title="Add String - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
         x:Name="addStringWindow"
         WindowStartupLocation="CenterOwner"
+                           FontFamily="system-ui, -apple-system, Segoe UI, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, Arial, Microsoft Yahei, Microsoft JhengHei, Global User Interface"
         >
 
     <Window.Resources>
@@ -150,8 +151,7 @@
                      VerticalScrollBarVisibility="Auto"
                      HorizontalScrollBarVisibility="Auto"
                      TextWrapping="Wrap"
-                         AcceptsReturn="True" AcceptsTab="True"
-                         TextChanged="EditTextBox_TextChanged"/>
+                         AcceptsReturn="True" AcceptsTab="True"/>
             </Grid>
         </Grid>
 

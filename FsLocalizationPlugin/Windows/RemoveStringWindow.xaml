@@ -12,6 +12,7 @@
         Title="Remove String - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
         x:Name="removeStringWindow"
         WindowStartupLocation="CenterOwner"
+                           FontFamily="system-ui, -apple-system, Segoe UI, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, Arial, Microsoft Yahei, Microsoft JhengHei, Global User Interface"
         >
 
     <Window.Resources>
