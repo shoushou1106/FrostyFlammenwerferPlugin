@@ -1,4 +1,4 @@
-﻿using Frosty.Core;
+using Frosty.Core;
 using FrostySdk.IO;
 using FrostySdk.Managers;
 using System;

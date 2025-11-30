@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <Configurations>Developer - Debug;Release - Alpha;Release - Beta;Release - Final</Configurations>
     <Platforms>x64</Platforms>
@@ -67,7 +67,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<Resource Include="Images\tag_32dp_FFFFFF_FILL0_wght500_GRAD0_opsz40.png" />
-	<Resource Include="Images\Tick_White.png" />
+    <Resource Include="Images\tag_32dp_FFFFFF_FILL0_wght500_GRAD0_opsz40.png" />
+    <Resource Include="Images\Tick_White.png" />
   </ItemGroup>
 </Project>

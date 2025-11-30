@@ -1,4 +1,4 @@
-﻿using Frosty.Core;
+using Frosty.Core;
 using Frosty.Core.IO;
 using Frosty.Core.Mod;
 using Frosty.Hash;

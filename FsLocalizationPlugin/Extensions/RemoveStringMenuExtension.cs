@@ -1,4 +1,4 @@
-﻿using Frosty.Core;
+using Frosty.Core;
 using System.Windows;
 using System.Windows.Media;
 

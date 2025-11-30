@@ -1,4 +1,4 @@
-﻿using FsLocalizationPlugin;
+using FsLocalizationPlugin;
 using FsLocalizationPlugin.Extensions;
 using Frosty.Core.Attributes;
 using FrostySdk;

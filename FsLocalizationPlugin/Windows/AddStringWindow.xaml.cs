@@ -1,4 +1,4 @@
-﻿using Frosty.Controls;
+using Frosty.Controls;
 using Frosty.Core;
 using Frosty.Core.Controls;
 using FrostySdk.Ebx;
