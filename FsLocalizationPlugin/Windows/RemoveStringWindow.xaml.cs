@@ -128,7 +128,7 @@ namespace FsLocalizationPlugin.Windows
                     return Convert.ToUInt32(hashOrId.Remove(0, 2), 16);
                 }
             }
-            catch {}
+            catch { }
             return null;
         }
 

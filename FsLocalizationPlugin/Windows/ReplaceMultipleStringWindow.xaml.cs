@@ -1,15 +1,12 @@
-﻿using System;
+using Frosty.Controls;
+using Frosty.Core;
+using Frosty.Core.Windows;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
-using System.Windows.Input;
-using FsLocalizationPlugin;
-using Frosty.Controls;
-using Frosty.Core;
-using Frosty.Core.Windows;
-using FrostySdk.Interfaces;
 
 namespace FsLocalizationPlugin.Windows
 {
@@ -29,7 +26,7 @@ namespace FsLocalizationPlugin.Windows
             DialogResult = false;
             Close();
         }
-        
+
         private void addButton_Click(object sender, RoutedEventArgs e)
         {
             List<uint> TotalStrings = db.EnumerateStrings().ToList();

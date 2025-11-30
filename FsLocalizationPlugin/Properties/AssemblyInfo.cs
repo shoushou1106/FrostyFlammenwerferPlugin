@@ -1,10 +1,10 @@
-using FsLocalizationPlugin;
-using FsLocalizationPlugin.Extensions;
+using Frosty.Core;
 using Frosty.Core.Attributes;
 using FrostySdk;
+using FsLocalizationPlugin;
+using FsLocalizationPlugin.Extensions;
 using System.Runtime.InteropServices;
 using System.Windows;
-using Frosty.Core;
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from

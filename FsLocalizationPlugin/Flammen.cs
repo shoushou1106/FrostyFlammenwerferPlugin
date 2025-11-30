@@ -28,7 +28,7 @@ namespace FsLocalizationPlugin.Flammen
         private const int HistogramInitialSectionSize = 0x80;
         private const int HistogramShiftNumStartIndex = 0x40;
         private const int HistogramShiftEndIndex = 0x1FE;
-        
+
         /// <summary>
         /// Decodes binary string using histogram
         /// </summary>
@@ -49,7 +49,7 @@ namespace FsLocalizationPlugin.Flammen
             while (index < binString.Length)
             {
                 byte currentByte = (byte)binString[index];
-                
+
                 if (currentByte < HistogramAsciiThreshold)
                 {
                     // ASCII character - decode directly
@@ -59,7 +59,7 @@ namespace FsLocalizationPlugin.Flammen
                 {
                     // Non-ASCII character - decode using histogram
                     ushort mappedValue = section[currentByte];
-                    
+
                     if (mappedValue >= HistogramAsciiThreshold)
                     {
                         // Direct mapping
@@ -71,7 +71,7 @@ namespace FsLocalizationPlugin.Flammen
                         index++;
                         if (index >= binString.Length)
                             break;
-                            
+
                         currentByte = (byte)binString[index];
                         if (currentByte >= HistogramAsciiThreshold)
                         {
@@ -108,7 +108,7 @@ namespace FsLocalizationPlugin.Flammen
             foreach (char c in str)
             {
                 uint charValue = (uint)c;
-                
+
                 if (charValue < HistogramAsciiThreshold)
                 {
                     // ASCII character - encode directly
@@ -130,12 +130,12 @@ namespace FsLocalizationPlugin.Flammen
                     {
                         // Multi-byte encoding - find appropriate shift
                         bool shiftFound = false;
-                        
+
                         foreach (int shift in shifts)
                         {
                             int shiftByte = (int)section[shift] << 7;
                             int byteShifted = index - shiftByte;
-                            
+
                             if (byteShifted >= 0 && byteShifted < HistogramAsciiThreshold)
                             {
                                 binString.Add((byte)shift);
@@ -145,7 +145,7 @@ namespace FsLocalizationPlugin.Flammen
                             }
                         }
 
-                        if (!shiftFound) 
+                        if (!shiftFound)
                         {
                             throw new ArgumentException(
                                 $"Unable to encode character '{c}' (U+{(int)c:X4}) to bytes." + Environment.NewLine +
@@ -185,7 +185,7 @@ namespace FsLocalizationPlugin.Flammen
 
             // Find characters not already in section
             List<char> newChars = charSet.Except(section).ToList();
-            
+
             if (!newChars.Any())
                 return; // No new characters to add
 
@@ -229,7 +229,7 @@ namespace FsLocalizationPlugin.Flammen
                     {
                         throw new ArgumentException("Too many characters to add to histogram. Maximum capacity exceeded.");
                     }
-                    
+
                     shiftNumsSet.Add(shiftNum);
                 }
                 return shiftNumsSet.OrderBy(x => (int)x).ToList();
@@ -253,19 +253,19 @@ namespace FsLocalizationPlugin.Flammen
 
             // Reconstruct section with new characters and shift numbers
             List<char> updatedSection = new List<char>();
-            
+
             // Add original ASCII section
             updatedSection.AddRange(section.Take(HistogramInitialSectionSize));
-            
+
             // Add calculated shift_nums
             updatedSection.AddRange(shiftNums);
-            
+
             // Add section from shiftNumsIndex to insertedStart
             updatedSection.AddRange(section.Skip(shiftNumsIndex).Take(insertedStart - shiftNumsIndex));
-            
+
             // Add new chars
             updatedSection.AddRange(newChars);
-            
+
             // Add remaining section
             updatedSection.AddRange(section.Skip(insertedStart));
 
@@ -330,7 +330,7 @@ namespace FsLocalizationPlugin.Flammen
         private static List<ushort> ReadHistogram(Stream histogramChunk)
         {
             List<ushort> histogramSection = new List<ushort>();
-            
+
             using (NativeReader reader = new NativeReader(histogramChunk))
             {
                 uint magic = reader.ReadUInt();
@@ -356,7 +356,7 @@ namespace FsLocalizationPlugin.Flammen
         private static Dictionary<uint, string> ReadStringsBinary(Stream stringsBinaryChunk, List<ushort> histogramSection)
         {
             Dictionary<uint, string> stringList = new Dictionary<uint, string>();
-            
+
             using (NativeReader reader = new NativeReader(stringsBinaryChunk))
             {
                 // Read and validate header
@@ -374,7 +374,7 @@ namespace FsLocalizationPlugin.Flammen
                 // Read hash-offset pairs
                 List<Tuple<uint, uint>> hashPairList = new List<Tuple<uint, uint>>();
                 reader.Position = dataOffset + 8;
-                
+
                 while (reader.Position != stringsOffset + 8)
                 {
                     uint hash = reader.ReadUInt();
@@ -387,7 +387,7 @@ namespace FsLocalizationPlugin.Flammen
                 {
                     reader.Position = stringsOffset + hashPair.Item2 + 8;
                     string binString = reader.ReadNullTerminatedString();
-                    
+
                     if (!stringList.ContainsKey(hashPair.Item1))
                     {
                         stringList.Add(hashPair.Item1, DecodeString(binString, histogramSection));
@@ -422,7 +422,7 @@ namespace FsLocalizationPlugin.Flammen
             uint histogramFileSize;
             uint histogramDataOffSize;
             List<char> histogramSection = new List<char>();
-            
+
             using (NativeReader reader = new NativeReader(am.GetChunk(histogramChunk)))
             {
                 histogramMagic = reader.ReadUInt();
@@ -447,7 +447,7 @@ namespace FsLocalizationPlugin.Flammen
             uint stringStringsOffset;
             string stringSection;
             Dictionary<uint, string> stringList = new Dictionary<uint, string>();
-            
+
             using (NativeReader reader = new NativeReader(am.GetChunk(stringsBinaryChunk)))
             {
                 // Read and validate header
@@ -465,7 +465,7 @@ namespace FsLocalizationPlugin.Flammen
                 // Read hash-offset pairs
                 List<Tuple<uint, uint>> hashPairList = new List<Tuple<uint, uint>>();
                 reader.Position = stringDataOffset + 8;
-                
+
                 while (reader.Position != stringStringsOffset + 8)
                 {
                     hashPairList.Add(new Tuple<uint, uint>(reader.ReadUInt(), reader.ReadUInt()));
@@ -476,7 +476,7 @@ namespace FsLocalizationPlugin.Flammen
                 {
                     reader.Position = stringStringsOffset + hashPair.Item2 + 8;
                     string binString = reader.ReadNullTerminatedString();
-                    
+
                     if (!stringList.ContainsKey(hashPair.Item1))
                     {
                         stringList.Add(hashPair.Item1, DecodeString(binString, histogramSection.Select(c => (ushort)c).ToList()));
@@ -574,7 +574,7 @@ namespace FsLocalizationPlugin.Flammen
                         writer.Write((uint)stringBuffer.Position);
                         stringBuffer.Write(EncodeString(keyValuePair.Value, histogramShifts, histogramSection));
                     }
-                    
+
                     // Write all encoded strings
                     writer.Write(stringBuffer.ToByteArray());
                 }

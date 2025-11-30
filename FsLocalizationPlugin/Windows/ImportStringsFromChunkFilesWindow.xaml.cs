@@ -4,11 +4,9 @@ using Frosty.Core.Controls;
 using Frosty.Core.Windows;
 using FrostySdk.Ebx;
 using FrostySdk.Interfaces;
-using FrostySdk.IO;
 using FrostySdk.Managers;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -16,7 +14,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace FsLocalizationPlugin.Windows
@@ -42,10 +39,10 @@ namespace FsLocalizationPlugin.Windows
                     _binaryFilePath = value;
                     OnPropertyChanged(nameof(BinaryFilePath));
                     OnPropertyChanged(nameof(CanImport));
-                        BinaryDragTips.Visibility = string.IsNullOrEmpty(_binaryFilePath) ? Visibility.Visible : Visibility.Collapsed;
-                    }
+                    BinaryDragTips.Visibility = string.IsNullOrEmpty(_binaryFilePath) ? Visibility.Visible : Visibility.Collapsed;
                 }
             }
+        }
 
         private string _histogramFilePath;
         public string HistogramFilePath
@@ -58,10 +55,10 @@ namespace FsLocalizationPlugin.Windows
                     _histogramFilePath = value;
                     OnPropertyChanged(nameof(HistogramFilePath));
                     OnPropertyChanged(nameof(CanImport));
-                        HistogramDragTips.Visibility = string.IsNullOrEmpty(_histogramFilePath) ? Visibility.Visible : Visibility.Collapsed;
-                    }
+                    HistogramDragTips.Visibility = string.IsNullOrEmpty(_histogramFilePath) ? Visibility.Visible : Visibility.Collapsed;
                 }
             }
+        }
 
         public bool CanImport => !string.IsNullOrEmpty(BinaryFilePath) && !string.IsNullOrEmpty(HistogramFilePath);
 
@@ -81,7 +78,7 @@ namespace FsLocalizationPlugin.Windows
             LanguageComboBox.Items.Clear();
             GetLocalizedLanguages().ForEach(x => LanguageComboBox.Items.Add(x));
             LanguageComboBox.SelectedIndex = LanguageComboBox.Items.IndexOf(Config.Get<string>("Language", "English", ConfigScope.Game));
-            }
+        }
 
         public static List<string> GetLocalizedLanguages()
         {
