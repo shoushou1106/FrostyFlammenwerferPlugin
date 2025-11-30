@@ -1,131 +1,164 @@
-﻿using System;
-using System.Windows;
-using FsLocalizationPlugin;
-using Frosty.Controls;
+﻿using Frosty.Controls;
 using Frosty.Core;
+using Frosty.Core.Controls;
+using FrostySdk.Ebx;
+using FrostySdk.Managers;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace FsLocalizationPlugin.Windows
 {
-    public partial class AddStringWindow : FrostyDockableWindow
+    public partial class AddStringWindow : FrostyDockableWindow, INotifyPropertyChanged
     {
-        public string ProfileName { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public FsLocalizationStringDatabase db = LocalizedStringDatabase.Current as FsLocalizationStringDatabase;
 
-        public AddStringWindow(Window owner)
+        private string _hashOrId;
+        public string HashOrId
         {
-            InitializeComponent();
-            Owner = owner;
+            get { return _hashOrId; }
+            set
+            {
+                if (_hashOrId != value)
+                {
+                    _hashOrId = value;
+                    OnPropertyChanged(nameof(HashOrId));
+                    OnPropertyChanged(nameof(StringValue));
+                    OnPropertyChanged(nameof(ShowIdToHash));
+                    OnPropertyChanged(nameof(IdToHash));
+                }
+            }
         }
 
-        private void cancelButton_Click(object sender, RoutedEventArgs e)
+        public string StringValue => HashOrIdToId(HashOrId) == null ? "No Hash or ID" : db.GetString(HashOrIdToId(HashOrId).Value);
+
+        public bool ShowIdToHash => HashOrId.StartsWith("ID");
+
+        public string IdToHash => LocalizationHelper.HashStringId(HashOrId).ToString("X8");
+        public bool CanAdd => HashOrIdToId(HashOrId) != null;
+
+        public AddStringWindow(Window owner)
+        {
+            Owner = owner;
+
+            InitializeComponent();
+
+            Left = Owner.Left + (Owner.Width / 2.0) - (ActualWidth / 2.0);
+            Top = Owner.Top + (Owner.Height / 2.0) - (ActualHeight / 2.0);
+
+            this.DataContext = this;
+
+            Dispatcher.UnhandledException += UnhandledException;
+
+            LanguageComboBox.Items.Clear();
+            GetLocalizedLanguages().ForEach(x => LanguageComboBox.Items.Add(x));
+            LanguageComboBox.SelectedIndex = LanguageComboBox.Items.IndexOf(Config.Get<string>("Language", "English", ConfigScope.Game));
+            // Manually set to avoid exception
+            LanguageComboBox.SelectionChanged += LanguageComboBox_SelectionChanged;
+        }
+
+        public static List<string> GetLocalizedLanguages()
+        {
+            HashSet<string> languages = new HashSet<string>();
+            foreach (EbxAssetEntry entry in App.AssetManager.EnumerateEbx("LocalizationAsset"))
+            {
+                // read master localization asset
+                dynamic localizationAsset = App.AssetManager.GetEbx(entry).RootObject;
+
+                // iterate through localized texts
+                foreach (PointerRef pointer in localizationAsset.LocalizedTexts)
+                {
+                    EbxAssetEntry textEntry = App.AssetManager.GetEbxEntry(pointer.External.FileGuid);
+                    if (textEntry == null)
+                        continue;
+
+                    // read localized text asset
+                    dynamic localizedText = App.AssetManager.GetEbx(textEntry).RootObject;
+
+                    string lang = localizedText.Language.ToString();
+                    lang = lang.Replace("LanguageFormat_", "");
+
+                    languages.Add(lang);
+                }
+            }
+
+            if (!languages.Any())
+                languages.Add("English");
+
+            return languages.ToList();
+        }
+
+        private void UnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            FrostyExceptionBox.Show(e.Exception, "Add String - Flammenwerfer");
+            DialogResult = false;
+            Close();
+        }
+
+        private uint? HashOrIdToId(string hashOrId)
+        {
+            try
+            {
+                if (hashOrId.StartsWith("ID"))
+                {
+                    return LocalizationHelper.HashStringId(hashOrId);
+                }
+                else if (hashOrId.Length == 8)
+                {
+                    return Convert.ToUInt32(hashOrId, 16);
+                }
+                else if (hashOrId.Length == 10 && (hashOrId.StartsWith("0x") || hashOrId.StartsWith("0X")))
+                {
+                    return Convert.ToUInt32(hashOrId.Remove(0, 2), 16);
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
             Close();
         }
-        private uint HashStringId(string stringId)
-        {
-            uint result = 0xFFFFFFFF;
-            for (int i = 0; i < stringId.Length; i++)
-                result = stringId[i] + 33 * result;
-            return result;
-        }
 
-        private void GenerateHashButton_Click(object sender, RoutedEventArgs e)
+        private void ConfirmButton_Click(object sender, RoutedEventArgs e)
         {
-            varHashTextBox.Text = "0x" + ((uint)rand.Next(1 << 30)).ToString("x").PadLeft(8, '0');
-        }
-        private static Random rand = new Random();
-        private void addButton_Click(object sender, RoutedEventArgs e)
-        {
-            string HashOrID = varIdTextBox.Text;
-            if (HashOrID.Length == 0)
+            uint? id = HashOrIdToId(HashOrId);
+            if (id == null)
             {
-                HashOrID = Remove0X(varHashTextBox.Text);
-                try
-                {
-                    uint result = Convert.ToUInt32(HashOrID, 16);
-                    if (db.GetString(result) != "Invalid StringId: " + result.ToString("X8"))
-                    {
-                        string PreviousString = db.GetString(result);
-                        db.SetString(result, varValueTextBox.Text);
-                        //App.Logger.Log(string.Format("Replaced Value of String Hash: 0x{0}, with Value: \"{1}\", Previously: \"{2}\".", HashOrID, varValueTextBox.Text, PreviousString));
-                    }
-                    else
-                    {
-                        db.SetString(result, varValueTextBox.Text);
-                        //App.Logger.Log(string.Format("Added String Hash: 0x{0}, with Value: \"{1}\".", HashOrID, varValueTextBox.Text));
-                    }
-                }
-                catch
-                {
-                    App.Logger.Log("0x" + HashOrID + " is not a valid string hash.");
-                }
+                return;
             }
             else
             {
-                uint result = HashStringId(HashOrID);
-                if (db.GetString(result) != "Invalid StringId: " + result.ToString("X8"))
-                {
-                    string PreviousString = db.GetString(result);
-                    db.SetString(result, varValueTextBox.Text);
-                    //App.Logger.Log(string.Format("Replaced Value of String ID: \"{3}\", Hash: 0x{0}, with Value: \"{1}\", Previously: \"{2}\".", result.ToString("X8"), varValueTextBox.Text, PreviousString, HashOrID));
-                }
-                else
-                {
-                    db.SetString(result, varValueTextBox.Text);
-                    //App.Logger.Log(string.Format("Added String ID: \"{2}\", Hash: 0x{0}, with Value: \"{1}\".", result.ToString("X8"), varValueTextBox.Text, HashOrID));
-                }
-            }
-
-            DialogResult = true;
-            Close();
-        }
-
-        public bool LazySolution = true;
-        private void varHashTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
-        {
-            if (LazySolution == true)
-            {
-                LazySolution = false;
-                varIdTextBox.Text = "";
-                LazySolution = true;
-            }
-            try
-            {
-                string MyHash = Remove0X(varHashTextBox.Text);
-                uint result = Convert.ToUInt32(MyHash, 16);
-                if (db.GetString(result) != "Invalid StringId: " + result.ToString("X8"))
-                {
-                    varCurrentValueTextBox.Text = db.GetString(result);
-                }
-                else
-                {
-                    varCurrentValueTextBox.Text = "No matching hash found in localisation database.";
-                }
-            }
-            catch
-            {
-                varCurrentValueTextBox.Text = "Invalid hash input.";
+                db.SetString(id.Value, EditTextBox.Text);
+                App.Logger.Log($"String {id.Value.ToString("X8")} added, value: {EditTextBox.Text}");
+                OnPropertyChanged(nameof(StringValue));
             }
         }
-
-        public string Remove0X(string Hash)
+        private void CopyAboveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Hash.StartsWith("0x"))
-            {
-                return Hash.Remove(0, 2);
-            }
-            return Hash;
+            EditTextBox.Text = StringValue;
         }
-        private void varIdTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+
+        private void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (LazySolution == true)
-            {
-                LazySolution = false;
-                varHashTextBox.Text = "0x" + HashStringId(varIdTextBox.Text).ToString("x");
-                LazySolution = true;
-            }
+            Config.Add("Language", LanguageComboBox.SelectedItem.ToString(), ConfigScope.Game);
+            Config.Save();
+            db.Initialize();
+            OnPropertyChanged(nameof(StringValue));
         }
     }
 }

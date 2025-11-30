@@ -4,11 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FsLocalizationPlugin.Windows"
+        xmlns:core="clr-namespace:Frosty.Core;assembly=FrostyCore"
         xmlns:ctrl="clr-namespace:Frosty.Controls;assembly=FrostyControls"
+        xmlns:fdev="FrostyDeveloper"
         mc:Ignorable="d"
-        Title="Add String" Height="275" Width="650"
+        UseLayoutRounding="True"
+        Title="Add String - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
+        x:Name="addStringWindow"
         WindowStartupLocation="CenterOwner"
-        FontFamily="system-ui, -apple-system, Segoe UI, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji, Arial, Microsoft Yahei, Microsoft JhengHei, Global User Interface">
+        >
 
     <Window.Resources>
         <ResourceDictionary>
@@ -17,41 +21,167 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
+
     <Grid Background="{StaticResource WindowBackground}">
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="38"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Grid Background="{StaticResource ListBackground}">
-            <StackPanel>
-                <DockPanel LastChildFill="True" Margin="5">
-                    <Label Content="ID: " FontFamily="Global User Interface" Width="90"/>
-                    <TextBox x:Name="varIdTextBox" VerticalContentAlignment="Center" Text="" Margin="1" BorderThickness="1" TextChanged="varIdTextBox_TextChanged"/>
-                </DockPanel>
-                <DockPanel LastChildFill="True" Margin="5">
-                    <Label Content="Hash: " FontFamily="Global User Interface" Width="90"/>
-                    <TextBox x:Name="varHashTextBox" VerticalContentAlignment="Center" Text="" Margin="1" BorderThickness="1" TextChanged="varHashTextBox_TextChanged"/>
-                </DockPanel>
-                <DockPanel Margin="5,0,5,5" LastChildFill="True">
-                    <Label Content="Current Value: " FontFamily="Global User Interface" Width="90"/>
-                    <TextBox x:Name="varCurrentValueTextBox" Text="" Margin="1" BorderThickness="1" Height="64" AcceptsReturn="True" TextWrapping="Wrap" MaxLines="999999" VerticalScrollBarVisibility="Auto"/>
-                </DockPanel>
-                <DockPanel Margin="5,0,5,5" LastChildFill="True">
-                    <Label Content="New Value: " FontFamily="Global User Interface" Width="90"/>
-                    <TextBox x:Name="varValueTextBox" Text="" Margin="1" BorderThickness="1" Height="64" AcceptsReturn="True" TextWrapping="Wrap" MaxLines="999999" VerticalScrollBarVisibility="Auto"/>
-                </DockPanel>
-            </StackPanel>
+        <Border Grid.Row="0" Background="{StaticResource ListBackground}"/>
+        <Grid x:Name="MainGrid" Visibility="Visible" Grid.Row="0" Margin="5, 10, 5, 10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <WrapPanel Grid.Row="0" Orientation="Horizontal" Margin="3">
+                <Label Width="Auto">
+                    <Label.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;" 
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="Language: "/>
+                        </StackPanel>
+                    </Label.Content>
+                </Label>
+                <ComboBox x:Name="LanguageComboBox" MinWidth="140" Width="Auto" Margin="2">
+                </ComboBox>
+            </WrapPanel>
+            <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="3">
+                <Label Width="Auto">
+                    <Label.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Margin="0, 2, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/tag_32dp_FFFFFF_FILL0_wght500_GRAD0_opsz40.png"
+                                RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="Hash or ID: "/>
+                        </StackPanel>
+                    </Label.Content>
+                </Label>
+                <TextBox Padding="2.5" Margin="2" Width="Auto" MinWidth="100"
+                    BorderThickness="1"
+                    Text="{Binding HashOrId, RelativeSource={RelativeSource AncestorType=Window}, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                    AcceptsTab="False"
+                    AcceptsReturn="False"
+                    AutoWordSelection="False"
+                    VerticalScrollBarVisibility="Disabled" 
+                    HorizontalScrollBarVisibility="Disabled"
+                    >
+                </TextBox>
+                <TextBox Padding="2.5" Margin="2" Width="Auto"
+                    BorderThickness="1"
+                    Text="{Binding IdToHash, RelativeSource={RelativeSource AncestorType=Window}, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                    AcceptsTab="False"
+                    AcceptsReturn="False"
+                    AutoWordSelection="False"
+                    VerticalScrollBarVisibility="Disabled" 
+                    HorizontalScrollBarVisibility="Disabled"
+                         IsReadOnly="True"
+                    >
+                    <TextBox.Style>
+                        <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowIdToHash, RelativeSource={RelativeSource AncestorType=Window}, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+            </WrapPanel>
+
+            <Grid Grid.Row="2" Margin="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Width="Auto">
+                    <Label.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Margin="0, 1, 5, 0" Text="&#xE7B3;" 
+           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+           RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Foreground="{StaticResource FontColor}" Text="Current Value: "/>
+                        </StackPanel>
+                    </Label.Content>
+                </Label>
+
+                <TextBox x:Name="PreviewTextBox" Grid.Row="1" Padding="2.5" Margin="5, 2, 5, 2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                    BorderThickness="1"
+                    Text="{Binding StringValue, RelativeSource={RelativeSource AncestorType=Window}, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Auto"
+                    TextWrapping="Wrap"
+                    IsReadOnly="True"/>
+            </Grid>
+            
+            <Grid Grid.Row="3" Margin="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <WrapPanel Grid.Row="0" Width="Auto">
+                    <Label>
+                        <Label.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0, 1, 5, 0" Text="&#xE70F;" 
+    FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+    RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="New Value: "/>
+                            </StackPanel>
+                        </Label.Content>
+                    </Label>
+                    <Button Padding="6, 3, 6, 3" Margin="0, 2, 0, 2" Width="Auto" Click="CopyAboveButton_Click">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyCore;component/Images/Copy.png"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Copy from Above"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                </WrapPanel>
+                <TextBox x:Name="EditTextBox" Grid.Row="1" Padding="2.5" Margin="5, 2, 5, 2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                     BorderThickness="1"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"
+                     TextWrapping="Wrap"
+                         AcceptsReturn="True" AcceptsTab="True"
+                         TextChanged="EditTextBox_TextChanged"/>
+            </Grid>
         </Grid>
 
-        <Border Grid.Row="1">
-            <Grid Margin="8">
+        <Grid Grid.Row="1" Height="38">
+            <Grid Margin="5">
                 <DockPanel LastChildFill="False">
-                    <Button x:Name="cancelButton" Content="Cancel" DockPanel.Dock="Left" Width="75" Click="cancelButton_Click"/>
-                    <Button x:Name="saveButton" Content="Add String" DockPanel.Dock="Right" Width="75" Click="addButton_Click"/>
-                    <Button x:Name="GenerateHashButton" Content="Generate Hash" DockPanel.Dock="Right" Width="90" Margin="8,0" Click="GenerateHashButton_Click"/>
+                    <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Click="CancelButton_Click">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyControls;component/Images/Clear.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Exit"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+
+                    <Button x:Name="ConfirmButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto" Click="ConfirmButton_Click" 
+                            IsEnabled="{Binding CanRemove}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyCore;component/Images/Add.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Foreground="{StaticResource FontColor}" Text="Add"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+
                 </DockPanel>
             </Grid>
-        </Border>
+        </Grid>
+
     </Grid>
 </ctrl:FrostyDockableWindow>
