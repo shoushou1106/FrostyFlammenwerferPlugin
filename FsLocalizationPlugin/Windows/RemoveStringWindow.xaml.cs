@@ -15,7 +15,6 @@ namespace FsLocalizationPlugin.Windows
 {
     public partial class RemoveStringWindow : FrostyDockableWindow, INotifyPropertyChanged
     {
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged(string propertyName)

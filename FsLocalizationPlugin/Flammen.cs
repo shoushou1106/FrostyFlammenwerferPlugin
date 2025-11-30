@@ -519,11 +519,7 @@ namespace FsLocalizationPlugin.Flammen
                 foreach (char c in section)
                 {
                     ushort charCode = (ushort)c;
-                    if (charCode <= 0xFFFF)
-                    {
-                        writer.Write(charCode);
-                    }
-                    // Skipped char > 0xFFFF
+                    writer.Write(charCode);
                 }
 
                 // Update file size
