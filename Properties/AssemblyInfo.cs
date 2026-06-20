@@ -34,7 +34,7 @@ using System.Windows;
 #endif
 
 [assembly: PluginAuthor("shoushou1106")]
-[assembly: PluginVersion("0.3.0")]
+[assembly: PluginVersion("0.3.1")]
 
 [assembly: PluginNotValidForProfile((int)ProfileVersion.DragonAgeInquisition)]
 [assembly: PluginNotValidForProfile((int)ProfileVersion.MassEffectAndromeda)]

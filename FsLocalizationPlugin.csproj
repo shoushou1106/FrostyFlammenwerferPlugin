@@ -9,8 +9,8 @@
     <UseWPF>true</UseWPF>
     <OutputType>Library</OutputType>
     <Title>Frosty Flammenwerfer Plugin</Title>
-    <Version>0.3.0</Version>
-    <FileVersion>0.3.0</FileVersion>
+    <Version>0.3.1</Version>
+    <FileVersion>0.3.1</FileVersion>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>shoushou1106</Authors>
     <PackageProjectUrl>https://github.com/shoushou1106/FrostyFlammenwerferPlugin/</PackageProjectUrl>
@@ -49,7 +49,7 @@
     <DefineConstants>TRACE;FROSTY_1063_LATER</DefineConstants>
     <Optimize>true</Optimize>
   </PropertyGroup>
-	
+    
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.6.2 or Earlier|x64'">
     <OutputPath>bin\ReleaseFinal\1.0.6.2orEarlier\</OutputPath>
     <DefineConstants>TRACE;FROSTY_1062_EARLIER</DefineConstants>
