@@ -26,10 +26,10 @@
 
 ## 1.0.7 Support
 - The provided 1.0.7 release is based on official 1.0.7, which DOES NOT work with Mod Manager.
-- You might want to (or already using) another community fork, like [this one from HarGabt](https://github.com/HarGabt/FrostyToolsuite). The plugin you downloaded here have a high possibility will not work with these forks. But I cannot build it for every of them, Frosty have a lot of forks. If you find out this plugin not working with a fork, please ask the author to integrate this plugin and throw them the GitHub link of this repo.
+- You might want to (or already using) another community fork, like [this one from HarGabt](https://github.com/HarGabt/FrostyToolsuite). The plugin you downloaded here have a high possibility will not work with these forks. But I cannot build it for every of them, Frosty have a lot of forks. If you find out this plugin not working with a fork, try build it yourself or ask the author politely to integrate this plugin and throw them the GitHub link of this repo.
 - The projects and mods you created use the structure of `FsLocalizationPlugin`, so your projects and mods will work properly doesn't matter who build it.
 
-## Build and Development Workflow.
+## Build and Development Workflow
 - Frosty have a lot of community fork, you may need to build your own version of plugin. Thats why this repo provides two workflow to build and develop.
 - Integrated Workflow: Use git submodule to include this plugin remotely inside `FrostyToolsuite\Plugins` folder.
 - Separate Workflow: Put this repo and the Frosty repo in a same folder. This is also more beginner-friendly.
