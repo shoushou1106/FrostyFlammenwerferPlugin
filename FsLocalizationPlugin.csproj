@@ -1,0 +1,85 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <Configurations>Debug - 1.0.6.2 or Older;Debug - 1.0.6.3 or Newer;Debug - 1.0.7;Release - 1.0.6.2 or Older;Release - 1.0.6.3 or Newer;Release - 1.0.7</Configurations>
+    <Platforms>x64</Platforms>
+    <TargetFrameworks>net48</TargetFrameworks>
+    <AssemblyTitle>FlammenwerferPlugin</AssemblyTitle>
+    <Product>Frosty Flammenwerfer Plugin</Product>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <UseWPF>true</UseWPF>
+    <OutputType>Library</OutputType>
+    <Title>Frosty Flammenwerfer Plugin</Title>
+    <Version>0.3.0</Version>
+    <FileVersion>0.3.0</FileVersion>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Authors>shoushou1106</Authors>
+    <PackageProjectUrl>https://github.com/shoushou1106/FrostyFlammenwerferPlugin/</PackageProjectUrl>
+    <Copyright>GPL-3.0</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/shoushou1106/FrostyFlammenwerferPlugin/</RepositoryUrl>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - 1.0.7|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\DeveloperDebug\1.0.7\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_107</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - 1.0.6.3 or Newer|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\DeveloperDebug\1.0.6.3orLater\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_1063_LATER</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - 1.0.6.2 or Older|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\DeveloperDebug\1.0.6.2orEarlier\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_1062_EARLIER</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.7|x64'">
+    <OutputPath>bin\ReleaseFinal\1.0.7\</OutputPath>
+    <DefineConstants>TRACE;FROSTY_107</DefineConstants>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.6.3 or Newer|x64'">
+    <OutputPath>bin\ReleaseFinal\1.0.6.3orLater\</OutputPath>
+    <DefineConstants>TRACE;FROSTY_1063_LATER</DefineConstants>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+	
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.6.2 or Older|x64'">
+    <OutputPath>bin\ReleaseFinal\1.0.6.2orEarlier\</OutputPath>
+    <DefineConstants>TRACE;FROSTY_1062_EARLIER</DefineConstants>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Include="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\FrostyToolsuite\FrostyControls\FrostyControls.csproj">
+      <Private>false</Private>
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\FrostyToolsuite\FrostyPlugin\FrostyCore.csproj">
+      <Private>false</Private>
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\FrostyToolsuite\FrostySdk\FrostySdk.csproj">
+      <Private>false</Private>
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\tag_32dp_FFFFFF_FILL0_wght500_GRAD0_opsz40.png" />
+    <Resource Include="Images\Tick_White.png" />
+  </ItemGroup>
+</Project>

@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 
-//using FrostySdk.Managers.Entries; // Uncomment this line [For 1.0.7]
+#if FROSTY_107
+using FrostySdk.Managers.Entries;
+#endif
 
 //namespace FsLocalizationPlugin.Resources
 // Frosty cannot detect a different namespace

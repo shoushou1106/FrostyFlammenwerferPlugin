@@ -16,6 +16,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 
+#if FROSTY_107
+using FrostySdk.Managers.Entries;
+#endif
+
 namespace FsLocalizationPlugin.Windows
 {
     public partial class ImportStringsFromChunkFilesWindow : FrostyDockableWindow, INotifyPropertyChanged

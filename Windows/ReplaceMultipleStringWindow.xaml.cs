@@ -8,6 +8,10 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 
+#if FROSTY_107
+using FrostySdk.Managers.Entries;
+#endif
+
 namespace FsLocalizationPlugin.Windows
 {
     public partial class ReplaceMultipleStringWindow : FrostyDockableWindow

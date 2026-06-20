@@ -7,7 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-//using FrostySdk.Managers.Entries; // Uncomment this line [For 1.0.7]
+#if FROSTY_107
+using FrostySdk.Managers.Entries;
+#endif
 
 namespace FsLocalizationPlugin.Flammen
 {

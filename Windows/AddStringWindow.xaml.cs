@@ -11,9 +11,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 
+#if FROSTY_107
+using FrostySdk.Managers.Entries;
+#endif
+
 namespace FsLocalizationPlugin.Windows
 {
-    public partial class RemoveStringWindow : FrostyDockableWindow, INotifyPropertyChanged
+    public partial class AddStringWindow : FrostyDockableWindow, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -35,25 +39,20 @@ namespace FsLocalizationPlugin.Windows
                     _hashOrId = value;
                     OnPropertyChanged(nameof(HashOrId));
                     OnPropertyChanged(nameof(StringValue));
-                    OnPropertyChanged(nameof(PreviewTextBoxBorderBrush));
                     OnPropertyChanged(nameof(ShowIdToHash));
                     OnPropertyChanged(nameof(IdToHash));
-                    OnPropertyChanged(nameof(CanRemove));
                 }
             }
         }
 
-        public string StringValue => HashOrIdToId(HashOrId) == null ? "Invalid Hash or ID" : db.GetString(HashOrIdToId(HashOrId).Value);
-
-        public System.Windows.Media.Brush PreviewTextBoxBorderBrush => HashOrIdToId(HashOrId) == null ? System.Windows.Media.Brushes.Red : (System.Windows.Media.Brush)this.TryFindResource("ControlBackground");
+        public string StringValue => HashOrIdToId(HashOrId) == null ? "No Hash or ID" : db.GetString(HashOrIdToId(HashOrId).Value);
 
         public bool ShowIdToHash => HashOrId.StartsWith("ID");
 
         public string IdToHash => LocalizationHelper.HashStringId(HashOrId).ToString("X8");
+        public bool CanAdd => HashOrIdToId(HashOrId) != null;
 
-        public bool CanRemove => HashOrIdToId(HashOrId) != null;
-
-        public RemoveStringWindow(Window owner)
+        public AddStringWindow(Window owner)
         {
             Owner = owner;
 
@@ -106,7 +105,7 @@ namespace FsLocalizationPlugin.Windows
 
         private void UnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            FrostyExceptionBox.Show(e.Exception, "Remove String - Flammenwerfer");
+            FrostyExceptionBox.Show(e.Exception, "Add String - Flammenwerfer");
             DialogResult = false;
             Close();
         }
@@ -147,12 +146,14 @@ namespace FsLocalizationPlugin.Windows
             }
             else
             {
-                db.DeleteString(id.Value);
-                App.Logger.Log($"String {id.Value.ToString("X8")} removed");
+                db.SetString(id.Value, EditTextBox.Text);
+                App.Logger.Log($"String {id.Value.ToString("X8")} added, value: {EditTextBox.Text}");
                 OnPropertyChanged(nameof(StringValue));
-                OnPropertyChanged(nameof(PreviewTextBoxBorderBrush));
-                OnPropertyChanged(nameof(CanRemove));
             }
+        }
+        private void CopyAboveButton_Click(object sender, RoutedEventArgs e)
+        {
+            EditTextBox.Text = StringValue;
         }
 
         private void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -161,8 +162,6 @@ namespace FsLocalizationPlugin.Windows
             Config.Save();
             db.Initialize();
             OnPropertyChanged(nameof(StringValue));
-            OnPropertyChanged(nameof(PreviewTextBoxBorderBrush));
-            OnPropertyChanged(nameof(CanRemove));
         }
     }
 }
