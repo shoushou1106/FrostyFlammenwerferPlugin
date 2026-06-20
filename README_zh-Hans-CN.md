@@ -24,15 +24,34 @@
 3. 把下载的文件放在 **Frosty** 的 `Plugins` 文件夹。
 4. （可选）如果您因为安装插件遇到了错误，可尝试删除 **Frosty** 的 `Caches` 文件夹。
 
-## 单独生成与开发
-> [!TIP]
-> Frosty 有很多社区分支，您可能需要自行编译此插件
+## 1.0.7 支持
+- 这里提供的 1.0.7 发行版是基于官方 1.0.7 构建的，无法在官方版 1.0.7 Mod Manager 中正常工作（因为官方版没做完，有 Bug）
+- 您可能想要（大概率已经在）使用一个社区分支(比如这个来自 HarGabt 的)[https://github.com/HarGabt/FrostyToolsuite]。这个插件很有可能无法在这些分支里正常工作。我不可能为每一个分支都单独编译一个版本，Frosty 的分支太多了。如果您发现这个插件无法在你使用的分支里工作，可以先检查一下那个分支是否有更新，作者说不定已经帮你集成好了这个插件。如果没有，您可以尝试自行构建或礼貌的请求那个分支的开发者将这个插件集成进去，不要忘了附上这个 GitHub 仓库的链接 `github.com/shoushou1106/FrostyFlammenwerferPlugin`
+- 您创建的工程和 Mod 都是基于 `FsLocalizationPlugin` 的结构保存的，也就是无论是谁构建的版本都应该能正常打开同一份工程或 Mod。
 
-- 你需要一个现代 Windows 和 Visual Studio 2022 或更新。（推荐 Visual Studio 2026）
+## 生成与开发工作流
+- Frosty 有很多社区分支，您可能需要自行编译此插件。这也是为什么这个仓库提供两种工作流来帮助您生成与开发。
+- 集成工作流：使用 Git Submodule 来将此仓库远程集成到 `FrostyToolsuite\Plugins` 文件夹
+- 独立工作流：将这个仓库和 Frosty 仓库放在同一个目录下。对新手更友好。
+
+### 集成工作流
+1. 将这个仓库 Submodule 到 Frosty 仓库的 Plugins 目录。如果你不知道 Submodule 请自行查询“Git Submodule”。在根目录运行类似这样的命令：
+```sh
+git submodule add https://github.com/shoushou1106/FrostyFlammenwerferPlugin Plugins/FrostyFlammenwerferPlugin
+```
+2. 无视 `FrostyFlammenwerferPlugin.sln`，从您的解决方案移除原版 FsLocalizationPlugin 工程，并将 `FrostyFlammenwerferPlugin/FsLocalizationPlugin.csproj` 作为工程添加到 Plugins 目录<br/><img width="369" height="103" alt="image" src="https://github.com/user-attachments/assets/104b27f7-c97f-4ba6-a15a-551eb887ee72" />
+3. 打开配置管理器来管理这个插件的适配版本。别忘了显示的名字是`FsLocalizationPlugin`<br/><img width="128" height="142" alt="image" src="https://github.com/user-attachments/assets/e325d226-7bee-4bd6-aa3e-5b5487b4c33d" /><br/><img width="502" height="352" alt="image" src="https://github.com/user-attachments/assets/5191bc34-a5fe-43a6-9a97-a3de68c90957" />
+4. 更改插件名称，如果您觉得有必要<br><img width="777" height="252" alt="image" src="https://github.com/user-attachments/assets/773f4f86-f18d-4ab2-97d5-25258d4ba2f6" />
+
+> [!IMPORTANT]
+> 增加一些记号可以区分您自己的版本和我的发行版，这样可以避免混淆，尤其当您在分发时。
+
+
+### 独立工作流
+> [!NOTE]
+> 这个教程是为新手编写的
+
 1. 在同一个文件夹里[克隆](https://docs.github.com/repositories/creating-and-managing-repositories/cloning-a-repository) FrostyToolsuite 和此仓库。Frosty 可以是[官方版](https://github.com/CadeEvs/FrostyToolsuite)或其他分支。<br><img width="338" height="161" alt="Screenshot 2025-10-29 165404" src="https://github.com/user-attachments/assets/e14bcc7e-78be-458b-84ca-dfb9f951928d" />
-
-> [!TIP]
-> 我的发行版使用[官方版 1.0.6.2](https://github.com/CadeEvs/FrostyToolsuite/tree/1.0.6.2) 、[官方版 1.0.6.4](https://github.com/CadeEvs/FrostyToolsuite/tree/1.0.6.4) 、和[官方版 1.0.7](https://github.com/CadeEvs/FrostyToolsuite/tree/1.0.7)
 
 2. 打开 `FrostyFlammenwerferPlugin.sln`。
 
