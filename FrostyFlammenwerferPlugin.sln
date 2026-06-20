@@ -30,8 +30,8 @@ Global
 		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Debug - 1.0.6.3 or Later|x64.Build.0 = Developer - Debug|x64
 		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Debug - 1.0.7|x64.ActiveCfg = Developer - Debug|x64
 		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Debug - 1.0.7|x64.Build.0 = Developer - Debug|x64
-		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Release - 1.0.6.2 or Earlier|x64.ActiveCfg = Developer - Debug|x64
-		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Release - 1.0.6.2 or Earlier|x64.Build.0 = Developer - Debug|x64
+		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Release - 1.0.6.2 or Earlier|x64.ActiveCfg = Release - Final|x64
+		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Release - 1.0.6.2 or Earlier|x64.Build.0 = Release - Final|x64
 		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Release - 1.0.6.3 or Later|x64.ActiveCfg = Release - Final|x64
 		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Release - 1.0.6.3 or Later|x64.Build.0 = Release - Final|x64
 		{93FB4A0C-DF89-4169-80B5-C4E2277FF7A0}.Release - 1.0.7|x64.ActiveCfg = Release - Final|x64
@@ -42,8 +42,8 @@ Global
 		{D86D23D9-DB93-4D4E-B383-5022F759ABA8}.Debug - 1.0.6.3 or Later|x64.Build.0 = Developer - Debug|x64
 		{D86D23D9-DB93-4D4E-B383-5022F759ABA8}.Debug - 1.0.7|x64.ActiveCfg = Developer - Debug|x64
 		{D86D23D9-DB93-4D4E-B383-5022F759ABA8}.Debug - 1.0.7|x64.Build.0 = Developer - Debug|x64
-		{D86D23D9-DB93-4D4E-B383-5022F759ABA8}.Release - 1.0.6.2 or Earlier|x64.ActiveCfg = Developer - Debug|x64
-		{D86D23D9-DB93-4D4E-B383-5022F759ABA8}.Release - 1.0.6.2 or Earlier|x64.Build.0 = Developer - Debug|x64
+		{D86D23D9-DB93-4D4E-B383-5022F759ABA8}.Release - 1.0.6.2 or Earlier|x64.ActiveCfg = Release - Final|x64
+		{D86D23D9-DB93-4D4E-B383-5022F759ABA8}.Release - 1.0.6.2 or Earlier|x64.Build.0 = Release - Final|x64
 		{D86D23D9-DB93-4D4E-B383-5022F759ABA8}.Release - 1.0.6.3 or Later|x64.ActiveCfg = Release - Final|x64
 		{D86D23D9-DB93-4D4E-B383-5022F759ABA8}.Release - 1.0.6.3 or Later|x64.Build.0 = Release - Final|x64
 		{D86D23D9-DB93-4D4E-B383-5022F759ABA8}.Release - 1.0.7|x64.ActiveCfg = Release - Final|x64
@@ -54,8 +54,8 @@ Global
 		{51D3305B-48D0-4D4C-9D64-727185420EAC}.Debug - 1.0.6.3 or Later|x64.Build.0 = Developer - Debug|x64
 		{51D3305B-48D0-4D4C-9D64-727185420EAC}.Debug - 1.0.7|x64.ActiveCfg = Developer - Debug|x64
 		{51D3305B-48D0-4D4C-9D64-727185420EAC}.Debug - 1.0.7|x64.Build.0 = Developer - Debug|x64
-		{51D3305B-48D0-4D4C-9D64-727185420EAC}.Release - 1.0.6.2 or Earlier|x64.ActiveCfg = Developer - Debug|x64
-		{51D3305B-48D0-4D4C-9D64-727185420EAC}.Release - 1.0.6.2 or Earlier|x64.Build.0 = Developer - Debug|x64
+		{51D3305B-48D0-4D4C-9D64-727185420EAC}.Release - 1.0.6.2 or Earlier|x64.ActiveCfg = Release - Final|x64
+		{51D3305B-48D0-4D4C-9D64-727185420EAC}.Release - 1.0.6.2 or Earlier|x64.Build.0 = Release - Final|x64
 		{51D3305B-48D0-4D4C-9D64-727185420EAC}.Release - 1.0.6.3 or Later|x64.ActiveCfg = Release - Final|x64
 		{51D3305B-48D0-4D4C-9D64-727185420EAC}.Release - 1.0.6.3 or Later|x64.Build.0 = Release - Final|x64
 		{51D3305B-48D0-4D4C-9D64-727185420EAC}.Release - 1.0.7|x64.ActiveCfg = Release - Final|x64
@@ -66,8 +66,8 @@ Global
 		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Debug - 1.0.6.3 or Later|x64.Build.0 = Developer - Debug|x64
 		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Debug - 1.0.7|x64.ActiveCfg = Developer - Debug|x64
 		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Debug - 1.0.7|x64.Build.0 = Developer - Debug|x64
-		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - 1.0.6.2 or Earlier|x64.ActiveCfg = Developer - Debug|x64
-		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - 1.0.6.2 or Earlier|x64.Build.0 = Developer - Debug|x64
+		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - 1.0.6.2 or Earlier|x64.ActiveCfg = Release - Final|x64
+		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - 1.0.6.2 or Earlier|x64.Build.0 = Release - Final|x64
 		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - 1.0.6.3 or Later|x64.ActiveCfg = Release - Final|x64
 		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - 1.0.6.3 or Later|x64.Build.0 = Release - Final|x64
 		{D1A29BF8-2E2E-47BE-845F-A6DD66D175BA}.Release - 1.0.7|x64.ActiveCfg = Release - Final|x64
@@ -77,10 +77,11 @@ Global
 		{E0BC6FC7-8E5A-3837-9F9E-AD5233A4F358}.Debug - 1.0.6.3 or Later|x64.ActiveCfg = Debug - 1.0.6.3 or Later|x64
 		{E0BC6FC7-8E5A-3837-9F9E-AD5233A4F358}.Debug - 1.0.6.3 or Later|x64.Build.0 = Debug - 1.0.6.3 or Later|x64
 		{E0BC6FC7-8E5A-3837-9F9E-AD5233A4F358}.Debug - 1.0.7|x64.ActiveCfg = Debug - 1.0.7|x64
+		{E0BC6FC7-8E5A-3837-9F9E-AD5233A4F358}.Debug - 1.0.7|x64.Build.0 = Debug - 1.0.7|x64
 		{E0BC6FC7-8E5A-3837-9F9E-AD5233A4F358}.Release - 1.0.6.2 or Earlier|x64.ActiveCfg = Release - 1.0.6.2 or Earlier|x64
 		{E0BC6FC7-8E5A-3837-9F9E-AD5233A4F358}.Release - 1.0.6.2 or Earlier|x64.Build.0 = Release - 1.0.6.2 or Earlier|x64
-		{E0BC6FC7-8E5A-3837-9F9E-AD5233A4F358}.Release - 1.0.6.3 or Later|x64.ActiveCfg = Release - 1.0.6.3 or Newer|x64
-		{E0BC6FC7-8E5A-3837-9F9E-AD5233A4F358}.Release - 1.0.6.3 or Later|x64.Build.0 = Release - 1.0.6.3 or Newer|x64
+		{E0BC6FC7-8E5A-3837-9F9E-AD5233A4F358}.Release - 1.0.6.3 or Later|x64.ActiveCfg = Release - 1.0.6.3 or Later|x64
+		{E0BC6FC7-8E5A-3837-9F9E-AD5233A4F358}.Release - 1.0.6.3 or Later|x64.Build.0 = Release - 1.0.6.3 or Later|x64
 		{E0BC6FC7-8E5A-3837-9F9E-AD5233A4F358}.Release - 1.0.7|x64.ActiveCfg = Release - 1.0.7|x64
 		{E0BC6FC7-8E5A-3837-9F9E-AD5233A4F358}.Release - 1.0.7|x64.Build.0 = Release - 1.0.7|x64
 	EndGlobalSection
