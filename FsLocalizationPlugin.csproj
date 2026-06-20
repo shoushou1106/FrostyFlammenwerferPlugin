@@ -62,21 +62,30 @@
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-  
+
+  <!-- Separate Workflow fallback -->
+  <PropertyGroup>
+    <FrostyProjPath>..\FrostyToolsuite</FrostyProjPath>
+  </PropertyGroup>
+  <!-- Integrated Workflow detection -->
+  <PropertyGroup Condition="Exists('..\..\Plugins\') And Exists('..\..\FrostyPlugin\FrostyCore.csproj')">
+    <FrostyProjPath>..\..</FrostyProjPath>
+  </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\FrostyToolsuite\FrostyControls\FrostyControls.csproj">
+    <ProjectReference Include="$(FrostyProjPath)\FrostyControls\FrostyControls.csproj">
       <Private>false</Private>
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
-    <ProjectReference Include="..\FrostyToolsuite\FrostyHash\FrostyHash.vcxproj">
+    <ProjectReference Include="$(FrostyProjPath)\FrostyHash\FrostyHash.vcxproj">
       <Private>false</Private>
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
-    <ProjectReference Include="..\FrostyToolsuite\FrostyPlugin\FrostyCore.csproj">
+    <ProjectReference Include="$(FrostyProjPath)\FrostyPlugin\FrostyCore.csproj">
       <Private>false</Private>
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
-    <ProjectReference Include="..\FrostyToolsuite\FrostySdk\FrostySdk.csproj">
+    <ProjectReference Include="$(FrostyProjPath)\FrostySdk\FrostySdk.csproj">
       <Private>false</Private>
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
