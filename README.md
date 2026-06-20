@@ -26,7 +26,7 @@
 
 ## 1.0.7 Support
 - The provided 1.0.7 release is based on official 1.0.7, which DOES NOT work with Mod Manager.
-- You might want to (or already using) another community fork, like [this one from HarGabt](https://github.com/HarGabt/FrostyToolsuite). The plugin you downloaded here have a high possibility will not work with these forks. But I cannot build it for every of them, Frosty have a lot of forks. If you find out this plugin not working with a fork, try build it yourself or ask the author politely to integrate this plugin and throw them the GitHub link of this repo.
+- You might want to (or already using) another community fork, like [this one from HarGabt](https://github.com/HarGabt/FrostyToolsuite). The plugin you downloaded here have a high possibility will not work with these forks. But I cannot build it for every of them, Frosty have a lot of forks. If you find out this plugin not working with a fork, check is there any updates on that fork, the author maybe already integrate this for you. If not, try build it yourself or ask the author politely to integrate this plugin, don't forget to include the GitHub link of this repo `github.com/shoushou1106/FrostyFlammenwerferPlugin`
 - The projects and mods you created use the structure of `FsLocalizationPlugin`, so your projects and mods will work properly doesn't matter who build it.
 
 ## Build and Development Workflow
