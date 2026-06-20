@@ -24,19 +24,23 @@
 3. Place the downloaded file in the `Plugins` folder under **Frosty**.
 4. (Optional) If you encountered any problems by install this, try delete `Caches` folder under **Frosty**
 
-## Build
+## Separate build and development
 > [!TIP]
 > Frosty have a lot of community fork, you may need to build your own version of plugin.
 
-- A modern Windows and Visual Studio 2022 or newer. (Visual Studio 2026 is recommended)
+- You need a modern Windows and Visual Studio 2022 or newer. (Visual Studio 2026 is recommended)
 1. [Clone](https://docs.github.com/repositories/creating-and-managing-repositories/cloning-a-repository) FrostyToolsuite and this repo in a same directory. Frosty can be [official](https://github.com/CadeEvs/FrostyToolsuite) or other fork.<br><img width="338" height="161" alt="Screenshot 2025-10-29 165404" src="https://github.com/user-attachments/assets/e14bcc7e-78be-458b-84ca-dfb9f951928d" />
+
+> [!TIP]
+> My releases use [official 1.0.6.2](https://github.com/CadeEvs/FrostyToolsuite/tree/1.0.6.2), [official 1.0.6.4](https://github.com/CadeEvs/FrostyToolsuite/tree/1.0.6.4), and [official 1.0.7](https://github.com/CadeEvs/FrostyToolsuite/tree/1.0.7)
+
 
 2. Open `FrostyFlammenwerferPlugin.sln`
 
 > [!NOTE]
 > The solution requires FrostyCore, FrostySdk, FrostyControl, and FrostyHash.
 
-3. Open `Properties/AssemblyInfo.cs`<br><img width="183" height="93" alt="image" src="https://github.com/user-attachments/assets/fe823a46-5995-4651-94bc-f2da1542b1b9" />
+3. Open `FsLocalizationPlugin/Properties/AssemblyInfo.cs`<br><img width="183" height="93" alt="image" src="https://github.com/user-attachments/assets/fe823a46-5995-4651-94bc-f2da1542b1b9" />
 
 4. Change plugin name<br><img width="777" height="252" alt="image" src="https://github.com/user-attachments/assets/773f4f86-f18d-4ab2-97d5-25258d4ba2f6" />
 
