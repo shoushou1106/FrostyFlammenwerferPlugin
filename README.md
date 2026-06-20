@@ -24,16 +24,30 @@
 3. Place the downloaded file in the `Plugins` folder under **Frosty**.
 4. (Optional) If you encountered any problems by install this, try delete `Caches` folder under **Frosty**
 
-## Separate build and development
-> [!TIP]
-> Frosty have a lot of community fork, you may need to build your own version of plugin.
+## 1.0.7 Support
+- The provided 1.0.7 release is based on official 1.0.7, which DOES NOT work with Mod Manager.
+- You might want to (or already using) another community fork, like [this one from HarGabt](https://github.com/HarGabt/FrostyToolsuite). The plugin you downloaded here have a high possibility will not work with these forks. But I cannot build it for every of them, Frosty have a lot of forks. If you find out this plugin not working with a fork, please ask the author to integrate this plugin and throw them the GitHub link of this repo.
+- The projects and mods you created use the structure of `FsLocalizationPlugin`, so your projects and mods will work properly doesn't matter who build it.
 
-- You need a modern Windows and Visual Studio 2022 or newer. (Visual Studio 2026 is recommended)
+## Build and Development Workflow.
+- Frosty have a lot of community fork, you may need to build your own version of plugin. Thats why this repo provides two workflow to build and develop.
+- Integrated Workflow: Use git submodule to include this plugin remotely inside `FrostyToolsuite\Plugins` folder.
+- Separate Workflow: Put this repo and the Frosty repo in a same folder. This is also more beginner-friendly.
+
+### Integrated Workflow
+1. Submodule this repo in Frosty repo's Plugins directory. If you don't know what is Git Submodule please Google it first. Run something like this in the root folder
+```sh
+git submodule add https://github.com/shoushou1106/FrostyFlammenwerferPlugin Plugins/FrostyFlammenwerferPlugin
+```
+2. Ignore the `FrostyFlammenwerferPlugin.sln`, delete vanilla FsLocalizationPlugin project from your solution and add `FrostyFlammenwerferPlugin/FsLocalizationPlugin.csproj` inside Plugins folder<br/><img width="369" height="103" alt="image" src="https://github.com/user-attachments/assets/104b27f7-c97f-4ba6-a15a-551eb887ee72" />
+3. Open Configuration Manager to manage version of this plugin. Don't forgot it's named `FsLocalizationPlugin`<br/><img width="128" height="142" alt="image" src="https://github.com/user-attachments/assets/e325d226-7bee-4bd6-aa3e-5b5487b4c33d" /><br/><img width="502" height="352" alt="image" src="https://github.com/user-attachments/assets/5191bc34-a5fe-43a6-9a97-a3de68c90957" />
+
+
+### Separate Workflow
+> [!NOTE]
+> This tutorial is written for beginners.
+
 1. [Clone](https://docs.github.com/repositories/creating-and-managing-repositories/cloning-a-repository) FrostyToolsuite and this repo in a same directory. Frosty can be [official](https://github.com/CadeEvs/FrostyToolsuite) or other fork.<br><img width="338" height="161" alt="Screenshot 2025-10-29 165404" src="https://github.com/user-attachments/assets/e14bcc7e-78be-458b-84ca-dfb9f951928d" />
-
-> [!TIP]
-> My releases use [official 1.0.6.2](https://github.com/CadeEvs/FrostyToolsuite/tree/1.0.6.2), [official 1.0.6.4](https://github.com/CadeEvs/FrostyToolsuite/tree/1.0.6.4), and [official 1.0.7](https://github.com/CadeEvs/FrostyToolsuite/tree/1.0.7)
-
 
 2. Open `FrostyFlammenwerferPlugin.sln`
 
