@@ -40,7 +40,7 @@
 git submodule add https://github.com/shoushou1106/FrostyFlammenwerferPlugin Plugins/FrostyFlammenwerferPlugin
 ```
 2. Ignore the `FrostyFlammenwerferPlugin.sln`, delete vanilla FsLocalizationPlugin project from your solution and add `FrostyFlammenwerferPlugin/FsLocalizationPlugin.csproj` inside Plugins folder<br/><img width="369" height="103" alt="image" src="https://github.com/user-attachments/assets/104b27f7-c97f-4ba6-a15a-551eb887ee72" />
-3. Open Configuration Manager to manage version of this plugin. Don't forgot it's named `FsLocalizationPlugin`<br/><img width="128" height="142" alt="image" src="https://github.com/user-attachments/assets/e325d226-7bee-4bd6-aa3e-5b5487b4c33d" /><br/><img width="502" height="352" alt="image" src="https://github.com/user-attachments/assets/5191bc34-a5fe-43a6-9a97-a3de68c90957" />
+3. Open Configuration Manager to manage version of this plugin. Don't forgot it's named `FsLocalizationPlugin`. Visual Studio will save your config in the .sln file so it should be easier then you think it'll.<br/><img width="128" height="142" alt="image" src="https://github.com/user-attachments/assets/e325d226-7bee-4bd6-aa3e-5b5487b4c33d" /><br/><img width="502" height="352" alt="image" src="https://github.com/user-attachments/assets/5191bc34-a5fe-43a6-9a97-a3de68c90957" />
 4. Change plugin name, if you think it's necessary.<br><img width="777" height="252" alt="image" src="https://github.com/user-attachments/assets/773f4f86-f18d-4ab2-97d5-25258d4ba2f6" />
 
 > [!IMPORTANT]
