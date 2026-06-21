@@ -40,7 +40,7 @@
 git submodule add https://github.com/shoushou1106/FrostyFlammenwerferPlugin Plugins/FrostyFlammenwerferPlugin
 ```
 2. 无视 `FrostyFlammenwerferPlugin.sln`，从您的解决方案移除原版 FsLocalizationPlugin 工程，并将 `FrostyFlammenwerferPlugin/FsLocalizationPlugin.csproj` 作为工程添加到 Plugins 目录<br/><img width="369" height="103" alt="image" src="https://github.com/user-attachments/assets/104b27f7-c97f-4ba6-a15a-551eb887ee72" />
-3. 打开配置管理器来管理这个插件的适配版本。别忘了显示的名字是`FsLocalizationPlugin`<br/><img width="128" height="142" alt="image" src="https://github.com/user-attachments/assets/e325d226-7bee-4bd6-aa3e-5b5487b4c33d" /><br/><img width="502" height="352" alt="image" src="https://github.com/user-attachments/assets/5191bc34-a5fe-43a6-9a97-a3de68c90957" />
+3. 打开配置管理器来管理这个插件的适配版本。别忘了显示的名字是`FsLocalizationPlugin`。Visual Studio 会把您的配置保存在 .sln 文件中，这可能比你想的要方便。<br/><img width="128" height="142" alt="image" src="https://github.com/user-attachments/assets/e325d226-7bee-4bd6-aa3e-5b5487b4c33d" /><br/><img width="502" height="352" alt="image" src="https://github.com/user-attachments/assets/5191bc34-a5fe-43a6-9a97-a3de68c90957" />
 4. 更改插件名称，如果您觉得有必要<br><img width="777" height="252" alt="image" src="https://github.com/user-attachments/assets/773f4f86-f18d-4ab2-97d5-25258d4ba2f6" />
 
 > [!IMPORTANT]
