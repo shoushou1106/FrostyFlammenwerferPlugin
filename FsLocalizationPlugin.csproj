@@ -4,6 +4,7 @@
     <Platforms>x64</Platforms>
     <TargetFrameworks>net48</TargetFrameworks>
     <AssemblyTitle>FlammenwerferPlugin</AssemblyTitle>
+	<AssemblyName>FlammenwerferPlugin</AssemblyName>
     <Product>Frosty Flammenwerfer Plugin</Product>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
@@ -22,36 +23,36 @@
   
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - 1.0.7|x64' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\DeveloperDebug\1.0.7\</OutputPath>
+    <OutputPath>bin\Developer\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_107</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - 1.0.6.3 or Later|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\DeveloperDebug\1.0.6.3orLater\</OutputPath>
+    <OutputPath>bin\Developer\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_1063_LATER</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - 1.0.6.2 or Earlier|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\DeveloperDebug\1.0.6.2orEarlier\</OutputPath>
+    <OutputPath>bin\Developer\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_1062_EARLIER</DefineConstants>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.7|x64'">
-    <OutputPath>bin\ReleaseFinal\1.0.7\</OutputPath>
+    <OutputPath>bin\Release\Final\</OutputPath>
     <DefineConstants>TRACE;FROSTY_107</DefineConstants>
     <Optimize>true</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.6.3 or Later|x64'">
-    <OutputPath>bin\ReleaseFinal\1.0.6.3orLater\</OutputPath>
+    <OutputPath>bin\Release\Final\</OutputPath>
     <DefineConstants>TRACE;FROSTY_1063_LATER</DefineConstants>
     <Optimize>true</Optimize>
   </PropertyGroup>
     
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.6.2 or Earlier|x64'">
-    <OutputPath>bin\ReleaseFinal\1.0.6.2orEarlier\</OutputPath>
+    <OutputPath>bin\Release\Final\</OutputPath>
     <DefineConstants>TRACE;FROSTY_1062_EARLIER</DefineConstants>
     <Optimize>true</Optimize>
   </PropertyGroup>
