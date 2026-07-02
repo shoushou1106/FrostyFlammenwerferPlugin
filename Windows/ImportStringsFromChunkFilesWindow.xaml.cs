@@ -130,8 +130,7 @@ namespace FsLocalizationPlugin.Windows
 
         private void BrowsePathButton_Click(object sender, RoutedEventArgs e)
         {
-            var button = sender as Button;
-            var kind = button != null ? (button.Tag as string) : null; // "Binary" or "Histogram"
+            var kind = sender is Button button ? (button.Tag as string) : null; // "Binary" or "Histogram"
 
             FrostyOpenFileDialog openFileDialog = new FrostyOpenFileDialog($"Import {kind} Chunk",
                 "Chunk file (*.chunk)|*.chunk|Binary file (*.bin)|*.bin|All files (*.*)|*.*",

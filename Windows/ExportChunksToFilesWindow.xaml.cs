@@ -216,8 +216,7 @@ namespace FsLocalizationPlugin.Windows
             if (SelectedLanguageOption == null)
                 return;
 
-            var button = sender as Button;
-            var kind = button != null ? (button.Tag as string) : null; // "Binary" or "Histogram"
+            var kind = sender is Button button ? (button.Tag as string) : null; // "Binary" or "Histogram"
 
             FrostySaveFileDialog saveFileDialog = new FrostySaveFileDialog($"Export {SelectedLanguageOption.Language} {kind} Chunk",
                 "Chunk file (*.chunk)|*.chunk|Binary file (*.bin)|*.bin|All files (*.*)|*.*",

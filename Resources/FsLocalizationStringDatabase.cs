@@ -13,9 +13,11 @@ using System.Windows;
 using FrostySdk.Managers.Entries;
 #endif
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+// Not using correct namespace due to FsLocalization backwards compatibility
 //namespace FsLocalizationPlugin.Resources
-// Frosty cannot detect a different namespace
 namespace FsLocalizationPlugin
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 {
     /// <summary>
     /// Provides utility methods for localization string operations.

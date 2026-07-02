@@ -337,10 +337,10 @@ namespace FsLocalizationPlugin
             {
                 uint magic = reader.ReadUInt();
                 if (magic != HistogramMagic)
-                    throw new InvalidDataException($"Magic failed, invalid histogram chunk. Got {magic.ToString("X")}.");
+                    throw new InvalidDataException($"Magic failed, invalid histogram chunk. Got {magic:X}.");
 
                 uint fileSize = reader.ReadUInt();
-                uint dataOffSize = reader.ReadUInt();
+                uint _ = reader.ReadUInt(); // dataOffSize
 
                 long sizeToRead = (fileSize + 8 - reader.Position) / 2;
                 for (int i = 0; i < sizeToRead; i++)
@@ -364,7 +364,7 @@ namespace FsLocalizationPlugin
                 // Read and validate header
                 uint magic = reader.ReadUInt();
                 if (magic != StringMagic)
-                    throw new InvalidDataException($"Magic failed, invalid strings binary chunk. Got {magic.ToString("X")}.");
+                    throw new InvalidDataException($"Magic failed, invalid strings binary chunk. Got {magic:X}.");
 
                 uint fileSize = reader.ReadUInt();
                 uint listSize = reader.ReadUInt();
@@ -403,9 +403,11 @@ namespace FsLocalizationPlugin
         /// <summary>
         /// Writes updated histogram and strings binary data, merging modified strings with existing data.
         /// </summary>
+        /// <param name="am">The AssetManager to use.</param>
         /// <param name="histogramChunk">The original histogram chunk.</param>
         /// <param name="stringsBinaryChunk">The original strings binary chunk.</param>
         /// <param name="modifiedData">Dictionary of modified strings to merge.</param>
+        /// <param name="stringToRemove">List of modified strings to remove. This is not avaliable in original FsLoc.</param>
         /// <param name="newHistogramData">Output parameter containing the new histogram chunk data.</param>
         /// <param name="newStringData">Output parameter containing the new strings binary chunk data.</param>
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
@@ -429,7 +431,7 @@ namespace FsLocalizationPlugin
             {
                 histogramMagic = reader.ReadUInt();
                 if (histogramMagic != HistogramMagic)
-                    throw new InvalidDataException($"Magic failed, invalid histogram chunk. Got {histogramMagic.ToString("X")}.");
+                    throw new InvalidDataException($"Magic failed, invalid histogram chunk. Got {histogramMagic:X}.");
 
                 histogramFileSize = reader.ReadUInt();
                 histogramDataOffSize = reader.ReadUInt();
@@ -455,7 +457,7 @@ namespace FsLocalizationPlugin
                 // Read and validate header
                 stringMagic = reader.ReadUInt();
                 if (stringMagic != StringMagic)
-                    throw new InvalidDataException($"Magic failed, invalid strings binary chunk. Got {stringMagic.ToString("X")}.");
+                    throw new InvalidDataException($"Magic failed, invalid strings binary chunk. Got {stringMagic:X}.");
 
                 stringFileSize = reader.ReadUInt();
                 stringListSize = reader.ReadUInt();

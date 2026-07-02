@@ -147,7 +147,7 @@ namespace FsLocalizationPlugin.Windows
             else
             {
                 db.SetString(id.Value, EditTextBox.Text);
-                App.Logger.Log($"String {id.Value.ToString("X8")} added, value: {EditTextBox.Text}");
+                App.Logger.Log($"String {id.Value:X8} added, value: {EditTextBox.Text}");
                 OnPropertyChanged(nameof(StringValue));
             }
         }
