@@ -247,7 +247,7 @@ namespace FsLocalizationPlugin
                 if (chunkEntry != null && histogramEntry != null)
                 {
                     // only load if chunk exists
-                    strings = strings.Concat(Flammen.Flammen.ReadStrings(histogramEntry, chunkEntry)).ToDictionary(k => k.Key, v => v.Value);
+                    strings = strings.Concat(Flammen.ReadStrings(histogramEntry, chunkEntry)).ToDictionary(k => k.Key, v => v.Value);
                     foreach (uint key in loadedDatabase.GetStringsToRemove())
                     {
                         strings.Remove(key);

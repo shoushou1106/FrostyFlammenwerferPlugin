@@ -324,7 +324,7 @@ namespace FsLocalizationPlugin.Windows
                             ChunkAssetEntry histogramEntry = App.AssetManager.GetChunkEntry(localizedText.HistogramChunk);
                             ChunkAssetEntry stringChunkEntry = App.AssetManager.GetChunkEntry(localizedText.BinaryChunk);
 
-                            Flammen.Flammen.WriteAll(App.AssetManager, histogramEntry, stringChunkEntry, modifiedData, new List<uint>(),
+                            Flammen.WriteAll(App.AssetManager, histogramEntry, stringChunkEntry, modifiedData, new List<uint>(),
                                 out byte[] newHistogramData,
                                 out byte[] newStringData);
 

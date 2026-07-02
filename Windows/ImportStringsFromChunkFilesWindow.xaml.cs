@@ -251,7 +251,7 @@ namespace FsLocalizationPlugin.Windows
                     using (var histogram = File.OpenRead(HistogramFilePath))
                     using (var binary = File.OpenRead(BinaryFilePath))
                     {
-                        dictionary = Flammen.Flammen.ReadStrings(histogram, binary);
+                        dictionary = Flammen.ReadStrings(histogram, binary);
                     }
 
                     task.TaskLogger.Log("[3/3] Importing Strings");

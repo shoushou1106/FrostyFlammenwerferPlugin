@@ -113,7 +113,7 @@ namespace FsLocalizationPlugin
                     }
 
                     // Modify Chunks
-                    Flammen.Flammen.WriteAll(am, histogramEntry, stringChunkEntry, modFs.strings, stringsToRemove,
+                    Flammen.WriteAll(am, histogramEntry, stringChunkEntry, modFs.strings, stringsToRemove,
                         out byte[] newHistogramData,
                         out byte[] newStringData);
 

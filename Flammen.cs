@@ -11,7 +11,7 @@ using System.Text;
 using FrostySdk.Managers.Entries;
 #endif
 
-namespace FsLocalizationPlugin.Flammen
+namespace FsLocalizationPlugin
 {
     /// <summary>
     /// Provides functionality for encoding and decoding localized strings using histogram-based compression.
