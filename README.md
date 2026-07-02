@@ -14,7 +14,7 @@
 - Feel free to include this plugin with your mod distribution, but it is better to indicate the GitHub link to this repo and keep it updated. Remember to follow GPL-3.0.
 - Support export chunks to files.
 - Support import strings from chunk files.
-- Support delete strings (FsLocalizationPlugin will automatically ignore).
+- Support delete strings (`FsLocalizationPlugin` will automatically ignore).
 
 ## Install
 1. Download plugin from [GitHub Releases](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
