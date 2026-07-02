@@ -340,7 +340,7 @@ namespace FsLocalizationPlugin
                     throw new InvalidDataException($"Magic failed, invalid histogram chunk. Got {magic:X}.");
 
                 uint fileSize = reader.ReadUInt();
-                uint _ = reader.ReadUInt(); // dataOffSize
+                reader.ReadUInt(); // dataOffSize
 
                 long sizeToRead = (fileSize + 8 - reader.Position) / 2;
                 for (int i = 0; i < sizeToRead; i++)
