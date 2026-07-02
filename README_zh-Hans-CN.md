@@ -14,7 +14,7 @@
 - 欢迎将此插件随附您的 Mod 一起分发，但最好标注此 GitHub 仓库链接，并保持更新。记得遵守 GPL-3.0。
 - 支持将字符串导出成 Chunk。
 - 支持从 Chunk 导入字符串。
-- 支持移除字符串（实验性）。
+- 支持移除字符串（`FsLocalizationPlugin` 会自动忽略）。
 
 ## 安装
 1. 从 [GitHub 发行版](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases)下载插件。
