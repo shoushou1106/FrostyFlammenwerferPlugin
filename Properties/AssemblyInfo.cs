@@ -23,18 +23,19 @@ using System.Windows;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("4b612468-9b6a-4304-88a5-055c3575eb3d")]
 
+[assembly: PluginDisplayName("Flammenwerfer")]
+[assembly: PluginAuthor("shoushou1106")]
+
 #if FROSTY_107
-[assembly: PluginDisplayName("Flammenwerfer (for 1.0.7)")]
+[assembly: PluginVersion("0.3.1 (for 1.0.7)")]
 #elif FROSTY_1063_LATER
-[assembly: PluginDisplayName("Flammenwerfer (for 1.0.6.3 or Later)")]
+[assembly: PluginVersion("0.3.1 (for 1.0.6.3 or Later)")]
 #elif FROSTY_1062_EARLIER
-[assembly: PluginDisplayName("Flammenwerfer (for 1.0.6.2 or Earlier)")]
+[assembly: PluginVersion("0.3.1 (for 1.0.6.2 or Earlier)")]
 #else
-[assembly: PluginDisplayName("Flammenwerfer (Unknown)")]
+[assembly: PluginVersion("0.3.1 (Unknown)")]
 #endif
 
-[assembly: PluginAuthor("shoushou1106")]
-[assembly: PluginVersion("0.3.1")]
 
 [assembly: PluginNotValidForProfile((int)ProfileVersion.DragonAgeInquisition)]
 [assembly: PluginNotValidForProfile((int)ProfileVersion.MassEffectAndromeda)]
