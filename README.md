@@ -10,11 +10,11 @@
 
 ## About
 - **FlammenwerferPlugin** is modified from the `FsLocalizationPlugin` (Sorry for GalaxyMan2015 and Mophead), and designed to replace it. They are compatible with each other's projects and mods, but cannot be used at the same time.
-- This plugin supports automatically modifying histogram to allowing the game to display unsupported characters。Even the mod were exported by `FsLocalizationPlugin`, or project is saved by `FsLocalizationPlugin`, vice versa, but `FsLocalizationPlugin` do not support modifying histogram.
+- This plugin supports automatically modifying histogram to allowing the game to display unsupported characters. Even the mod were exported by `FsLocalizationPlugin`, or project is saved by `FsLocalizationPlugin`, vice versa, but `FsLocalizationPlugin` do not support modifying histogram.
 - Feel free to include this plugin with your mod distribution, but it is better to indicate the GitHub link to this repo and keep it updated. Remember to follow GPL-3.0.
 - Support export chunks to files.
 - Support import strings from chunk files.
-- Support delete strings (Experimental).
+- Support delete strings (FsLocalizationPlugin will automatically ignore).
 
 ## Install
 1. Download plugin from [GitHub Releases](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
