@@ -56,11 +56,15 @@ namespace FsLocalizationPlugin
 
         public override void ReadInternal(NativeReader reader)
         {
-            uint magic = reader.ReadUInt();
-            if (magic != 0xABCD0001)
+            uint fsMagic = reader.ReadUInt();
+            if (fsMagic != 0xABCD0001)
             {
-                int countOld = (int)magic;
-                for (int i = 0; i < countOld; i++)
+                // Old FsLoc format
+#if FROSTY_DEVELOPER
+                App.Logger.Log("[Debug] FsLocalization Old Format Detected");
+#endif
+                int legacyCount = (int)fsMagic;
+                for (int i = 0; i < legacyCount; i++)
                 {
                     uint hash = reader.ReadUInt();
                     string str = reader.ReadNullTerminatedString();
@@ -68,27 +72,68 @@ namespace FsLocalizationPlugin
                 }
                 return;
             }
-            int count = reader.ReadInt();
-            for (int i = 0; i < count; i++)
+            // New FsLoc format
+            int stringsCount = reader.ReadInt();
+            strings.Clear();
+            for (int i = 0; i < stringsCount; i++)
             {
                 uint hash = reader.ReadUInt();
                 string str = reader.ReadNullTerminatedWideString();
                 AddString(hash, str);
             }
+
+            // Flammenwerfer extended format
+            try
+            {
+                uint flammenMagic = reader.ReadUInt();
+                if (flammenMagic == 0xF1A88E22) // FLAMMENN magic
+                {
+#if FROSTY_DEVELOPER
+                    App.Logger.Log("[Debug] Flammenwerfer Extended Format Detected");
+#endif
+                    int stringsToRemoveCount = reader.ReadInt();
+                    stringsToRemove.Clear();
+                    for (int i = 0; i < stringsToRemoveCount; i++)
+                    {
+                        uint hash = reader.ReadUInt();
+                        RemoveString(reader.ReadUInt());
+                    }
+                }
+#if FROSTY_DEVELOPER
+                else
+                {
+                    App.Logger.Log("[Debug] FsLocalization New Format Detected");
+                }
+#endif
+            }
+            catch 
+            {
+                stringsToRemove.Clear();
+            }
         }
 
         public override void SaveInternal(NativeWriter writer)
         {
+            // New FsLoc format
             writer.Write(0xABCD0001);
             writer.Write(strings.Count);
-            for (int i = 0; i < strings.Count; i++)
+
+            foreach (var kvp in strings)
             {
-                writer.Write(strings.Keys.ElementAt(i));
-                string s = strings.Values.ElementAt(i);
+                writer.Write(kvp.Key);
+                string s = kvp.Value;
                 foreach (char c in s)
+                {
                     writer.Write((ushort)c);
+                }
                 writer.Write((ushort)0);
             }
+
+            // Flammenwerfer extended format
+            writer.Write(0xF1A88E22); // FLAMMENN magic
+            writer.Write(stringsToRemove.Count);
+            foreach (uint value in stringsToRemove)
+                writer.Write(value);
         }
 
         /// <summary>
@@ -142,6 +187,11 @@ namespace FsLocalizationPlugin
                 else
                     strings.Add(key, other.strings[key]);
             }
+            try
+            {
+                stringsToRemove = stringsToRemove.Union(other.stringsToRemove).ToList();
+            }
+            catch { }
         }
     }
 
