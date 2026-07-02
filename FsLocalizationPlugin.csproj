@@ -63,7 +63,7 @@
     </None>
   </ItemGroup>
 
-  <!-- Integrated  Workflow only -->
+  <!-- Integrated Workflow only -->
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="Exists('..\..\Plugins\') And Exists('..\..\FrostyPlugin\FrostyCore.csproj')">
     <Exec Command='xcopy /Y "$(TargetPath)" "$(SolutionDir)$(OutDir)Plugins\"' />
     <Exec Command='xcopy /Y "$(TargetPath)" "$(SolutionDir)..\FrostyModManager\$(OutDir)Plugins\"' />
@@ -73,7 +73,7 @@
   <PropertyGroup>
     <FrostyProjPath>..\FrostyToolsuite</FrostyProjPath>
   </PropertyGroup>
-  <!-- Integrated  Workflow detection -->
+  <!-- Integrated Workflow detection -->
   <PropertyGroup Condition="Exists('..\..\Plugins\') And Exists('..\..\FrostyPlugin\FrostyCore.csproj')">
     <FrostyProjPath>..\..</FrostyProjPath>
   </PropertyGroup>
