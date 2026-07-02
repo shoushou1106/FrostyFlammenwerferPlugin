@@ -103,7 +103,7 @@ namespace FsLocalizationPlugin
         /// Revert a string with the specified ID.
         /// </summary>
         /// <param name="id">The hash ID of the string to revert.</param>
-        public void RemoveString(uint id)
+        public void RevertString(uint id)
         {
             strings.Remove(id);
         }
@@ -112,7 +112,7 @@ namespace FsLocalizationPlugin
         /// Remove a string with the specified ID.
         /// </summary>
         /// <param name="id">The hash ID of the string to remove.</param>
-        public void DeleteString(uint id)
+        public void RemoveString(uint id)
         {
             strings.Remove(id);
             stringsToRemove.Add(id);
@@ -166,13 +166,13 @@ namespace FsLocalizationPlugin
             return modified.GetString(id);
         }
 
+        public void RevertString(uint id)
+        {
+            modified.RevertString(id);
+        }
         public void RemoveString(uint id)
         {
             modified.RemoveString(id);
-        }
-        public void DeleteString(uint id)
-        {
-            modified.DeleteString(id);
         }
 
         public IEnumerable<uint> EnumerateStrings()
@@ -302,7 +302,7 @@ namespace FsLocalizationPlugin
 
         public void RevertString(uint id)
         {
-            loadedDatabase.RemoveString(id);
+            loadedDatabase.RevertString(id);
             App.AssetManager.ModifyEbx(App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid).Name, loadedDatabase);
         }
 
@@ -334,9 +334,9 @@ namespace FsLocalizationPlugin
             return loadedDatabase.EnumerateStrings().Contains(id);
         }
 
-        public void DeleteString(uint id)
+        public void RemoveString(uint id)
         {
-            loadedDatabase.DeleteString(id);
+            loadedDatabase.RemoveString(id);
             strings.Remove(id);
             App.AssetManager.ModifyEbx(App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid).Name, loadedDatabase);
         }

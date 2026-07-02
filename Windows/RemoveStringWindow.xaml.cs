@@ -151,7 +151,7 @@ namespace FsLocalizationPlugin.Windows
             }
             else
             {
-                db.DeleteString(id.Value);
+                db.RemoveString(id.Value);
                 App.Logger.Log($"String {id.Value.ToString("X8")} removed");
                 OnPropertyChanged(nameof(StringValue));
                 OnPropertyChanged(nameof(PreviewTextBoxBorderBrush));

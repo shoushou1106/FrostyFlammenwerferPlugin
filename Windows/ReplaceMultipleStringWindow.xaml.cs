@@ -137,7 +137,7 @@ namespace FsLocalizationPlugin.Windows
                                 {
                                     if (Regex.IsMatch(value, CurrentValueTextBox.Text))
                                     {
-                                        db.DeleteString(stringid);
+                                        db.RemoveString(stringid);
                                         totalDelete++;
                                     }
                                 }
@@ -145,7 +145,7 @@ namespace FsLocalizationPlugin.Windows
                                 {
                                     if (Regex.IsMatch(value, pattern, options))
                                     {
-                                        db.DeleteString(stringid);
+                                        db.RemoveString(stringid);
                                         totalDelete++;
                                     }
                                 }
@@ -158,7 +158,7 @@ namespace FsLocalizationPlugin.Windows
                                 {
                                     if (Regex.IsMatch(value, CurrentValueTextBox.Text))
                                     {
-                                        db.DeleteString(stringid);
+                                        db.RemoveString(stringid);
                                         totalDelete++;
                                     }
                                 }
@@ -166,7 +166,7 @@ namespace FsLocalizationPlugin.Windows
                                 {
                                     if (Regex.IsMatch(value, pattern, options))
                                     {
-                                        db.DeleteString(stringid);
+                                        db.RemoveString(stringid);
                                         totalDelete++;
                                     }
                                 }

@@ -236,7 +236,7 @@ namespace FsLocalizationPlugin.Windows
                         int totalDelete = db.EnumerateStrings().Count();
                         foreach (uint id in db.EnumerateStrings())
                         {
-                            (db as FsLocalizationStringDatabase).DeleteString(id);
+                            (db as FsLocalizationStringDatabase).RemoveString(id);
                             cancelToken.Token.ThrowIfCancellationRequested();
                             ReportProgress(task.TaskLogger, ++currentDelete, totalDelete, currentPart: 1, totalParts);
                         }
