@@ -3,8 +3,9 @@
     <Configurations>Debug - 1.0.6.2 or Earlier;Debug - 1.0.6.3 or Later;Debug - 1.0.7;Release - 1.0.6.2 or Earlier;Release - 1.0.6.3 or Later;Release - 1.0.7</Configurations>
     <Platforms>x64</Platforms>
     <TargetFrameworks>net48</TargetFrameworks>
+    <!-- AssemblyName is set to FsLocalizationPlugin on purpose, renamed after build. -->
+    <AssemblyName>FsLocalizationPlugin</AssemblyName>
     <AssemblyTitle>FlammenwerferPlugin</AssemblyTitle>
-	<AssemblyName>FlammenwerferPlugin</AssemblyName>
     <Product>Frosty Flammenwerfer Plugin</Product>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
@@ -23,78 +24,98 @@
   
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - 1.0.7|x64' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Developer\Debug\</OutputPath>
+    <OutputPath>bin\DeveloperDebug\1.0.7\</OutputPath>
     <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_107</DefineConstants>
+    <IsDebug>true</IsDebug>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - 1.0.6.3 or Later|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Developer\Debug\</OutputPath>
+    <OutputPath>bin\DeveloperDebug\1.0.6.3orLater\</OutputPath>
     <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_1063_LATER</DefineConstants>
+    <IsDebug>true</IsDebug>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - 1.0.6.2 or Earlier|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Developer\Debug\</OutputPath>
+    <OutputPath>bin\DeveloperDebug\1.0.6.2orEarlier\</OutputPath>
     <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_1062_EARLIER</DefineConstants>
+    <IsDebug>true</IsDebug>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.7|x64'">
-    <OutputPath>bin\Release\Final\</OutputPath>
+    <OutputPath>bin\ReleaseFinal\1.0.7\</OutputPath>
     <DefineConstants>TRACE;FROSTY_107</DefineConstants>
     <Optimize>true</Optimize>
+    <IsDebug>false</IsDebug>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.6.3 or Later|x64'">
-    <OutputPath>bin\Release\Final\</OutputPath>
+    <OutputPath>bin\ReleaseFinal\1.0.6.3orLater\</OutputPath>
     <DefineConstants>TRACE;FROSTY_1063_LATER</DefineConstants>
     <Optimize>true</Optimize>
+    <IsDebug>false</IsDebug>
   </PropertyGroup>
-    
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.6.2 or Earlier|x64'">
-    <OutputPath>bin\Release\Final\</OutputPath>
+    <OutputPath>bin\ReleaseFinal\1.0.6.2orEarlier\</OutputPath>
     <DefineConstants>TRACE;FROSTY_1062_EARLIER</DefineConstants>
     <Optimize>true</Optimize>
+    <IsDebug>false</IsDebug>
+  </PropertyGroup>
+    
+  <!-- Integrated Workflow detection -->
+  <PropertyGroup>
+    <IsIntegratedWorkflow>false</IsIntegratedWorkflow>
+    <IsIntegratedWorkflow Condition="Exists('..\..\Plugins\') And Exists('..\..\FrostyPlugin\FrostyCore.csproj')">true</IsIntegratedWorkflow>
   </PropertyGroup>
   
-  <ItemGroup>
-    <None Include="README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
-
   <!-- Integrated Workflow only -->
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="Exists('..\..\Plugins\') And Exists('..\..\FrostyPlugin\FrostyCore.csproj')">
-    <Exec Command='xcopy /Y "$(TargetPath)" "$(SolutionDir)$(OutDir)Plugins\"' />
-    <Exec Command='xcopy /Y "$(TargetPath)" "$(SolutionDir)..\FrostyModManager\$(OutDir)Plugins\"' />
+  <Target Name="CopyPluginDebug" AfterTargets="PostBuildEvent" Condition="$(IsIntegratedWorkflow) And $(IsDebug)">
+    <!-- Not renaming for debug -->
+    <Copy SourceFiles="$(TargetPath)"
+      DestinationFolder="$(SolutionDir)\bin\Developer\Debug\Plugins\"
+      SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetPath)"
+      DestinationFolder="$(SolutionDir)..\FrostyModManager\bin\Developer\Debug\Plugins\"
+      SkipUnchangedFiles="true" />
+    <!-- Copy PDB -->
+    <Copy SourceFiles="$(OutputPath)\FsLocalizationPlugin.pdb"
+      DestinationFolder="$(SolutionDir)\bin\Developer\Debug\Plugins\"
+      SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(OutputPath)\FsLocalizationPlugin.pdb"
+      DestinationFolder="$(SolutionDir)..\FrostyModManager\bin\Developer\Debug\Plugins\"
+      SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="CopyPluginRelease" AfterTargets="PostBuildEvent" Condition="$(IsIntegratedWorkflow) And !$(IsDebug)">
+    <!-- Rename for end-user experience -->
+    <Copy SourceFiles="$(TargetPath)"
+        DestinationFiles="$(SolutionDir)\bin\Release\Final\Plugins\FlammenwerferPlugin.dll"
+        SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetPath)"
+        DestinationFiles="$(SolutionDir)..\FrostyModManager\bin\Release\Final\Plugins\FlammenwerferPlugin.dll"
+        SkipUnchangedFiles="true" />
   </Target>
 
-  <!-- Separate Workflow fallback -->
   <PropertyGroup>
+    <!-- Separate Workflow fallback -->
     <FrostyProjPath>..\FrostyToolsuite</FrostyProjPath>
-  </PropertyGroup>
-  <!-- Integrated Workflow detection -->
-  <PropertyGroup Condition="Exists('..\..\Plugins\') And Exists('..\..\FrostyPlugin\FrostyCore.csproj')">
-    <FrostyProjPath>..\..</FrostyProjPath>
+    <!-- Integrated Workflow -->
+    <FrostyProjPath Condition="$(IsIntegratedWorkflow)">..\..</FrostyProjPath>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(FrostyProjPath)\FrostyControls\FrostyControls.csproj">
       <Private>false</Private>
-      <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
     <ProjectReference Include="$(FrostyProjPath)\FrostyHash\FrostyHash.vcxproj">
       <Private>false</Private>
-      <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
     <ProjectReference Include="$(FrostyProjPath)\FrostyPlugin\FrostyCore.csproj">
       <Private>false</Private>
-      <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
     <ProjectReference Include="$(FrostyProjPath)\FrostySdk\FrostySdk.csproj">
       <Private>false</Private>
-      <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
   </ItemGroup>
 
