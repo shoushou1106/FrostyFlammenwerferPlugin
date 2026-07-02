@@ -49,7 +49,7 @@ namespace FsLocalizationPlugin.Windows
 
         public string StringValue => HashOrIdToId(HashOrId) == null ? "Invalid Hash or ID" : db.GetString(HashOrIdToId(HashOrId).Value);
 
-        public System.Windows.Media.Brush PreviewTextBoxBorderBrush => HashOrIdToId(HashOrId) == null ? System.Windows.Media.Brushes.Red : (System.Windows.Media.Brush)this.TryFindResource("ControlBackground");
+        public System.Windows.Media.Brush PreviewTextBoxBorderBrush => HashOrIdToId(HashOrId) == null || StringValue.StartsWith("[Error]") ? System.Windows.Media.Brushes.Red : (System.Windows.Media.Brush)this.TryFindResource("ControlBackground");
 
         public bool ShowIdToHash => HashOrId.StartsWith("ID");
 
@@ -117,6 +117,8 @@ namespace FsLocalizationPlugin.Windows
 
         private uint? HashOrIdToId(string hashOrId)
         {
+            if (hashOrId == null)
+                return null;
             try
             {
                 if (hashOrId.StartsWith("ID"))

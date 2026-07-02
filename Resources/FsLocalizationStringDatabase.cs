@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 
 #if FROSTY_107
 using FrostySdk.Managers.Entries;
@@ -96,7 +97,7 @@ namespace FsLocalizationPlugin
                     for (int i = 0; i < stringsToRemoveCount; i++)
                     {
                         uint hash = reader.ReadUInt();
-                        RemoveString(reader.ReadUInt());
+                        RemoveString(hash);
                     }
                 }
 #if FROSTY_DEVELOPER
@@ -118,7 +119,7 @@ namespace FsLocalizationPlugin
             writer.Write(0xABCD0001);
             writer.Write(strings.Count);
 
-            foreach (var kvp in strings)
+            foreach (KeyValuePair<uint, string> kvp in strings)
             {
                 writer.Write(kvp.Key);
                 string s = kvp.Value;
@@ -144,6 +145,7 @@ namespace FsLocalizationPlugin
         public void AddString(uint id, string str)
         {
             strings[id] = str;
+            stringsToRemove.Remove(id);
         }
 
         /// <summary>
@@ -153,6 +155,7 @@ namespace FsLocalizationPlugin
         public void RevertString(uint id)
         {
             strings.Remove(id);
+            stringsToRemove.Remove(id);
         }
 
         /// <summary>
@@ -227,20 +230,11 @@ namespace FsLocalizationPlugin
             modified.RemoveString(id);
         }
 
-        public IEnumerable<uint> EnumerateStrings()
-        {
-            return modified.EnumerateStrings();
-        }
+        public IEnumerable<uint> EnumerateStrings() => modified.EnumerateStrings();
 
-        public Dictionary<uint, string> GetStrings()
-        {
-            return modified.strings;
-        }
+        public Dictionary<uint, string> GetStrings() => modified.strings;
 
-        public List<uint> GetStringsToRemove()
-        {
-            return modified.stringsToRemove;
-        }
+        public List<uint> GetStringsToRemove() => modified.stringsToRemove;
     }
 
     public class FsLocalizationStringDatabase : ILocalizedStringDatabase
@@ -299,21 +293,29 @@ namespace FsLocalizationPlugin
                 if (chunkEntry != null && histogramEntry != null)
                 {
                     // only load if chunk exists
-                    strings = strings.Concat(Flammen.ReadStrings(histogramEntry, chunkEntry)).ToDictionary(k => k.Key, v => v.Value);
-                    foreach (uint key in loadedDatabase.GetStringsToRemove())
-                    {
-                        strings.Remove(key);
-                    }
+                    strings = Flammen.ReadStrings(histogramEntry, chunkEntry);
                 }
             }
         }
 
         public IEnumerable<uint> EnumerateStrings()
         {
-            foreach (uint key in strings.Keys)
-                yield return key;
+            var yieldedKeys = new HashSet<uint>();
+
             foreach (uint key in loadedDatabase.EnumerateStrings())
-                yield return key;
+            {
+                if (!loadedDatabase.GetStringsToRemove().Contains(key))
+                {
+                    yield return key;
+                    yieldedKeys.Add(key);
+                }
+            }
+
+            foreach (uint key in strings.Keys)
+            {
+                if (!loadedDatabase.GetStringsToRemove().Contains(key) && !yieldedKeys.Contains(key))
+                    yield return key;
+            }
         }
         public IEnumerable<uint> EnumerateModifiedStrings()
         {
@@ -323,15 +325,16 @@ namespace FsLocalizationPlugin
 
         public string GetString(uint id)
         {
+            if (loadedDatabase.GetStringsToRemove().Contains(id))
+                return $"[Error] String Removed: {id:X8}";
+
             string value = loadedDatabase.GetString(id);
             if (value != null)
                 return value;
 
             if (!strings.ContainsKey(id))
             {
-                if (id == 0)
-                    return "";
-                return string.Format("Invalid StringId: {0}", id.ToString("X8"));
+                return $"[Error] Invalid String ID: {id:X8}";
             }
 
             return strings[id];
@@ -389,7 +392,6 @@ namespace FsLocalizationPlugin
         public void RemoveString(uint id)
         {
             loadedDatabase.RemoveString(id);
-            strings.Remove(id);
             App.AssetManager.ModifyEbx(App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid).Name, loadedDatabase);
         }
     }

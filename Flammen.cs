@@ -374,18 +374,18 @@ namespace FsLocalizationPlugin
                 string section = reader.ReadNullTerminatedString();
 
                 // Read hash-offset pairs
-                List<Tuple<uint, uint>> hashPairList = new List<Tuple<uint, uint>>();
+                List<ValueTuple<uint, uint>> hashPairList = new List<ValueTuple<uint, uint>>();
                 reader.Position = dataOffset + 8;
 
                 while (reader.Position != stringsOffset + 8)
                 {
                     uint hash = reader.ReadUInt();
                     uint offset = reader.ReadUInt();
-                    hashPairList.Add(new Tuple<uint, uint>(hash, offset));
+                    hashPairList.Add(new ValueTuple<uint, uint>(hash, offset));
                 }
 
                 // Decode strings using histogram
-                foreach (Tuple<uint, uint> hashPair in hashPairList)
+                foreach (ValueTuple<uint, uint> hashPair in hashPairList)
                 {
                     reader.Position = stringsOffset + hashPair.Item2 + 8;
                     string binString = reader.ReadNullTerminatedString();
@@ -467,16 +467,16 @@ namespace FsLocalizationPlugin
                 stringSection = reader.ReadNullTerminatedString();
 
                 // Read hash-offset pairs
-                List<Tuple<uint, uint>> hashPairList = new List<Tuple<uint, uint>>();
+                List<ValueTuple<uint, uint>> hashPairList = new List<ValueTuple<uint, uint>>();
                 reader.Position = stringDataOffset + 8;
 
                 while (reader.Position != stringStringsOffset + 8)
                 {
-                    hashPairList.Add(new Tuple<uint, uint>(reader.ReadUInt(), reader.ReadUInt()));
+                    hashPairList.Add(new ValueTuple<uint, uint>(reader.ReadUInt(), reader.ReadUInt()));
                 }
 
                 // Decode existing strings
-                foreach (Tuple<uint, uint> hashPair in hashPairList)
+                foreach (ValueTuple<uint, uint> hashPair in hashPairList)
                 {
                     reader.Position = stringStringsOffset + hashPair.Item2 + 8;
                     string binString = reader.ReadNullTerminatedString();
@@ -488,8 +488,6 @@ namespace FsLocalizationPlugin
                 }
             }
 
-            // Add new characters to histogram
-            AddCharsToHistogram(modifiedData.Values, ref histogramDataOffSize, ref histogramSection);
 
             // Merge modified strings with existing strings
             foreach (KeyValuePair<uint, string> data in modifiedData)
@@ -500,7 +498,10 @@ namespace FsLocalizationPlugin
             {
                 stringList.Remove(id);
             }
-            stringList.OrderBy(pair => pair.Key);
+            //stringList.OrderBy(pair => pair.Key);
+
+            // Add new characters to histogram
+            AddCharsToHistogram(stringList.Values, ref histogramDataOffSize, ref histogramSection);
 
             // Write histogram chunk
             newHistogramData = WriteHistogramChunk(histogramDataOffSize, histogramSection, out histogramFileSize);
@@ -522,8 +523,7 @@ namespace FsLocalizationPlugin
 
                 foreach (char c in section)
                 {
-                    ushort charCode = (ushort)c;
-                    writer.Write(charCode);
+                    writer.Write((ushort)c);
                 }
 
                 // Update file size
