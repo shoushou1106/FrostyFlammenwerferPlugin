@@ -49,7 +49,7 @@ A few things worth knowing:
 ## Install
 
 1. Download the plugin from [GitHub Releases](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
-   - Also grab the `.pdb` if you want to debug, rename both the dll and pdb to `FsLocalizationPlugin`, and place it next to the `.dll`.
+   - Also grab the `.pdb` if you want to debug, rename both the dll and pdb to `FsLocalizationPlugin`.
 2. Delete or disable `FsLocalizationPlugin.dll` in your Frosty `Plugins` folder.
    - Disabling is safer than deleting: rename it to something that isn't `.dll`, e.g. `FsLocalizationPlugin.dll.disable`.
 3. Place the downloaded file in the `Plugins` folder.
