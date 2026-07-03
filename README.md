@@ -2,7 +2,7 @@
 > This plugin is still under development.
 
 > [!WARNING]
-> This plugin is not production-ready. Do not release a mod or fork with this yet.
+> This plugin is not production-ready. Do not release a mod or Frosty fork with this yet.
 
 # Frosty Flammenwerfer Plugin
 
