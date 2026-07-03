@@ -32,7 +32,7 @@ Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by Gal
 
 Two-way compatibility with the original `FsLocalizationPlugin` is Flammenwerfer Plugin's core feature and promise, and it's why the two plugins share a project/mod format:
 
-| Project or mod saved by... | ...opened in Flammenwerfer Plugin | ...opened in `FsLocalizationPlugin` |
+| Project or mod saved by... | ...opened in Flammenwerfer Plugin | ...opened in FsLocalizationPlugin |
 | --- | --- | --- |
 | FsLocalizationPlugin | Loads normally | Loads normally (obviously) |
 | Flammenwerfer Plugin | Loads normally | Loads normally |
