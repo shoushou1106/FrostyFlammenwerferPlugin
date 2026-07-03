@@ -28,6 +28,8 @@ namespace FsLocalizationPlugin.Windows
 
         public FsLocalizationStringDatabase db = LocalizedStringDatabase.Current as FsLocalizationStringDatabase;
 
+        private string CurrentLocale { get; set; }
+
         private string _hashOrId;
         public string HashOrId
         {
@@ -56,6 +58,9 @@ namespace FsLocalizationPlugin.Windows
         {
             Owner = owner;
 
+            // Save user's current locale and change back when window closed.
+            CurrentLocale = Config.Get<string>("Language", "English", ConfigScope.Game); 
+
             InitializeComponent();
 
             Left = Owner.Left + (Owner.Width / 2.0) - (ActualWidth / 2.0);
@@ -67,7 +72,7 @@ namespace FsLocalizationPlugin.Windows
 
             LanguageComboBox.Items.Clear();
             GetLocalizedLanguages().ForEach(x => LanguageComboBox.Items.Add(x));
-            LanguageComboBox.SelectedIndex = LanguageComboBox.Items.IndexOf(Config.Get<string>("Language", "English", ConfigScope.Game));
+            LanguageComboBox.SelectedIndex = LanguageComboBox.Items.IndexOf(CurrentLocale);
             // Manually set to avoid exception
             LanguageComboBox.SelectionChanged += LanguageComboBox_SelectionChanged;
         }
@@ -162,6 +167,17 @@ namespace FsLocalizationPlugin.Windows
             Config.Save();
             db.Initialize();
             OnPropertyChanged(nameof(StringValue));
+        }
+
+        private void addStringWindow_Closing(object sender, CancelEventArgs e)
+        {
+            // Skip the costly database re-initialization when the user never switched languages
+            if (Config.Get("Language", "English", ConfigScope.Game) == CurrentLocale)
+                return;
+
+            Config.Add("Language", CurrentLocale, ConfigScope.Game);
+            Config.Save();
+            db.Initialize();
         }
     }
 }

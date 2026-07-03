@@ -73,28 +73,16 @@
   <!-- Integrated Workflow only -->
   <Target Name="CopyPluginDebug" AfterTargets="PostBuildEvent" Condition="$(IsIntegratedWorkflow) And $(IsDebug)">
     <!-- Not renaming for debug -->
-    <Copy SourceFiles="$(TargetPath)"
-      DestinationFolder="$(SolutionDir)\bin\Developer\Debug\Plugins\"
-      SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(TargetPath)"
-      DestinationFolder="$(SolutionDir)..\FrostyModManager\bin\Developer\Debug\Plugins\"
-      SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SolutionDir)\bin\Developer\Debug\Plugins\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SolutionDir)..\FrostyModManager\bin\Developer\Debug\Plugins\" SkipUnchangedFiles="true" />
     <!-- Copy PDB -->
-    <Copy SourceFiles="$(OutputPath)\FsLocalizationPlugin.pdb"
-      DestinationFolder="$(SolutionDir)\bin\Developer\Debug\Plugins\"
-      SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(OutputPath)\FsLocalizationPlugin.pdb"
-      DestinationFolder="$(SolutionDir)..\FrostyModManager\bin\Developer\Debug\Plugins\"
-      SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(OutputPath)\FsLocalizationPlugin.pdb" DestinationFolder="$(SolutionDir)\bin\Developer\Debug\Plugins\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(OutputPath)\FsLocalizationPlugin.pdb" DestinationFolder="$(SolutionDir)..\FrostyModManager\bin\Developer\Debug\Plugins\" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="CopyPluginRelease" AfterTargets="PostBuildEvent" Condition="$(IsIntegratedWorkflow) And !$(IsDebug)">
     <!-- Rename for end-user experience -->
-    <Copy SourceFiles="$(TargetPath)"
-        DestinationFiles="$(SolutionDir)\bin\Release\Final\Plugins\FlammenwerferPlugin.dll"
-        SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(TargetPath)"
-        DestinationFiles="$(SolutionDir)..\FrostyModManager\bin\Release\Final\Plugins\FlammenwerferPlugin.dll"
-        SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(SolutionDir)\bin\Release\Final\Plugins\FlammenwerferPlugin.dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(SolutionDir)..\FrostyModManager\bin\Release\Final\Plugins\FlammenwerferPlugin.dll" SkipUnchangedFiles="true" />
   </Target>
 
   <PropertyGroup>
@@ -122,5 +110,9 @@
   <ItemGroup>
     <Resource Include="Images\tag_32dp_FFFFFF_FILL0_wght500_GRAD0_opsz40.png" />
     <Resource Include="Images\Tick_White.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ViewModels\" />
   </ItemGroup>
 </Project>
