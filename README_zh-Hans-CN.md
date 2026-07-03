@@ -1,80 +1,141 @@
-> [!NOTE] 
-> 此插件正在开发中
-  
-  
-# Frosty Flammenwerfer Plugin
+> [!NOTE]
+> 此插件正在开发中。
+
+> [!WARNING]
+> 此插件尚未达到生产可用标准。请勿发布基于此插件的模组或 Frosty 分支。
+
+# Frosty 喷火器插件
+
 [English (United States)](./README.md) | **简体中文（中国）**
-> 🔥 ***Flammenwerfer Plugin***，当 ❄️ ***Frosty*** 遇见炽火之舞。
 
-`Flammenwerfer Plugin` 是 [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/) 的 [Frosty v1](https://github.com/CadeEvs/FrostyToolsuite) 插件移植版。此插件的愿景是构建下一代的 Frosty Modding 体验，作为每个人的必装基础插件存在。从此再无语言障碍。
+> 🔥 ***喷火器插件***，当 ❄️ ***Frosty*** 遇见炽火之舞。
 
-## 关于
-- 此插件从 `FsLocalizationPlugin` 修改而来（对不起，GalaxyMan2015 和 Mophead），并旨在代替它。它们兼容对方的工程和 Mod，但不能同时使用。
-- 此插件支持自动修改码表（Histogram）从而让游戏显示不支持的字符。即使 Mod 是用 `FsLocalizationPlugin` 导出的，或者工程是用 `FsLocalizationPlugin` 保存的。反之亦然，但 `FsLocalizationPlugin` 不支持修改码表。
-- 欢迎将此插件随附您的 Mod 一起分发，但最好标注此 GitHub 仓库链接，并保持更新。记得遵守 GPL-3.0。
-- 支持将字符串导出成 Chunk。
-- 支持从 Chunk 导入字符串。
-- 支持移除字符串（`FsLocalizationPlugin` 会自动忽略）。
+喷火器插件是一个 [Frosty v1](https://github.com/CadeEvs/FrostyToolsuite) 插件，从 [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/)，一个用于修改寒霜引擎 FsLocalization 数据的工具移植而来。愿景是：构建下一代 Frosty 模组体验，作为每个人的必装基础插件存在。从此再无语言障碍。
+
+## 此插件是什么
+
+喷火器插件是 `FsLocalizationPlugin` 的直接替代品（由 GalaxyMan2015 和 Mophead 开发，向他们致谢）。但喷火器插件允许您使用几乎所有字符（例如中文字符）进行修改。读写相同的工程和模组格式，升级完全安全。
+
+## 功能
+
+- **自动扩展直方图**：所有使用 FsLocalization 的寒霜游戏都会使用直方图（Histogram）：一个码表，将字节映射到游戏能够渲染的字符。如果输入的字符不在码表中，原版 `FsLocalizationPlugin` 将会报错。喷火器插件会**自动扩展直方图**，让游戏正确显示字符。
+
+- **与往常一样使用**：它拥有原版 `FsLocalizationPlugin` 的所有功能，并附赠性能和稳定性提升。
+
+- **即使没有其他插件也能使用**：无需其他插件即可通过 Frosty 编辑器的菜单栏添加/修改字符串。说不定哪天就用上了。
+
+- **批量查找和替换**：现已支持正则表达式。
+
+- **块（Chunk）文件的导入导出：**：您可以将修改后的资源作为静态二进制文件导出。就像原版 flammenwerfer 一样。
+
+### 扩展功能
+
+- **字符串移除**：有总比没有好。移除一个字符串将使游戏显示原始 `ID_`。
+
+## 兼容性
+
+与原版 `FsLocalizationPlugin` 的双向兼容是喷火器插件的核心特性和目标，这也是为什么这两个插件共享相同工程/模组格式的原因：
+
+| 工程或模组由……保存 | 用喷火器插件打开 | 用 FsLocalizationPlugin 打开 |
+| --- | --- | --- |
+| FsLocalizationPlugin | 正常加载 | 正常加载（不然呢） |
+| 喷火器插件 | 正常加载 | 正常加载 |
+| 喷火器插件（带扩展功能） | 正常加载 | 正常加载，忽略任何扩展功能 |
+
+一些注意事项：
+
+- 不能同时运行这两个插件，请在 `Plugins` 文件夹中选择一个。
+
+- 自动扩展直方图是喷火器插件独有的功能，也是核心所在。`FsLocalizationPlugin` 如果遇到了，虽然不会崩溃，但会在日志中报告错误，并当游戏在直方图中找不到某个字符时，会显示空白。
+
+- 此插件并非适用于所有游戏。部分寒霜引擎游戏使用其他格式，例如《龙腾世纪：审判》、《质量效应：仙女座》、《圣歌》、《FIFA》系列或《死亡空间》。
+
+- 如果您使用 `FsLocalizationPlugin` 打开一个包含扩展功能的 Flammenwerfer 工程，所有扩展功能都将被忽略。如果您此时保存项目，将会**丢失**所有已保存的扩展功能。请务必小心！
+
+- 由于 FsLocalization 格式的限制，**无法支持**大于 `0xFFFF` 的字符。也就是说不能打**表情符号**😭😭😭。也不能打𰻝𰻝面（**生僻汉字**）。（也不支持某些**历史与古文字**、**特殊符号与字母**）
 
 ## 安装
-1. 从 [GitHub 发行版](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases)下载插件。
-  - 如果需要除错，也可以下载 `pdb`，并和 `dll` 放在一起。
-2. 从 **Frosty** 的 `Plugins` 文件夹删除或禁用 `FsLocalizationPlugin.dll`。
-  - 建议给插件添加 `.disable` 或其他不是 `.dll` 的**后缀**以禁用。示例：`FsLocalizationPlugin.dll.disable`。
-3. 把下载的文件放在 **Frosty** 的 `Plugins` 文件夹。
-4. （可选）如果您因为安装插件遇到了错误，可尝试删除 **Frosty** 的 `Caches` 文件夹。
 
-## 1.0.7 支持
-- 这里提供的 1.0.7 发行版是基于官方 1.0.7 构建的，无法在官方版 1.0.7 Mod Manager 中正常工作（因为官方版没做完，有 Bug）
-- 您可能想要（大概率已经在）使用一个社区分支(比如这个来自 HarGabt 的)[https://github.com/HarGabt/FrostyToolsuite]。这个插件很有可能无法在这些分支里正常工作。我不可能为每一个分支都单独编译一个版本，Frosty 的分支太多了。如果您发现这个插件无法在你使用的分支里工作，可以先检查一下那个分支是否有更新，作者说不定已经帮你集成好了这个插件。如果没有，您可以尝试自行构建或礼貌的请求那个分支的开发者将这个插件集成进去，不要忘了附上这个 GitHub 仓库的链接 `github.com/shoushou1106/FrostyFlammenwerferPlugin`
-- 您创建的工程和 Mod 都是基于 `FsLocalizationPlugin` 的结构保存的，也就是无论是谁构建的版本都应该能正常打开同一份工程或 Mod。
+1. 从 [GitHub 发行版](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases) 下载插件。
 
-## 生成与开发工作流
-- Frosty 有很多社区分支，您可能需要自行编译此插件。这也是为什么这个仓库提供两种工作流来帮助您生成与开发。
-- 集成工作流：使用 Git Submodule 来将此仓库远程集成到 `FrostyToolsuite\Plugins` 文件夹
-- 独立工作流：将这个仓库和 Frosty 仓库放在同一个目录下。对新手更友好。
+   - 如果需要调试，请一同下载 `.pdb` 文件，并将 dll 文件和 pdb 文件都重命名为 `FsLocalizationPlugin`。
 
-### 集成工作流
-1. 将这个仓库 Submodule 到 Frosty 仓库的 Plugins 目录。如果你不知道 Submodule 请自行查询“Git Submodule”。在根目录运行类似这样的命令：
-```sh
-git submodule add https://github.com/shoushou1106/FrostyFlammenwerferPlugin Plugins/FrostyFlammenwerferPlugin
-```
-2. 无视 `FrostyFlammenwerferPlugin.sln`，从您的解决方案移除原版 FsLocalizationPlugin 工程，并将 `FrostyFlammenwerferPlugin/FsLocalizationPlugin.csproj` 作为工程添加到 Plugins 目录<br/><img width="369" height="103" alt="image" src="https://github.com/user-attachments/assets/104b27f7-c97f-4ba6-a15a-551eb887ee72" />
-3. 打开配置管理器来管理这个插件的适配版本。别忘了显示的名字是`FsLocalizationPlugin`。Visual Studio 会把您的配置保存在 .sln 文件中，这可能比你想的要方便。<br/><img width="128" height="142" alt="image" src="https://github.com/user-attachments/assets/e325d226-7bee-4bd6-aa3e-5b5487b4c33d" /><br/><img width="502" height="352" alt="image" src="https://github.com/user-attachments/assets/5191bc34-a5fe-43a6-9a97-a3de68c90957" />
-4. 更改插件名称，如果您觉得有必要<br><img width="777" height="252" alt="image" src="https://github.com/user-attachments/assets/773f4f86-f18d-4ab2-97d5-25258d4ba2f6" />
+2. 删除或禁用 **Frosty** 的 `Plugins` 文件夹中的 `FsLocalizationPlugin.dll`。
 
-> [!IMPORTANT]
-> 增加一些记号可以区分您自己的版本和我的发行版，这样可以避免混淆，尤其当您在分发时。
+   - 禁用比删除更安全：可以将其重命名为任何不是 `.dll` 的**后缀**，例如 `FsLocalizationPlugin.dll.disable`。
 
+3. 将下载的文件放入 `Plugins` 文件夹。
+
+4. （可选）如果安装后遇到问题，请尝试删除 **Frosty** 目录下的 `Caches` 文件夹。
+
+## Frosty 1.0.7 及社区分支
+
+此处发布的 1.0.7 版本针对的是官方 1.0.7 版本，该版本与模组管理器不兼容。如果您使用的是一个社区分支（例如 [HarGabt 的](https://github.com/HarGabt/FrostyToolsuite)），则此版本很可能无法加载。Frosty 有许多分支，为每个分支都单独生成一个版本不太现实。
+
+如果插件无法在您使用的分支上运行：
+
+- 检查该分支有没有新版，作者是否已经集成此插件。
+
+- 如果没有，请自行生成（见下文）或联系分支的作者进行集成，请在联系时附上此仓库的链接 （`github.com/shoushou1106/FrostyFlammenwerferPlugin`）。
+
+不过这无论怎样都不会影响您的数据：无论哪个版本、哪个生成，工程和模组都使用相同的格式，因此无论谁生成了您的插件副本，都会正常工作。
+
+## 生成和开发工作流
+
+我们支持两种工作流，会自动识别并进行切换：
+
+- **独立工作流**：此仓库和您的 Frosty 仓库位于同一文件夹中。更适合新手。
+
+- **集成工作流**：此仓库是 `FrostyToolsuite\Plugins` 目录下的 Git Submodule。
 
 ### 独立工作流
-> [!NOTE]
-> 这个教程是为新手编写的
-
-1. 在同一个文件夹里[克隆](https://docs.github.com/repositories/creating-and-managing-repositories/cloning-a-repository) FrostyToolsuite 和此仓库。Frosty 可以是[官方版](https://github.com/CadeEvs/FrostyToolsuite)或其他分支。<br><img width="338" height="161" alt="Screenshot 2025-10-29 165404" src="https://github.com/user-attachments/assets/e14bcc7e-78be-458b-84ca-dfb9f951928d" />
-
-2. 打开 `FrostyFlammenwerferPlugin.sln`。
 
 > [!NOTE]
-> 此解决方案需要 `FrostyCore`，`FrostySdk`，`FrostyControl`，和 `FrostyHash`.
+> 本教程是面向新手编写的。
+
+1. 在同一个父文件夹里[克隆](https://docs.github.com/repositories/creating-and-managing-repositories/cloning-a-repository) FrostyToolsuite 和此仓库。Frosty 可以是[官方版](https://github.com/CadeEvs/FrostyToolsuite)或其他分支。<br><img width="338" height="161" alt="Screenshot 2025-10-29 165404" src="https://github.com/user-attachments/assets/e14bcc7e-78be-458b-84ca-dfb9f951928d" />
+
+2. 打开 `FrostyFlammenwerferPlugin.sln`。请在运行 Windows 10 或更高版本的现代 PC 上使用 Visual Studio 2022 或更高版本打开。
+
+> [!NOTE]
+> 此解决方案需要 Frosty 仓库中包含 FrostyCore、FrostySdk、FrostyControls 和 FrostyHash。
 
 3. 打开 `FsLocalizationPlugin/Properties/AssemblyInfo.cs`。<br><img width="183" height="93" alt="image" src="https://github.com/user-attachments/assets/fe823a46-5995-4651-94bc-f2da1542b1b9" />
 
-4. 更改插件名<br><img width="777" height="252" alt="image" src="https://github.com/user-attachments/assets/773f4f86-f18d-4ab2-97d5-25258d4ba2f6" />
+4. 更改插件名。<br><img width="777" height="252" alt="image" src="https://github.com/user-attachments/assets/773f4f86-f18d-4ab2-97d5-25258d4ba2f6" />
 
 > [!IMPORTANT]
-> 请务必增加一些记号来区分您自己的版本和我的发行版，这样可以避免混淆，尤其当您在分发时。
+> 在你的构建版本中增加一些记号来区分官方版本。这样可以避免混淆，尤其是在分发时。
 
-5. 在工具栏更改生成配置。请务必选择您正在用于构建的 Frosty 版本。<br><img width="178" height="212" alt="image" src="https://github.com/user-attachments/assets/9b157cd2-d18c-4bb7-9eb2-35eb78cd623c" />
+5. 在顶部的工具栏更改生成配置，请确保与您正在用于生成的 Frosty 版本相匹配。<br><img width="178" height="212" alt="image" src="https://github.com/user-attachments/assets/9b157cd2-d18c-4bb7-9eb2-35eb78cd623c" />
 
-    - 您可以在右下角快速切换 Frosty 分支版本<br/><img width="347" height="347" alt="image" src="https://github.com/user-attachments/assets/5e8ffb3d-ae8f-4a1b-97ab-a4ff5e4c3f4e" />
+   - 您也可以在右下角快速切换 Frosty 版本。<br/><img width="347" height="347" alt="image" src="https://github.com/user-attachments/assets/5e8ffb3d-ae8f-4a1b-97ab-a4ff5e4c3f4e" />
 
-6. 在解决方案资源管理器中右键 `FsLocalizationPlugin`，并点击**生成**。如果您更改了 Frosty 版本、分支或任何与 Frosty 相关的内容，请点击**重新生成**以避免出现问题。<br><img width="439.5" height="180.75" alt="image" src="https://github.com/user-attachments/assets/2833c7c4-bd4a-4b71-806d-8397fcfba32a" />
+6. 在解决方案资源管理器中右键此项目并点击**生成**。如果您更改了 Frosty 版本、分支或任何与 Frosty 相关的内容，请点击**重新生成**以避免出现问题。增量构建无法正确识别 Frosty 版本变更。<br><img width="439.5" height="180.75" alt="image" src="https://github.com/user-attachments/assets/2833c7c4-bd4a-4b71-806d-8397fcfba32a" />
 
-7. 插件会生成到 `bin\`
+7. 插件会生成到 `bin\`。
 
+### 集成工作流
+
+1. 将这个仓库作为 Submodule 添加到 Frosty 仓库的 `Plugins` 目录。（如果你不熟悉 Git Submodule 请自行查询）：
+   ```sh
+   git submodule add https://github.com/shoushou1106/FrostyFlammenwerferPlugin Plugins/FrostyFlammenwerferPlugin
+   ```
+2. 无视 `FrostyFlammenwerferPlugin.sln`。从您的解决方案移除原版 FsLocalizationPlugin 工程并从 Plugins 目录添加 `FrostyFlammenwerferPlugin/FsLocalizationPlugin.csproj`。<br/><img width="369" height="103" alt="image" src="https://github.com/user-attachments/assets/104b27f7-c97f-4ba6-a15a-551eb887ee72" />
+3. 打开配置管理器来管理这个插件的生成配置。请注意显示的名字是`FsLocalizationPlugin`。Visual Studio 会把您的配置保存在 .sln 文件中，这可能比你想的要方便。<br/><img width="128" height="142" alt="image" src="https://github.com/user-attachments/assets/e325d226-7bee-4bd6-aa3e-5b5487b4c33d" /><br/><img width="502" height="352" alt="image" src="https://github.com/user-attachments/assets/5191bc34-a5fe-43a6-9a97-a3de68c90957" />
+4. 更改插件名称，如果您觉得有必要。<br><img width="777" height="252" alt="image" src="https://github.com/user-attachments/assets/773f4f86-f18d-4ab2-97d5-25258d4ba2f6" />
+
+> [!IMPORTANT]
+> 在你的构建版本中增加一些记号来区分官方版本。这样可以避免混淆，尤其是在分发时。
+
+在代码库中，程序集被有意命名为“FsLocalizationPlugin.dll”（为了向后兼容）。
+
+- 在 Release 配置下。集成工作流在将输出复制到 Frosty 的 `bin\` 文件夹时，会自动将输出**重命名**为 “FlammenwerferPlugin.dll”。
+
+- 在 Debug 配置下。集成工作流在将输出复制到 Frosty 的 `bin\` 文件夹时，**不会重命名**，但是会顺便带上 pdb 文件。
 
 ## 特别鸣谢
+
 - [NFSLYY](https://space.bilibili.com/14734025) 帮助测试
 - [HarGabt](https://github.com/HarGabt) 的[分支](https://github.com/HarGabt/FrostyFlammenwerferPlugin)
 - [Max Alex](https://github.com/zyf722) 和其的 [BF1CHS](https://github.com/BF1CHS)
