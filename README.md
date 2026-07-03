@@ -117,7 +117,7 @@ The assembly is intentionally still named `FsLocalizationPlugin.dll` in the code
 
 - On Release config, integrated workflow will automatically **rename** the output to `FlammenwerferPlugin.dll` when copying it into your Frosty `bin\` folder.
 
-- On Debug config, integrated workflow will **NOT rename** the output, but it also grab the pdb when copying it into your Frosty `bin\` folder.
+- On Debug config, integrated workflow will **NOT rename** the output, but it **also grab the pdb** when copying it into your Frosty `bin\` folder.
 
 ## Special Thanks
 
