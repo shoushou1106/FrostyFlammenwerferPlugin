@@ -14,7 +14,7 @@ Flammenwerfer Plugin is a [Frosty Toolsuite v1](https://github.com/CadeEvs/Frost
 
 ## What it is
 
-Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by GalaxyMan2015 and Mophead, with my thanks and respect). But it allows you to mod with more characters. It reads and writes the same project and mod format, completely safe to upgrade.
+Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by GalaxyMan2015 and Mophead, with my thanks and respect). But it allows you to mod with almost any character. It reads and writes the same project and mod format, completely safe to upgrade.
 
 ## Features
 
@@ -44,6 +44,7 @@ A few things worth knowing:
 - Auto-grown histograms are a Flammenwerfer-only feature; `FsLocalizationPlugin` won't crash but report error is Logs, and the game will display a blank when a character is not found in histogram.
 - This plugin isn't valid for every game — Some Frostbite games use another format, like Dragon Age: Inquisition, Mass Effect Andromeda, Anthem, FIFA series, or Dead Space.
 - If you open a Flammenwerfer project with extended features using `FsLocalizationPlugin`, all extended features will be ignored. If you save the project at this point, you will **lose** all saved extended features. Be careful!
+- Due to limits of FsLocalization format, we cannot support characters bigger than `0xFFFF`. That means no emojis 😭😭😭. (Also no some rare or historical characters, and ancient scripts)
 
 ## Install
 
