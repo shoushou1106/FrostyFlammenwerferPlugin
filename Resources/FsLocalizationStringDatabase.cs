@@ -280,8 +280,6 @@ namespace FsLocalizationPlugin
     /// </summary>
     public class FsLocalizationStringDatabase : ILocalizedStringDatabase
     {
-        private static readonly HashSet<uint> EmptyIdSet = new HashSet<uint>();
-
         private Dictionary<uint, string> strings = new Dictionary<uint, string>();
         private FsLocalizationAsset loadedDatabase = null;
         private EbxAssetEntry subscribedTextEntry = null;
@@ -404,25 +402,49 @@ namespace FsLocalizationPlugin
 
         public string GetString(uint id)
         {
-            if (loadedDatabase != null)
-            {
-                if (loadedDatabase.GetStringsToRemove().Contains(id))
-                    return $"[Error] String Removed: {id:X8}";
-
-                string modifiedValue = loadedDatabase.GetString(id);
-                if (modifiedValue != null)
-                    return modifiedValue;
-            }
-
-            if (strings.TryGetValue(id, out string value))
+            if (TryGetString(id, out string value))
                 return value;
 
-            return $"[Error] Invalid String ID: {id:X8}";
+            return IsStringRemoved(id) ? $"[Error] String Removed: {id:X8}" : $"[Error] Invalid String ID: {id:X8}";
         }
 
         public string GetString(string stringId)
         {
             return GetString(LocalizationHelper.HashStringId(stringId));
+        }
+
+        /// <summary>
+        /// Attempts to get the current value of a string, without the "[Error] ..."
+        /// placeholder text <see cref="GetString(uint)"/> returns for display purposes.
+        /// </summary>
+        /// <param name="id">The hash ID of the string.</param>
+        /// <param name="value">The string's current value, if it has one.</param>
+        /// <returns><see langword="true"/> if the string exists and isn't removed.</returns>
+        public bool TryGetString(uint id, out string value)
+        {
+            if (loadedDatabase != null)
+            {
+                if (loadedDatabase.GetStringsToRemove().Contains(id))
+                {
+                    value = null;
+                    return false;
+                }
+
+                string modifiedValue = loadedDatabase.GetString(id);
+                if (modifiedValue != null)
+                {
+                    value = modifiedValue;
+                    return true;
+                }
+            }
+
+            return strings.TryGetValue(id, out value);
+        }
+
+        /// <summary>Whether a string has been marked for removal.</summary>
+        public bool IsStringRemoved(uint id)
+        {
+            return loadedDatabase != null && loadedDatabase.GetStringsToRemove().Contains(id);
         }
 
         /// <summary>
@@ -458,14 +480,12 @@ namespace FsLocalizationPlugin
 
         public void AddStringWindow()
         {
-            AddStringWindow win = new AddStringWindow(Application.Current.MainWindow);
-            win.ShowDialog();
+            new ModifyStringWindow(Application.Current.MainWindow).ShowDialog();
         }
 
         public void BulkReplaceWindow()
         {
-            ReplaceMultipleStringWindow win = new ReplaceMultipleStringWindow(Application.Current.MainWindow);
-            win.ShowDialog();
+            new ModifyMultipleStringsWindow(Application.Current.MainWindow).ShowDialog();
         }
 
         public bool isStringEdited(uint id)

@@ -36,7 +36,6 @@ using System.Windows;
 [assembly: PluginVersion("0.3.1 (Unknown)")]
 #endif
 
-
 [assembly: PluginNotValidForProfile((int)ProfileVersion.DragonAgeInquisition)]
 [assembly: PluginNotValidForProfile((int)ProfileVersion.MassEffectAndromeda)]
 [assembly: PluginNotValidForProfile((int)ProfileVersion.Anthem)]
@@ -55,17 +54,15 @@ using System.Windows;
 // Starting Frosty 1.0.6.3, Dyvinia added PluginManagerType to RegisterMenuExtension attribute.
 // On Frosty 1.0.7 and 1.0.6.2 or earlier, the PluginManagerType does not exist, writing nothing equals to PluginManagerType.Editor
 #if FROSTY_1063_LATER
-[assembly: RegisterMenuExtension(typeof(AddStringMenuExtension), PluginManagerType.Editor)]
-[assembly: RegisterMenuExtension(typeof(RemoveStringMenuExtension), PluginManagerType.Editor)]
-[assembly: RegisterMenuExtension(typeof(ReplaceMultipleStringMenuExtension), PluginManagerType.Editor)]
-[assembly: RegisterMenuExtension(typeof(ImportStringsFromChunkFilesMenuExtension), PluginManagerType.Editor)]
-[assembly: RegisterMenuExtension(typeof(ExportChunksToFilesMenuExtension), PluginManagerType.Editor)]
+[assembly: RegisterMenuExtension(typeof(ModifyStringMenuExtension), PluginManagerType.Editor)]
+[assembly: RegisterMenuExtension(typeof(ModifyMultipleStringsMenuExtension), PluginManagerType.Editor)]
+[assembly: RegisterMenuExtension(typeof(ImportChunksMenuExtension), PluginManagerType.Editor)]
+[assembly: RegisterMenuExtension(typeof(ExportChunksMenuExtension), PluginManagerType.Editor)]
 [assembly: RegisterMenuExtension(typeof(CheckCompatibilityMenuExtension), PluginManagerType.Editor)]
 #else
-[assembly: RegisterMenuExtension(typeof(AddStringMenuExtension))]
-[assembly: RegisterMenuExtension(typeof(RemoveStringMenuExtension))]
-[assembly: RegisterMenuExtension(typeof(ReplaceMultipleStringMenuExtension))]
-[assembly: RegisterMenuExtension(typeof(ImportStringsFromChunkFilesMenuExtension))]
-[assembly: RegisterMenuExtension(typeof(ExportChunksToFilesMenuExtension))]
+[assembly: RegisterMenuExtension(typeof(ModifyStringMenuExtension))]
+[assembly: RegisterMenuExtension(typeof(ModifyMultipleStringsMenuExtension))]
+[assembly: RegisterMenuExtension(typeof(ImportChunksMenuExtension))]
+[assembly: RegisterMenuExtension(typeof(ExportChunksMenuExtension))]
 [assembly: RegisterMenuExtension(typeof(CheckCompatibilityMenuExtension))]
 #endif

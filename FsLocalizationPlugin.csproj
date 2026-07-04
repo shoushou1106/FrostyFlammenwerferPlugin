@@ -3,6 +3,7 @@
     <Configurations>Debug - 1.0.6.2 or Earlier;Debug - 1.0.6.3 or Later;Debug - 1.0.7;Release - 1.0.6.2 or Earlier;Release - 1.0.6.3 or Later;Release - 1.0.7</Configurations>
     <Platforms>x64</Platforms>
     <TargetFrameworks>net48</TargetFrameworks>
+    <LangVersion>7.3</LangVersion>
     <!-- AssemblyName is set to FsLocalizationPlugin on purpose, renamed after build. -->
     <AssemblyName>FsLocalizationPlugin</AssemblyName>
     <AssemblyTitle>FlammenwerferPlugin</AssemblyTitle>
@@ -93,6 +94,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Resource Include="Images\tag_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz20.png" />
+    <Resource Include="Images\edit_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz20.png" />
+    <Resource Include="Images\find_replace_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
+    <Resource Include="Images\Tick_White.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="$(FrostyProjPath)\FrostyControls\FrostyControls.csproj">
       <Private>false</Private>
     </ProjectReference>
@@ -105,14 +113,5 @@
     <ProjectReference Include="$(FrostyProjPath)\FrostySdk\FrostySdk.csproj">
       <Private>false</Private>
     </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Images\tag_32dp_FFFFFF_FILL0_wght500_GRAD0_opsz40.png" />
-    <Resource Include="Images\Tick_White.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="ViewModels\" />
   </ItemGroup>
 </Project>
