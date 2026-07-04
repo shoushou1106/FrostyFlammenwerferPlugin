@@ -6,9 +6,7 @@ using FrostySdk.Resources;
 using FsLocalizationPlugin.Windows;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
-using System.Windows.Input;
 
 #if FROSTY_107
 using FrostySdk.Managers.Entries;
@@ -21,35 +19,41 @@ namespace FsLocalizationPlugin
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 {
     /// <summary>
-    /// Provides utility methods for localization string operations.
+    /// The diff Flammenwerfer records for a single localized-text asset: strings added or
+    /// changed, plus (as a Flammenwerfer-only extension) strings marked for removal.
     /// </summary>
-    public static class LocalizationHelper
-    {
-        /// <summary>
-        /// Computes a hash for a string ID using a custom hashing algorithm.
-        /// This is compatible with the Frostbite engine's string ID hashing.
-        /// </summary>
-        /// <param name="stringId">The string ID to hash.</param>
-        /// <returns>The 32-bit hash value.</returns>
-        public static uint HashStringId(string stringId)
-        {
-            if (string.IsNullOrEmpty(stringId))
-                return 0xFFFFFFFF;
-
-            uint result = 0xFFFFFFFF;
-            foreach (char c in stringId)
-            {
-                result = c + 33 * result;
-            }
-            return result;
-        }
-    }
-
+    /// <remarks>
+    /// <para>
+    /// <see cref="ReadInternal"/>/<see cref="SaveInternal"/> read and write three format
+    /// layers, in this order, and this layering is the entire reason Flammenwerfer can claim
+    /// two-way project/mod compatibility with the original FsLocalizationPlugin:
+    /// </para>
+    /// <list type="number">
+    /// <item>Legacy FsLocalizationPlugin format (no magic; the first value read is
+    /// directly a string count, one byte per character).</item>
+    /// <item>Current FsLocalizationPlugin format (magic <c>0xABCD0001</c>, two bytes per
+    /// character).</item>
+    /// <item>Flammenwerfer's own trailing extension (magic <c>0xF1A88E22</c>, "FLAMMENN"),
+    /// carrying the removal list. The original FsLocalizationPlugin never writes this and
+    /// never reads it - it just runs out of bytes at that point, which
+    /// <see cref="ReadInternal"/> turns into "nothing was removed" rather than a crash.</item>
+    /// </list>
+    /// <para>
+    /// The first two layers are byte-for-byte compatible with the original
+    /// FsLocalizationPlugin and must never change. The third layer is entirely
+    /// Flammenwerfer's own and safe to extend - it carries its own format-version field for
+    /// exactly that reason - as long as the read stays wrapped in a try/catch so files
+    /// without it (i.e. saved by the original FsLocalizationPlugin) still load cleanly.
+    /// </para>
+    /// </remarks>
     public class ModifiedFsLocalizationAsset : ModifiedResource
     {
+        private const uint FlammenwerferExtensionMagic = 0xF1A88E22; // "FLAMMENN"
+        private const uint FlammenwerferExtensionFormatVersion = 1;
+
         public Dictionary<uint, string> strings = new Dictionary<uint, string>();
 
-        public List<uint> stringsToRemove = new List<uint>();
+        public HashSet<uint> stringsToRemove = new HashSet<uint>();
 
         public ModifiedFsLocalizationAsset()
         {
@@ -60,7 +64,8 @@ namespace FsLocalizationPlugin
             uint fsMagic = reader.ReadUInt();
             if (fsMagic != 0xABCD0001)
             {
-                // Old FsLoc format
+                // Legacy FsLocalizationPlugin format - see the type-level remarks.
+                // Do not change this branch.
 #if FROSTY_DEVELOPER
                 App.Logger.Log("[Debug] FsLocalization Old Format Detected");
 #endif
@@ -73,7 +78,9 @@ namespace FsLocalizationPlugin
                 }
                 return;
             }
-            // New FsLoc format
+
+            // New FsLocalizationPlugin format - see the type-level remarks.
+            // Do not change this branch.
             int stringsCount = reader.ReadInt();
             strings.Clear();
             for (int i = 0; i < stringsCount; i++)
@@ -83,22 +90,32 @@ namespace FsLocalizationPlugin
                 AddString(hash, str);
             }
 
-            // Flammenwerfer extended format
+            // Flammenwerfer extension - see the type-level remarks. A project/mod saved by
+            // the original FsLocalizationPlugin simply has no more bytes here, so any read
+            // failure (end of stream, garbage magic) is treated as nothing.
             try
             {
                 uint flammenMagic = reader.ReadUInt();
-                if (flammenMagic == 0xF1A88E22) // FLAMMENN magic
+                if (flammenMagic == FlammenwerferExtensionMagic)
                 {
+                    uint formatVersion = reader.ReadUInt();
 #if FROSTY_DEVELOPER
-                    App.Logger.Log("[Debug] Flammenwerfer Extended Format Detected");
+                    App.Logger.Log($"[Debug] Flammenwerfer Extended Format Detected, Version {formatVersion}");
 #endif
-                    int stringsToRemoveCount = reader.ReadInt();
-                    stringsToRemove.Clear();
-                    for (int i = 0; i < stringsToRemoveCount; i++)
+                    if (formatVersion == FlammenwerferExtensionFormatVersion)
                     {
-                        uint hash = reader.ReadUInt();
-                        RemoveString(hash);
+                        // FormatVersion: 1
+                        int stringsToRemoveCount = reader.ReadInt();
+                        stringsToRemove.Clear();
+                        for (int i = 0; i < stringsToRemoveCount; i++)
+                        {
+                            uint hash = reader.ReadUInt();
+                            RemoveString(hash);
+                        }
                     }
+                    // Else: a newer, unrecognized extension format version. Everything
+                    // before it parsed fine, but there's nothing more we can safely read
+                    // from this trailing block.
                 }
 #if FROSTY_DEVELOPER
                 else
@@ -107,7 +124,7 @@ namespace FsLocalizationPlugin
                 }
 #endif
             }
-            catch 
+            catch
             {
                 stringsToRemove.Clear();
             }
@@ -115,7 +132,8 @@ namespace FsLocalizationPlugin
 
         public override void SaveInternal(NativeWriter writer)
         {
-            // New FsLoc format
+            // New FsLocalizationPlugin format - see the type-level remarks.
+            // Do not change this section.
             writer.Write(0xABCD0001);
             writer.Write(strings.Count);
 
@@ -130,8 +148,11 @@ namespace FsLocalizationPlugin
                 writer.Write((ushort)0);
             }
 
-            // Flammenwerfer extended format
-            writer.Write(0xF1A88E22); // FLAMMENN magic
+            // Flammenwerfer extension - see the type-level remarks.
+            writer.Write(FlammenwerferExtensionMagic);
+            writer.Write(FlammenwerferExtensionFormatVersion);
+
+            // FormatVersion: 1
             writer.Write(stringsToRemove.Count);
             foreach (uint value in stringsToRemove)
                 writer.Write(value);
@@ -149,7 +170,7 @@ namespace FsLocalizationPlugin
         }
 
         /// <summary>
-        /// Revert a string with the specified ID.
+        /// Reverts a string with the specified ID back to its unmodified, baseline value.
         /// </summary>
         /// <param name="id">The hash ID of the string to revert.</param>
         public void RevertString(uint id)
@@ -159,7 +180,7 @@ namespace FsLocalizationPlugin
         }
 
         /// <summary>
-        /// Remove a string with the specified ID.
+        /// Marks a string with the specified ID for removal.
         /// </summary>
         /// <param name="id">The hash ID of the string to remove.</param>
         public void RemoveString(uint id)
@@ -168,36 +189,50 @@ namespace FsLocalizationPlugin
             stringsToRemove.Add(id);
         }
 
+        /// <summary>
+        /// Gets the modified value of a string, or <see langword="null"/> if this diff
+        /// doesn't touch it.
+        /// </summary>
         public string GetString(uint id)
         {
-            if (!strings.ContainsKey(id))
-                return null;
-            return strings[id];
+            return strings.TryGetValue(id, out string value) ? value : null;
         }
 
+        /// <summary>
+        /// Enumerates the hash IDs of every string this diff adds or changes (not
+        /// including removals).
+        /// </summary>
         public IEnumerable<uint> EnumerateStrings()
         {
             foreach (uint key in strings.Keys)
                 yield return key;
         }
 
+        /// <summary>
+        /// Merges another diff into this one - used when Frosty Mod Manager combines two
+        /// mods that both touch the same localized-text asset. <paramref name="other"/>'s
+        /// added/changed strings win on conflict.
+        /// </summary>
         public void Merge(ModifiedFsLocalizationAsset other)
         {
             foreach (uint key in other.strings.Keys)
-            {
-                if (strings.ContainsKey(key))
-                    strings[key] = other.strings[key];
-                else
-                    strings.Add(key, other.strings[key]);
-            }
+                strings[key] = other.strings[key];
+
             try
             {
-                stringsToRemove = stringsToRemove.Union(other.stringsToRemove).ToList();
+                // Defensive: guards against a stringsToRemove that failed to come back
+                // populated from vanilla FsLocalizationPlugin ModifiedResource.
+                stringsToRemove.UnionWith(other.stringsToRemove);
             }
             catch { }
         }
     }
 
+    /// <summary>
+    /// The <see cref="EbxAsset"/> wrapper Frosty hands us for a <c>UITextDatabase</c>'s
+    /// localized-text child asset. Thin - it just forwards to the underlying
+    /// <see cref="ModifiedFsLocalizationAsset"/> diff.
+    /// </summary>
     public class FsLocalizationAsset : EbxAsset
     {
         private ModifiedFsLocalizationAsset modified = new ModifiedFsLocalizationAsset();
@@ -234,13 +269,22 @@ namespace FsLocalizationPlugin
 
         public Dictionary<uint, string> GetStrings() => modified.strings;
 
-        public List<uint> GetStringsToRemove() => modified.stringsToRemove;
+        public HashSet<uint> GetStringsToRemove() => modified.stringsToRemove;
     }
 
+    /// <summary>
+    /// Flammenwerfer's implementation of Frosty's <see cref="ILocalizedStringDatabase"/> -
+    /// the interface the editor (and any other plugin, e.g. LocalizedStringPlugin) uses to
+    /// read and edit localized text without caring which localization system a given game
+    /// actually uses under the hood.
+    /// </summary>
     public class FsLocalizationStringDatabase : ILocalizedStringDatabase
     {
+        private static readonly HashSet<uint> EmptyIdSet = new HashSet<uint>();
+
         private Dictionary<uint, string> strings = new Dictionary<uint, string>();
         private FsLocalizationAsset loadedDatabase = null;
+        private EbxAssetEntry subscribedTextEntry = null;
 
         /// <summary>
         /// Initializes the localization database by loading strings for the configured language.
@@ -253,11 +297,20 @@ namespace FsLocalizationPlugin
             Guid histogramChunk = Guid.Empty;
 
             strings.Clear();
+            loadedDatabase = null;
+
+            if (subscribedTextEntry != null)
+            {
+                subscribedTextEntry.AssetModified -= OnLoadedTextAssetModified;
+                subscribedTextEntry = null;
+            }
 
             foreach (EbxAssetEntry entry in App.AssetManager.EnumerateEbx("LocalizationAsset"))
             {
                 // read master localization asset
                 dynamic localizationAsset = App.AssetManager.GetEbx(entry).RootObject;
+
+                bool foundLanguage = false;
 
                 // iterate through localized texts
                 foreach (PointerRef pointer in localizationAsset.LocalizedTexts)
@@ -266,22 +319,26 @@ namespace FsLocalizationPlugin
                     if (textEntry == null)
                         continue;
 
-                    // read localized text asset
                     loadedDatabase = App.AssetManager.GetEbxAs<FsLocalizationAsset>(textEntry);
-                    dynamic localizedText = loadedDatabase.RootObject;
 
-                    // check for language
-                    if (localizedText.Language.ToString() == language)
-                    {
-                        textEntry.AssetModified += (o, e) =>
-                        {
-                            loadedDatabase = App.AssetManager.GetEbxAs<FsLocalizationAsset>(textEntry);
-                        };
-                        stringChunk = localizedText.BinaryChunk;
-                        histogramChunk = localizedText.HistogramChunk;
-                        break;
-                    }
+                    // Peek at the language before committing to this as loadedDatabase - a
+                    // LocalizationAsset can list texts for several languages, and only one
+                    // of them should ever end up as the active database.
+                    dynamic localizedText = loadedDatabase.RootObject;
+                    if (localizedText.Language.ToString() != language)
+                        continue;
+
+                    subscribedTextEntry = textEntry;
+                    textEntry.AssetModified += OnLoadedTextAssetModified;
+
+                    stringChunk = localizedText.BinaryChunk;
+                    histogramChunk = localizedText.HistogramChunk;
+                    foundLanguage = true;
+                    break;
                 }
+
+                if (foundLanguage)
+                    break;
             }
 
             // load chunk
@@ -298,13 +355,27 @@ namespace FsLocalizationPlugin
             }
         }
 
+        private void OnLoadedTextAssetModified(object sender, EventArgs e)
+        {
+            loadedDatabase = App.AssetManager.GetEbxAs<FsLocalizationAsset>(subscribedTextEntry);
+        }
+
+        /// <summary>
+        /// Enumerates every string hash visible for the current language: everything in
+        /// the modified diff (minus anything marked for removal), plus every baseline
+        /// string not shadowed by a modification.
+        /// </summary>
         public IEnumerable<uint> EnumerateStrings()
         {
+            if (loadedDatabase == null)
+                yield break;
+
+            HashSet<uint> removed = loadedDatabase.GetStringsToRemove();
             var yieldedKeys = new HashSet<uint>();
 
             foreach (uint key in loadedDatabase.EnumerateStrings())
             {
-                if (!loadedDatabase.GetStringsToRemove().Contains(key))
+                if (!removed.Contains(key))
                 {
                     yield return key;
                     yieldedKeys.Add(key);
@@ -313,31 +384,40 @@ namespace FsLocalizationPlugin
 
             foreach (uint key in strings.Keys)
             {
-                if (!loadedDatabase.GetStringsToRemove().Contains(key) && !yieldedKeys.Contains(key))
+                if (!removed.Contains(key) && !yieldedKeys.Contains(key))
                     yield return key;
             }
         }
+
+        /// <summary>
+        /// Enumerates only the string hashes touched by the modified diff (added, changed,
+        /// or - unlike <see cref="EnumerateStrings"/> - still including removed ones).
+        /// </summary>
         public IEnumerable<uint> EnumerateModifiedStrings()
         {
+            if (loadedDatabase == null)
+                yield break;
+
             foreach (uint key in loadedDatabase.EnumerateStrings())
                 yield return key;
         }
 
         public string GetString(uint id)
         {
-            if (loadedDatabase.GetStringsToRemove().Contains(id))
-                return $"[Error] String Removed: {id:X8}";
-
-            string value = loadedDatabase.GetString(id);
-            if (value != null)
-                return value;
-
-            if (!strings.ContainsKey(id))
+            if (loadedDatabase != null)
             {
-                return $"[Error] Invalid String ID: {id:X8}";
+                if (loadedDatabase.GetStringsToRemove().Contains(id))
+                    return $"[Error] String Removed: {id:X8}";
+
+                string modifiedValue = loadedDatabase.GetString(id);
+                if (modifiedValue != null)
+                    return modifiedValue;
             }
 
-            return strings[id];
+            if (strings.TryGetValue(id, out string value))
+                return value;
+
+            return $"[Error] Invalid String ID: {id:X8}";
         }
 
         public string GetString(string stringId)
@@ -345,6 +425,10 @@ namespace FsLocalizationPlugin
             return GetString(LocalizationHelper.HashStringId(stringId));
         }
 
+        /// <summary>
+        /// Adds a new string under the given string ID (e.g. <c>ID_FLAME</c>) and returns
+        /// its computed hash.
+        /// </summary>
         public uint AddString(string id, string value)
         {
             uint hash = LocalizationHelper.HashStringId(id);
@@ -386,9 +470,13 @@ namespace FsLocalizationPlugin
 
         public bool isStringEdited(uint id)
         {
-            return loadedDatabase.EnumerateStrings().Contains(id);
+            return loadedDatabase != null && loadedDatabase.GetStrings().ContainsKey(id);
         }
 
+        /// <summary>
+        /// Marks a string for removal. Not supported by the original FsLocalizationPlugin -
+        /// see the removal-list section of <see cref="ModifiedFsLocalizationAsset"/>'s remarks.
+        /// </summary>
         public void RemoveString(uint id)
         {
             loadedDatabase.RemoveString(id);

@@ -21,6 +21,27 @@ using FrostySdk.Managers.Entries;
 namespace FsLocalizationPlugin
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 {
+    /// <summary>
+    /// The mod merge/bake pipeline for <c>UITextDatabase</c> ebx assets - registered via
+    /// <c>[assembly: RegisterCustomHandler(CustomHandlerType.Ebx, typeof(FsLocalizationCustomActionHandler), ebxType: "UITextDatabase")]</c>
+    /// in <c>Properties/AssemblyInfo.cs</c>. Frosty calls into this from two different
+    /// places, hence the two regions below:
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Editor side</b> (building a mod from the current project): <see cref="SaveToMod"/>
+    /// serializes the <see cref="ModifiedFsLocalizationAsset"/> diff straight into the
+    /// <c>.fbmod</c> file.
+    /// </para>
+    /// <para>
+    /// <b>Mod Manager side</b> (applying one or more mods to the game): <see cref="Load"/>
+    /// merges the diffs of every mod touching the same asset (via
+    /// <see cref="ModifiedFsLocalizationAsset.Merge"/>), <see cref="GetResourceActions"/>
+    /// describes what a mod changes for the mod info UI, and <see cref="Modify"/> is the
+    /// actual "bake into the game" step: it regenerates the histogram and strings-binary
+    /// chunks from the merged diff and registers them as new runtime chunk resources.
+    /// </para>
+    /// </remarks>
     public class FsLocalizationCustomActionHandler : ICustomActionHandler
     {
         public HandlerUsage Usage => HandlerUsage.Merge;
@@ -49,6 +70,10 @@ namespace FsLocalizationPlugin
 
         #region -- Editor Specific --
 
+        /// <summary>
+        /// Serializes a modified <c>UITextDatabase</c> child asset's diff into the mod
+        /// being written.
+        /// </summary>
         public void SaveToMod(FrostyModWriter writer, AssetEntry entry)
         {
             writer.AddResource(new FsLocalizationResource(entry as EbxAssetEntry, writer.ResourceManifest));
@@ -58,6 +83,9 @@ namespace FsLocalizationPlugin
 
         #region -- Mod Manager Specific --
 
+        /// <summary>
+        /// Describes the strings a mod adds/changes, for Frosty Mod Manager's mod info UI.
+        /// </summary>
         public IEnumerable<string> GetResourceActions(string name, byte[] data)
         {
             ModifiedFsLocalizationAsset newFs = (ModifiedFsLocalizationAsset)ModifiedResource.Read(data);
@@ -75,6 +103,10 @@ namespace FsLocalizationPlugin
             return actions;
         }
 
+        /// <summary>
+        /// Merges a newly loaded mod's diff into any existing diff already accumulated
+        /// for the same asset from a previously loaded mod.
+        /// </summary>
         public object Load(object existing, byte[] newData)
         {
             ModifiedFsLocalizationAsset newFs = (ModifiedFsLocalizationAsset)ModifiedResource.Read(newData);
@@ -87,6 +119,11 @@ namespace FsLocalizationPlugin
             return oldFs;
         }
 
+        /// <summary>
+        /// Bakes the merged diff into the game: regenerates the histogram and
+        /// strings-binary chunks via <see cref="Flammen.WriteAll"/>, compresses them, and
+        /// registers them as new runtime chunk resources.
+        /// </summary>
         public void Modify(AssetEntry origEntry, AssetManager am, RuntimeResources runtimeResources, object data, out byte[] outData)
         {
             try
@@ -104,18 +141,7 @@ namespace FsLocalizationPlugin
                     ChunkAssetEntry newHistogramChunkEntry = new ChunkAssetEntry();
                     ChunkAssetEntry newStringChunkEntry = new ChunkAssetEntry();
 
-                    List<uint> stringsToRemove = new List<uint>();
-                    try
-                    {
-                        stringsToRemove = modFs.stringsToRemove;
-                    }
-                    catch
-                    {
-                        stringsToRemove = new List<uint>();
-                    }
-
-                    // Modify Chunks
-                    Flammen.WriteAll(am, histogramEntry, stringChunkEntry, modFs.strings, stringsToRemove,
+                    Flammen.WriteAll(am, histogramEntry, stringChunkEntry, modFs.strings, modFs.stringsToRemove,
                         out byte[] newHistogramData,
                         out byte[] newStringData);
 
@@ -185,25 +211,5 @@ namespace FsLocalizationPlugin
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// Extension methods for NativeWriter to support localization string operations.
-    /// </summary>
-    public static class WriterStringExtension
-    {
-        /// <summary>
-        /// Writes a null-terminated string with one byte per character.
-        /// </summary>
-        /// <param name="writer">The writer to write to.</param>
-        /// <param name="str">The string to write.</param>
-        public static void WriteNullTerminatedOneBytePerCharString(this NativeWriter writer, string str)
-        {
-            foreach (char c in str)
-            {
-                writer.Write((byte)c);
-            }
-            writer.Write((byte)0x00);
-        }
     }
 }

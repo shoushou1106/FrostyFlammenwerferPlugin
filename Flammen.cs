@@ -14,8 +14,30 @@ using FrostySdk.Managers.Entries;
 namespace FsLocalizationPlugin
 {
     /// <summary>
-    /// Provides functionality for encoding and decoding localized strings using histogram-based compression.
+    /// Reads and writes the two Frostbite chunk types that back a game's localized text:
+    /// the <b>histogram</b> chunk, a lookup table mapping single- and double-byte codes to
+    /// Unicode code points, and the <b>strings binary</b> chunk, a table of string-ID
+    /// hashes plus histogram-encoded, null-terminated string data.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Histogram chunk layout</b> (magic <c>0x00039001</c>): <c>uint magic</c>,
+    /// <c>uint fileSize</c> (byte count following the two header fields),
+    /// <c>uint dataOffSize</c> (see <see cref="AddCharsToHistogram"/>), followed by a flat
+    /// table of <c>ushort</c> code points. The table's first 128 entries are the identity
+    /// mapping for ASCII; everything from index <c>0x80</c> onward is populated (and grown)
+    /// by <see cref="AddCharsToHistogram"/>.
+    /// </para>
+    /// <para>
+    /// <b>Strings binary chunk layout</b> (magic <c>0x00039000</c>): <c>uint magic</c>,
+    /// <c>uint fileSize</c>, <c>uint listSize</c> (string count), <c>uint dataOffset</c>
+    /// (fixed at <see cref="StringDefaultDataOffset"/>), <c>uint stringsOffset</c>, a
+    /// null-terminated section-name string, padding out to <c>dataOffset</c>, then
+    /// <c>listSize</c> pairs of (<c>uint</c> string-ID hash, <c>uint</c> offset into the
+    /// string data relative to <c>stringsOffset</c>), followed by the histogram-encoded,
+    /// null-terminated string data itself.
+    /// </para>
+    /// </remarks>
     public class Flammen
     {
         // String chunk constants
@@ -32,12 +54,23 @@ namespace FsLocalizationPlugin
         private const int HistogramShiftEndIndex = 0x1FE;
 
         /// <summary>
-        /// Decodes binary string using histogram
+        /// Decodes a histogram-encoded binary string into its Unicode representation.
         /// </summary>
-        /// <param name="binString">String to decode</param>
-        /// <param name="section">Histogram</param>
+        /// <param name="binString">The raw, histogram-encoded bytes (as a string of chars 0-255).</param>
+        /// <param name="section">The histogram code-point table to decode against.</param>
         /// <returns>The decoded string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when binString or section is null</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="binString"/> or <paramref name="section"/> is null.</exception>
+        /// <remarks>
+        /// Bytes below <c>0x80</c> pass through as ASCII. Bytes at or above <c>0x80</c> are
+        /// looked up in the histogram: if the mapped value is itself &gt;= <c>0x80</c>, it's
+        /// used directly as the code point; otherwise it's a shift number, and the *next*
+        /// byte (which must also be &gt;= <c>0x80</c>) combines with it to index further into
+        /// the table. This differs from the original Python <c>flammenwerfer</c>
+        /// implementation, which guards the second byte with <c>&gt; 0x80</c> rather than
+        /// <c>&gt;= 0x80</c> - that stricter check caused a "no proper shift" failure the
+        /// moment a game launched with zero modified strings, so the looser guard here is a
+        /// deliberate fix, not an oversight.
+        /// </remarks>
         public static string DecodeString(string binString, List<ushort> section)
         {
             if (binString == null)
@@ -88,15 +121,42 @@ namespace FsLocalizationPlugin
         }
 
         /// <summary>
-        /// Encodes binary string using histogram
+        /// Encodes a string into histogram-encoded bytes, building a fresh character-to-index
+        /// lookup from <paramref name="section"/> before encoding.
         /// </summary>
-        /// <param name="str">String to encode</param>
-        /// <param name="shifts">The list of shift indices for multi-byte character encoding.</param>
-        /// <param name="section">Histogram</param>
-        /// <returns>The encoded byte array with null terminator.</returns>
+        /// <param name="str">The string to encode.</param>
+        /// <param name="shifts">The histogram indices usable as two-byte shift prefixes, in the order they should be tried.</param>
+        /// <param name="section">The histogram code-point table to encode against.</param>
+        /// <returns>The encoded byte array with a trailing null terminator.</returns>
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
         /// <exception cref="ArgumentException">Thrown when a character cannot be encoded.</exception>
+        /// <remarks>
+        /// This overload exists for API compatibility - it builds a lookup dictionary on
+        /// every call. Encoding many strings against the same histogram (as
+        /// <see cref="WriteAll"/> does) should build that dictionary once with
+        /// <see cref="BuildCharIndex"/> and call the <see cref="EncodeString(string, List{int}, List{char}, Dictionary{char, int})"/>
+        /// overload directly instead.
+        /// </remarks>
         public static byte[] EncodeString(string str, List<int> shifts, List<char> section)
+        {
+            if (section == null)
+                throw new ArgumentNullException(nameof(section));
+
+            return EncodeString(str, shifts, section, BuildCharIndex(section));
+        }
+
+        /// <summary>
+        /// Encodes a string into histogram-encoded bytes using a precomputed character-to-index
+        /// lookup, as produced by <see cref="BuildCharIndex"/>.
+        /// </summary>
+        /// <param name="str">The string to encode.</param>
+        /// <param name="shifts">The histogram indices usable as two-byte shift prefixes, in the order they should be tried.</param>
+        /// <param name="section">The histogram code-point table to encode against.</param>
+        /// <param name="charIndex">A map from character to its first occurrence's index in <paramref name="section"/>.</param>
+        /// <returns>The encoded byte array with a trailing null terminator.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when a character cannot be encoded.</exception>
+        public static byte[] EncodeString(string str, List<int> shifts, List<char> section, Dictionary<char, int> charIndex)
         {
             if (str == null)
                 throw new ArgumentNullException(nameof(str));
@@ -104,6 +164,8 @@ namespace FsLocalizationPlugin
                 throw new ArgumentNullException(nameof(shifts));
             if (section == null)
                 throw new ArgumentNullException(nameof(section));
+            if (charIndex == null)
+                throw new ArgumentNullException(nameof(charIndex));
 
             List<byte> binString = new List<byte>();
 
@@ -119,9 +181,19 @@ namespace FsLocalizationPlugin
                 else
                 {
                     // Non-ASCII character - encode using histogram
-                    int index = section.FindIndex(a => a.Equals(c));
-                    if (index == -1)
-                        continue;
+                    if (!charIndex.TryGetValue(c, out int index))
+                    {
+                        // AddCharsToHistogram is always run before encoding in WriteAll, so a
+                        // character missing from the histogram at this point means the
+                        // histogram and the strings being encoded have fallen out of sync -
+                        // that's a bug, not something to quietly paper over.
+                        throw new ArgumentException(
+                            $"Unable to encode character '{c}' (U+{(int)c:X4}) to bytes." + Environment.NewLine +
+                            "This character is not present in the histogram at all." + Environment.NewLine +
+                            "Expand the histogram with this character before encoding, or the game won't be able to display it either." + Environment.NewLine +
+                            $"Full string: {str}",
+                            nameof(str));
+                    }
 
                     if (index <= HistogramMaxShiftValue)
                     {
@@ -153,7 +225,7 @@ namespace FsLocalizationPlugin
                                 $"Unable to encode character '{c}' (U+{(int)c:X4}) to bytes." + Environment.NewLine +
                                 "The histogram does not contain a valid shift mapping for this character." + Environment.NewLine +
                                 "Consider expanding the histogram by adding more characters." + Environment.NewLine +
-                                $"Full String: {str}",
+                                $"Full string: {str}",
                                 nameof(str));
                         }
                     }
@@ -163,6 +235,34 @@ namespace FsLocalizationPlugin
             // Add null terminator
             binString.Add(0x00);
             return binString.ToArray();
+        }
+
+        /// <summary>
+        /// Builds a character-to-index lookup for a histogram section, for use with
+        /// <see cref="EncodeString(string, List{int}, List{char}, Dictionary{char, int})"/>.
+        /// </summary>
+        /// <param name="section">The histogram code-point table to index.</param>
+        /// <returns>A map from character to the index of its <i>first</i> occurrence in <paramref name="section"/>.</returns>
+        /// <remarks>
+        /// First-occurrence-wins matters: the histogram legitimately contains repeated
+        /// values (e.g. padding zeroes), and the original character-by-character
+        /// <c>List.FindIndex</c> lookup this replaces always returned the first match. Using
+        /// anything other than first-wins here would change which byte gets emitted for a
+        /// repeated character and silently produce a different (though still technically
+        /// valid) encoded chunk.
+        /// </remarks>
+        public static Dictionary<char, int> BuildCharIndex(List<char> section)
+        {
+            if (section == null)
+                throw new ArgumentNullException(nameof(section));
+
+            Dictionary<char, int> charIndex = new Dictionary<char, int>(section.Count);
+            for (int i = 0; i < section.Count; i++)
+            {
+                if (!charIndex.ContainsKey(section[i]))
+                    charIndex[section[i]] = i;
+            }
+            return charIndex;
         }
 
         /// <summary>
@@ -366,12 +466,12 @@ namespace FsLocalizationPlugin
                 if (magic != StringMagic)
                     throw new InvalidDataException($"Magic failed, invalid strings binary chunk. Got {magic:X}.");
 
-                uint fileSize = reader.ReadUInt();
-                uint listSize = reader.ReadUInt();
+                reader.ReadUInt(); // fileSize
+                reader.ReadUInt(); // listSize
                 uint dataOffset = reader.ReadUInt();
                 uint stringsOffset = reader.ReadUInt();
 
-                string section = reader.ReadNullTerminatedString();
+                reader.ReadNullTerminatedString(); // section name
 
                 // Read hash-offset pairs
                 List<ValueTuple<uint, uint>> hashPairList = new List<ValueTuple<uint, uint>>();
@@ -407,12 +507,12 @@ namespace FsLocalizationPlugin
         /// <param name="histogramChunk">The original histogram chunk.</param>
         /// <param name="stringsBinaryChunk">The original strings binary chunk.</param>
         /// <param name="modifiedData">Dictionary of modified strings to merge.</param>
-        /// <param name="stringToRemove">List of modified strings to remove. This is not avaliable in original FsLoc.</param>
+        /// <param name="stringToRemove">Hashes of strings to remove. Not supported by the original FsLocalizationPlugin.</param>
         /// <param name="newHistogramData">Output parameter containing the new histogram chunk data.</param>
         /// <param name="newStringData">Output parameter containing the new strings binary chunk data.</param>
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
         /// <exception cref="InvalidDataException">Thrown when chunk format is invalid.</exception>
-        public static void WriteAll(AssetManager am, ChunkAssetEntry histogramChunk, ChunkAssetEntry stringsBinaryChunk, Dictionary<uint, string> modifiedData, List<uint> stringToRemove, out byte[] newHistogramData, out byte[] newStringData)
+        public static void WriteAll(AssetManager am, ChunkAssetEntry histogramChunk, ChunkAssetEntry stringsBinaryChunk, Dictionary<uint, string> modifiedData, IEnumerable<uint> stringToRemove, out byte[] newHistogramData, out byte[] newStringData)
         {
             if (histogramChunk == null)
                 throw new ArgumentNullException(nameof(histogramChunk));
@@ -420,20 +520,20 @@ namespace FsLocalizationPlugin
                 throw new ArgumentNullException(nameof(stringsBinaryChunk));
             if (modifiedData == null)
                 throw new ArgumentNullException(nameof(modifiedData));
+            if (stringToRemove == null)
+                throw new ArgumentNullException(nameof(stringToRemove));
 
             // Read histogram chunk
-            uint histogramMagic;
-            uint histogramFileSize;
             uint histogramDataOffSize;
             List<char> histogramSection = new List<char>();
 
             using (NativeReader reader = new NativeReader(am.GetChunk(histogramChunk)))
             {
-                histogramMagic = reader.ReadUInt();
+                uint histogramMagic = reader.ReadUInt();
                 if (histogramMagic != HistogramMagic)
                     throw new InvalidDataException($"Magic failed, invalid histogram chunk. Got {histogramMagic:X}.");
 
-                histogramFileSize = reader.ReadUInt();
+                uint histogramFileSize = reader.ReadUInt();
                 histogramDataOffSize = reader.ReadUInt();
 
                 long sizeToRead = (histogramFileSize + 8 - reader.Position) / 2;
@@ -444,25 +544,20 @@ namespace FsLocalizationPlugin
             }
 
             // Read strings binary chunk
-            uint stringMagic;
-            uint stringFileSize;
-            uint stringListSize;
-            uint stringDataOffset;
-            uint stringStringsOffset;
             string stringSection;
             Dictionary<uint, string> stringList = new Dictionary<uint, string>();
 
             using (NativeReader reader = new NativeReader(am.GetChunk(stringsBinaryChunk)))
             {
                 // Read and validate header
-                stringMagic = reader.ReadUInt();
+                uint stringMagic = reader.ReadUInt();
                 if (stringMagic != StringMagic)
                     throw new InvalidDataException($"Magic failed, invalid strings binary chunk. Got {stringMagic:X}.");
 
-                stringFileSize = reader.ReadUInt();
-                stringListSize = reader.ReadUInt();
-                stringDataOffset = reader.ReadUInt();
-                stringStringsOffset = reader.ReadUInt();
+                reader.ReadUInt(); // fileSize
+                reader.ReadUInt(); // listSize
+                uint stringDataOffset = reader.ReadUInt();
+                uint stringStringsOffset = reader.ReadUInt();
 
                 stringSection = reader.ReadNullTerminatedString();
 
@@ -488,7 +583,6 @@ namespace FsLocalizationPlugin
                 }
             }
 
-
             // Merge modified strings with existing strings
             foreach (KeyValuePair<uint, string> data in modifiedData)
             {
@@ -498,13 +592,12 @@ namespace FsLocalizationPlugin
             {
                 stringList.Remove(id);
             }
-            //stringList.OrderBy(pair => pair.Key);
 
             // Add new characters to histogram
             AddCharsToHistogram(stringList.Values, ref histogramDataOffSize, ref histogramSection);
 
             // Write histogram chunk
-            newHistogramData = WriteHistogramChunk(histogramDataOffSize, histogramSection, out histogramFileSize);
+            newHistogramData = WriteHistogramChunk(histogramDataOffSize, histogramSection);
 
             // Write string chunk
             newStringData = WriteStringChunk(stringSection, stringList, histogramSection);
@@ -513,7 +606,7 @@ namespace FsLocalizationPlugin
         /// <summary>
         /// Writes the histogram chunk data.
         /// </summary>
-        private static byte[] WriteHistogramChunk(uint dataOffSize, List<char> section, out uint fileSize)
+        private static byte[] WriteHistogramChunk(uint dataOffSize, List<char> section)
         {
             using (NativeWriter writer = new NativeWriter(new MemoryStream()))
             {
@@ -527,7 +620,7 @@ namespace FsLocalizationPlugin
                 }
 
                 // Update file size
-                fileSize = (uint)(writer.Position - 8);
+                uint fileSize = (uint)(writer.Position - 8);
                 writer.Position = 4;
                 writer.Write(fileSize);
 
@@ -569,6 +662,12 @@ namespace FsLocalizationPlugin
                     }
                 }
 
+                // Build the character lookup once for this whole batch of strings, rather than
+                // linearly scanning the histogram section for every non-ASCII character of
+                // every string - with a large database and a grown histogram, that scan used
+                // to dominate mod-bake time.
+                Dictionary<char, int> charIndex = BuildCharIndex(histogramSection);
+
                 // Write hash pairs and encode strings
                 using (NativeWriter stringBuffer = new NativeWriter(new MemoryStream()))
                 {
@@ -576,7 +675,7 @@ namespace FsLocalizationPlugin
                     {
                         writer.Write(keyValuePair.Key);
                         writer.Write((uint)stringBuffer.Position);
-                        stringBuffer.Write(EncodeString(keyValuePair.Value, histogramShifts, histogramSection));
+                        stringBuffer.Write(EncodeString(keyValuePair.Value, histogramShifts, histogramSection, charIndex));
                     }
 
                     // Write all encoded strings
