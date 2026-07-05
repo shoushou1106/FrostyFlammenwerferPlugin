@@ -12,8 +12,8 @@
     <UseWPF>true</UseWPF>
     <OutputType>Library</OutputType>
     <Title>Frosty Flammenwerfer Plugin</Title>
-    <Version>0.3.1</Version>
-    <FileVersion>0.3.1</FileVersion>
+    <Version>0.4.0</Version>
+    <FileVersion>0.4.0</FileVersion>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>shoushou1106</Authors>
     <PackageProjectUrl>https://github.com/shoushou1106/FrostyFlammenwerferPlugin/</PackageProjectUrl>
