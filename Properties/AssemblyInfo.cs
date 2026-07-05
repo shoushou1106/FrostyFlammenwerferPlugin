@@ -27,13 +27,13 @@ using System.Windows;
 [assembly: PluginAuthor("shoushou1106")]
 
 #if FROSTY_107
-[assembly: PluginVersion("0.3.1 (for 1.0.7)")]
+[assembly: PluginVersion("0.3.2 (for 1.0.7)")]
 #elif FROSTY_1063_LATER
-[assembly: PluginVersion("0.3.1 (for 1.0.6.3 or Later)")]
+[assembly: PluginVersion("0.3.2 (for 1.0.6.3 or Later)")]
 #elif FROSTY_1062_EARLIER
-[assembly: PluginVersion("0.3.1 (for 1.0.6.2 or Earlier)")]
+[assembly: PluginVersion("0.3.2 (for 1.0.6.2 or Earlier)")]
 #else
-[assembly: PluginVersion("0.3.1 (Unknown)")]
+[assembly: PluginVersion("0.3.2 (Unknown)")]
 #endif
 
 [assembly: PluginNotValidForProfile((int)ProfileVersion.DragonAgeInquisition)]
