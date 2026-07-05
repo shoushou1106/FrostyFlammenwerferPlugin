@@ -79,6 +79,9 @@ namespace FsLocalizationPlugin.Helpers
                 return cachedLanguages;
             }
 
+            if (!modifiedOnly && cachedProfileName != ProfilesLibrary.ProfileName)
+                InvalidateLanguageCache();
+
             HashSet<string> languages = new HashSet<string>();
             foreach (EbxAssetEntry entry in App.AssetManager.EnumerateEbx("LocalizationAsset"))
             {
