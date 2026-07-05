@@ -3,7 +3,6 @@ using FrostySdk;
 using FrostySdk.Ebx;
 using FrostySdk.Interfaces;
 using FrostySdk.Managers;
-using FsLocalizationPlugin.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +11,7 @@ using System.Linq;
 using FrostySdk.Managers.Entries;
 #endif
 
-namespace FsLocalizationPlugin
+namespace FsLocalizationPlugin.Helpers
 {
     /// <summary>
     /// Shared helpers for string IDs and language discovery, used by the editor windows
@@ -76,7 +75,7 @@ namespace FsLocalizationPlugin
         {
             if (!modifiedOnly && cachedLanguages != null && cachedProfileName == ProfilesLibrary.ProfileName)
             {
-                FlammenwerferOptions.DebugLog("LocalizationHelper.GetLocalizedLanguages", "Using cached languages for profile: {0}", cachedProfileName);
+                DebugLogHelper.Log("LocalizationHelper.GetLocalizedLanguages", "Using cached languages for profile: {0}", cachedProfileName);
                 return cachedLanguages;
             }
 
@@ -110,12 +109,12 @@ namespace FsLocalizationPlugin
             {
                 cachedLanguages = result;
                 cachedProfileName = ProfilesLibrary.ProfileName;
-                FlammenwerferOptions.DebugLog("LocalizationHelper.GetLocalizedLanguages", "Found {0} languages for profile: {1}, cache performed", result.Count, cachedProfileName);
+                DebugLogHelper.Log("LocalizationHelper.GetLocalizedLanguages", "Found {0} languages for profile: {1}, cache performed", result.Count, cachedProfileName);
             }
 
             if (modifiedOnly)
             {
-                FlammenwerferOptions.DebugLog("LocalizationHelper.GetLocalizedLanguages", "Found {0} modified languages", result.Count);
+                DebugLogHelper.Log("LocalizationHelper.GetLocalizedLanguages", "Found {0} modified languages", result.Count);
             }
 
             return result;
@@ -124,7 +123,7 @@ namespace FsLocalizationPlugin
         /// <summary>Clears the cached language list. Only needed if a different game profile loads into the same process.</summary>
         public static void InvalidateLanguageCache()
         {
-            FlammenwerferOptions.DebugLog("LocalizationHelper.InvalidateLanguageCache", "Cached languages cleared for profile: {0}", cachedProfileName);
+            DebugLogHelper.Log("LocalizationHelper.InvalidateLanguageCache", "Cached languages cleared for profile: {0}", cachedProfileName);
             cachedLanguages = null;
             cachedProfileName = null;
         }

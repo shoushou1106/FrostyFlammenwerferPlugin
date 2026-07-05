@@ -1,7 +1,7 @@
 using Frosty.Core;
 using FrostySdk.IO;
 using FrostySdk.Managers;
-using FsLocalizationPlugin.Options;
+using FsLocalizationPlugin.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -313,7 +313,7 @@ namespace FsLocalizationPlugin
             // Add remaining section
             updatedSection.AddRange(section.Skip(insertedStart));
 
-            FlammenwerferOptions.DebugLog("Flammen.AddCharsToHistogram", "Added {0} new characters to histogram, original dataOffSize: {1}, new dataOffSize: {2}", newChars.Count, dataOffSize, dataOffSize + (uint)newChars.Count);
+            DebugLogHelper.Log("Flammen.AddCharsToHistogram", "Added {0} new characters to histogram, original dataOffSize: {1}, new dataOffSize: {2}", newChars.Count, dataOffSize, dataOffSize + (uint)newChars.Count);
 
             section = updatedSection;
             dataOffSize += (uint)newChars.Count;
@@ -327,7 +327,7 @@ namespace FsLocalizationPlugin
             if (stringsBinaryChunk == null)
                 throw new ArgumentNullException(nameof(stringsBinaryChunk));
 
-            FlammenwerferOptions.DebugLog("Flammen.ReadStrings", "Read histogram and strings from {0}(Histogram) and {1}(String Binary)", histogramChunk.Id, stringsBinaryChunk.Id);
+            DebugLogHelper.Log("Flammen.ReadStrings", "Read histogram and strings from {0}(Histogram) and {1}(String Binary)", histogramChunk.Id, stringsBinaryChunk.Id);
             
             List<ushort> histogramSection;
             // Read histogram chunk
@@ -351,7 +351,7 @@ namespace FsLocalizationPlugin
             if (stringsBinaryChunk == null)
                 throw new ArgumentNullException(nameof(stringsBinaryChunk));
 
-            FlammenwerferOptions.DebugLog("Flammen.ReadStrings", "Read histogram and strings from stream");
+            DebugLogHelper.Log("Flammen.ReadStrings", "Read histogram and strings from stream");
 
             // Read histogram chunk
             List<ushort> histogramSection = ReadHistogram(histogramChunk);
@@ -507,19 +507,19 @@ namespace FsLocalizationPlugin
                 }
             }
 
-            FlammenwerferOptions.DebugLog("Flammen.WriteAll", "Readed histogram and {0} strings", stringList.Count);
+            DebugLogHelper.Log("Flammen.WriteAll", "Readed histogram and {0} strings", stringList.Count);
 
             // Merge modified strings with existing strings
             foreach (KeyValuePair<uint, string> data in modifiedData)
             {
                 stringList[data.Key] = data.Value;
             }
-            FlammenwerferOptions.DebugLog("Flammen.WriteAll", "Modified {0} strings", modifiedData.Count);
+            DebugLogHelper.Log("Flammen.WriteAll", "Modified {0} strings", modifiedData.Count);
             foreach (uint id in stringToRemove)
             {
                 stringList.Remove(id);
             }
-            FlammenwerferOptions.DebugLog("Flammen.WriteAll", "Removed {0} strings", stringToRemove.Count());
+            DebugLogHelper.Log("Flammen.WriteAll", "Removed {0} strings", stringToRemove.Count());
 
             // Add new characters to histogram
             AddCharsToHistogram(stringList.Values, ref histogramDataOffSize, ref histogramSection);
@@ -550,7 +550,7 @@ namespace FsLocalizationPlugin
                 // Update file size
                 uint fileSize = (uint)(writer.Position - 8);
 
-                FlammenwerferOptions.DebugLog("Flammen.WriteHistogramChunk", "Finish writting histogram chunk, chunk size: {0}", writer.Position);
+                DebugLogHelper.Log("Flammen.WriteHistogramChunk", "Finish writting histogram chunk, chunk size: {0}", writer.Position);
 
                 writer.Position = 4;
                 writer.Write(fileSize);
@@ -620,7 +620,7 @@ namespace FsLocalizationPlugin
                 // Update file size
                 uint fileSize = (uint)(writer.Position - 8);
 
-                FlammenwerferOptions.DebugLog("Flammen.WriteStringChunk", "Finish writting string chunk, chunk size: {0}", writer.Position);
+                DebugLogHelper.Log("Flammen.WriteStringChunk", "Finish writting string chunk, chunk size: {0}", writer.Position);
 
                 writer.Position = 4;
                 writer.Write(fileSize);

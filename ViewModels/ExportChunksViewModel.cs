@@ -4,7 +4,7 @@ using Frosty.Core.Windows;
 using FrostySdk.Ebx;
 using FrostySdk.IO;
 using FrostySdk.Managers;
-using FsLocalizationPlugin.Options;
+using FsLocalizationPlugin.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -183,10 +183,12 @@ namespace FsLocalizationPlugin.ViewModels
                                     writer.Write(newStringData);
                                 }
                                 // Add [ExportChunksViewModel] because Flammen.WriteAll write a lot of logs when Debug enabled
-                                if (FlammenwerferOptions.DebugLoggingEnabled)
-                                    App.Logger.Log("[ExportChunksViewModel] Exported {0} string binary chunk, chunk size: {1}, file path: {2}, id: {3}", lang, (uint)newStringData.Length, langOption.BinaryPath, localizedText.BinaryChunk);
+                                // localizedText is dynamic, passing a dynamic arg makes this whole call dynamically-bound and mis-tags the log as [Core].
+                                Guid binaryChunkId = localizedText.BinaryChunk;
+                                if (DebugLogHelper.Enabled)
+                                    App.Logger.Log("[ExportChunksViewModel] Exported {0} string binary chunk, chunk size: {1}, file path: {2}, id: {3}", lang, (uint)newStringData.Length, langOption.BinaryPath, binaryChunkId);
                                 else
-                                    App.Logger.Log("Exported {0} string binary chunk, chunk size: {1}, file path: {2}, id: {3}", lang, (uint)newStringData.Length, langOption.BinaryPath, localizedText.BinaryChunk);
+                                    App.Logger.Log("Exported {0} string binary chunk, chunk size: {1}, file path: {2}, id: {3}", lang, (uint)newStringData.Length, langOption.BinaryPath, binaryChunkId);
                             }
 
                             LocalizationHelper.ReportProgress(task.TaskLogger, 3, 4, currentPart, totalParts);
@@ -199,10 +201,12 @@ namespace FsLocalizationPlugin.ViewModels
                                     writer.Write(newHistogramData);
                                 }
                                 // Add [ExportChunksViewModel] because Flammen.WriteAll write a lot of logs when Debug enabled
-                                if (FlammenwerferOptions.DebugLoggingEnabled)
-                                    App.Logger.Log("[ExportChunksViewModel] Exported {0} histogram chunk, chunk size: {1}, file path: {2}, id: {3}", lang, (uint)newHistogramData.Length, langOption.HistogramPath, localizedText.HistogramChunk);
+                                // localizedText is dynamic, passing a dynamic arg makes this whole call dynamically-bound and mis-tags the log as [Core].
+                                Guid histogramChunkId = localizedText.HistogramChunk;
+                                if (DebugLogHelper.Enabled)
+                                    App.Logger.Log("[ExportChunksViewModel] Exported {0} histogram chunk, chunk size: {1}, file path: {2}, id: {3}", lang, (uint)newHistogramData.Length, langOption.HistogramPath, histogramChunkId);
                                 else
-                                    App.Logger.Log("Exported {0} histogram chunk, chunk size: {1}, file path: {2}, id: {3}", lang, (uint)newHistogramData.Length, langOption.HistogramPath, localizedText.HistogramChunk);
+                                    App.Logger.Log("Exported {0} histogram chunk, chunk size: {1}, file path: {2}, id: {3}", lang, (uint)newHistogramData.Length, langOption.HistogramPath, histogramChunkId);
                             }
 
                             LocalizationHelper.ReportProgress(task.TaskLogger, 4, 4, currentPart, totalParts);

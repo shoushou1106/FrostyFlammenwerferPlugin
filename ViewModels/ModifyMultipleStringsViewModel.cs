@@ -1,7 +1,7 @@
 using Frosty.Controls;
 using Frosty.Core;
 using Frosty.Core.Windows;
-using FsLocalizationPlugin.Options;
+using FsLocalizationPlugin.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -259,7 +259,7 @@ namespace FsLocalizationPlugin.ViewModels
                 }
                 else if (FrostyMessageBox.Show($"Temporal Ward Activated! The mass cast was interrupted, but {touchedCount} string(s) were already altered. Restore them to how they were before?", "Modify Multiple Strings - Flammenwerfer", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
-                    FlammenwerferOptions.DebugLog("ModifyMultipleStringsViewModel.Process", "Restoring {0} prior value(s), {1} baseline revert(s), {2} re-removal(s)", priorModifiedValues.Count, priorUnmodifiedIds.Count, priorRemovedIds.Count);
+                    DebugLogHelper.Log("ModifyMultipleStringsViewModel.Process", "Restoring {0} prior value(s), {1} baseline revert(s), {2} re-removal(s)", priorModifiedValues.Count, priorUnmodifiedIds.Count, priorRemovedIds.Count);
 
                     FrostyTaskWindow.Show(owner, "Invoking Temporal Ward", "Restoring Strings", restoreTask =>
                     {

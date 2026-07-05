@@ -1,4 +1,5 @@
 using Frosty.Core;
+using FsLocalizationPlugin.Helpers;
 using System;
 
 namespace FsLocalizationPlugin.ViewModels

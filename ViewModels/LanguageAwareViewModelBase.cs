@@ -1,5 +1,5 @@
 using Frosty.Core;
-using FsLocalizationPlugin.Options;
+using FsLocalizationPlugin.Helpers;
 using System.Collections.Generic;
 
 namespace FsLocalizationPlugin.ViewModels
@@ -15,7 +15,7 @@ namespace FsLocalizationPlugin.ViewModels
             Database = database;
             originalLanguage = Config.Get("Language", "English", ConfigScope.Game);
             selectedLanguage = originalLanguage;
-            FlammenwerferOptions.DebugLog("LanguageAwareViewModelBase", "Saved user's original database language: {0}", originalLanguage);
+            DebugLogHelper.Log("LanguageAwareViewModelBase", "Saved user's original database language: {0}", originalLanguage);
         }
 
         protected FsLocalizationStringDatabase Database { get; }
@@ -33,7 +33,7 @@ namespace FsLocalizationPlugin.ViewModels
                 Config.Add("Language", value, ConfigScope.Game);
                 Config.Save();
                 Database.Initialize();
-                FlammenwerferOptions.DebugLog("LanguageAwareViewModelBase.SelectedLanguage", "User selected a temporary language: {0}", value);
+                DebugLogHelper.Log("LanguageAwareViewModelBase.SelectedLanguage", "User selected a temporary language: {0}", value);
                 OnLanguageChanged();
             }
         }
@@ -52,7 +52,7 @@ namespace FsLocalizationPlugin.ViewModels
             Config.Add("Language", originalLanguage, ConfigScope.Game);
             Config.Save();
             Database.Initialize();
-            FlammenwerferOptions.DebugLog("LanguageAwareViewModelBase.RestoreOriginalLanguage", "Restored user's original database language: {0}", originalLanguage);
+            DebugLogHelper.Log("LanguageAwareViewModelBase.RestoreOriginalLanguage", "Restored user's original database language: {0}", originalLanguage);
         }
     }
 }

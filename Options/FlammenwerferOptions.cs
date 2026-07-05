@@ -1,6 +1,7 @@
 using Frosty.Core;
 using Frosty.Core.Controls;
 using FrostySdk.Attributes;
+using FsLocalizationPlugin.Helpers;
 using System;
 using System.Globalization;
 using System.IO;
@@ -10,29 +11,6 @@ namespace FsLocalizationPlugin.Options
     [DisplayName("Flammenwerfer Options")]
     public class FlammenwerferOptions : OptionsExtension
     {
-        // Cached so DebugLog doesn't hit Config on every call. Load()/Save() refresh it;
-        // otherwise it's read lazily on first use (Load() only runs when Options is opened).
-        private static bool? debugLoggingCache;
-
-        /// <summary>Whether Debug Logging is on. Use <see cref="DebugLog"/> instead of checking this directly.</summary>
-        public static bool DebugLoggingEnabled
-        {
-            get
-            {
-                if (!debugLoggingCache.HasValue)
-                    debugLoggingCache = Config.Get("Flammenwerfer_DebugLogging", false, ConfigScope.Global);
-                return debugLoggingCache.Value;
-            }
-        }
-
-        /// <summary>Logs only when Debug Logging is enabled.
-        /// Styled like: "[Debug] [<paramref name="methodName"/>] <paramref name="content"/>"  </summary>
-        public static void DebugLog(string methodName, string content, params object[] args)
-        {
-            if (DebugLoggingEnabled)
-                App.Logger.Log("[Debug] [" + methodName + "] " + content, args);
-        }
-
         //[Category("General")]
         //[Description("Currently placeholder")]
         //[DisplayName("Language")]
@@ -48,13 +26,13 @@ namespace FsLocalizationPlugin.Options
         public override void Load()
         {
             DebugLogging = Config.Get("Flammenwerfer_DebugLogging", false, ConfigScope.Global);
-            debugLoggingCache = DebugLogging;
+            DebugLogHelper.Enabled = DebugLogging;
         }
 
         public override void Save()
         {
             Config.Add("Flammenwerfer_DebugLogging", DebugLogging, ConfigScope.Global);
-            debugLoggingCache = DebugLogging;
+            DebugLogHelper.Enabled = DebugLogging;
         }
 
         //public static string GetBestLocale(CultureInfo culture = null)

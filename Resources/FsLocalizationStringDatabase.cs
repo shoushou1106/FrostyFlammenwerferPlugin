@@ -3,7 +3,7 @@ using FrostySdk.Ebx;
 using FrostySdk.IO;
 using FrostySdk.Managers;
 using FrostySdk.Resources;
-using FsLocalizationPlugin.Options;
+using FsLocalizationPlugin.Helpers;
 using FsLocalizationPlugin.Windows;
 using System;
 using System.Collections.Generic;
@@ -51,7 +51,7 @@ namespace FsLocalizationPlugin
             if (fsMagic != 0xABCD0001)
             {
                 // Legacy FsLocalizationPlugin format
-                FlammenwerferOptions.DebugLog("ModifiedResource.ReadInternal", "FsLocalization Old Format Detected");
+                DebugLogHelper.Log("ModifiedResource.ReadInternal", "FsLocalization Old Format Detected");
                 int legacyCount = (int)fsMagic;
                 for (int i = 0; i < legacyCount; i++)
                 {
@@ -80,7 +80,7 @@ namespace FsLocalizationPlugin
                 if (flammenMagic == FlammenwerferExtensionMagic)
                 {
                     uint formatVersion = reader.ReadUInt();
-                    FlammenwerferOptions.DebugLog("ModifiedResource.ReadInternal", "Flammenwerfer Extended Format Detected, Version {0}", formatVersion);
+                    DebugLogHelper.Log("ModifiedResource.ReadInternal", "Flammenwerfer Extended Format Detected, Version {0}", formatVersion);
                     if (formatVersion == FlammenwerferExtensionFormatVersion)
                     {
                         // FormatVersion: 1
@@ -97,7 +97,7 @@ namespace FsLocalizationPlugin
                 }
                 else
                 {
-                    FlammenwerferOptions.DebugLog("ModifiedResource.ReadInternal", "FsLocalization New Format Detected");
+                    DebugLogHelper.Log("ModifiedResource.ReadInternal", "FsLocalization New Format Detected");
                 }
             }
             catch
@@ -300,7 +300,7 @@ namespace FsLocalizationPlugin
 
             if (!foundLanguage)
             {
-                FlammenwerferOptions.DebugLog("Database.Initialize", "No LocalizationAsset found for language {0}", language);
+                DebugLogHelper.Log("Database.Initialize", "No LocalizationAsset found for language {0}", language);
                 return;
             }
 
@@ -314,7 +314,7 @@ namespace FsLocalizationPlugin
                 {
                     // Only load if chunk exists
                     strings = Flammen.ReadStrings(histogramEntry, chunkEntry);
-                    FlammenwerferOptions.DebugLog("Database.Initialize", "Loaded {0} strings for language {1}", strings.Count, language);
+                    DebugLogHelper.Log("Database.Initialize", "Loaded {0} strings for language {1}", strings.Count, language);
                 }
             }
         }

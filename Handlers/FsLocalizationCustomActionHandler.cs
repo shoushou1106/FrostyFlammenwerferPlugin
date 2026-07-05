@@ -6,7 +6,7 @@ using FrostySdk;
 using FrostySdk.IO;
 using FrostySdk.Managers;
 using FrostySdk.Resources;
-using FsLocalizationPlugin.Options;
+using FsLocalizationPlugin.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -62,7 +62,7 @@ namespace FsLocalizationPlugin
 
         public void SaveToMod(FrostyModWriter writer, AssetEntry entry)
         {
-            FlammenwerferOptions.DebugLog("ActionHandler.SaveToMod", "Saving {0} to mod", entry.Name);
+            DebugLogHelper.Log("ActionHandler.SaveToMod", "Saving {0} to mod", entry.Name);
             writer.AddResource(new FsLocalizationResource(entry as EbxAssetEntry, writer.ResourceManifest));
         }
 
@@ -84,7 +84,7 @@ namespace FsLocalizationPlugin
                 actions.Add(AssetName + " [" + resourceName + "];" + resourceType + ";" + action);
             }
 
-            FlammenwerferOptions.DebugLog("ActionHandler.GetResourceActions", "{0} has {1} action(s)", name, actions.Count);
+            DebugLogHelper.Log("ActionHandler.GetResourceActions", "{0} has {1} action(s)", name, actions.Count);
             return actions;
         }
 
@@ -95,18 +95,18 @@ namespace FsLocalizationPlugin
 
             if (oldFs == null)
             {
-                FlammenwerferOptions.DebugLog("ActionHandler.Load", "First mod touching this asset, {0} string(s), {1} removal(s)", newFs.strings.Count, newFs.stringsToRemove.Count);
+                DebugLogHelper.Log("ActionHandler.Load", "First mod touching this asset, {0} string(s), {1} removal(s)", newFs.strings.Count, newFs.stringsToRemove.Count);
                 return newFs;
             }
 
             oldFs.Merge(newFs);
-            FlammenwerferOptions.DebugLog("ActionHandler.Load", "Merged mod, now {0} string(s), {1} removal(s)", oldFs.strings.Count, oldFs.stringsToRemove.Count);
+            DebugLogHelper.Log("ActionHandler.Load", "Merged mod, now {0} string(s), {1} removal(s)", oldFs.strings.Count, oldFs.stringsToRemove.Count);
             return oldFs;
         }
 
         public void Modify(AssetEntry origEntry, AssetManager am, RuntimeResources runtimeResources, object data, out byte[] outData)
         {
-            FlammenwerferOptions.DebugLog("ActionHandler.Modify", "Start applying handler");
+            DebugLogHelper.Log("ActionHandler.Modify", "Start applying handler");
 
             try
             {
@@ -200,7 +200,7 @@ namespace FsLocalizationPlugin
                     outData = Utils.CompressFile(writer.ToByteArray());
                 }
             }
-            FlammenwerferOptions.DebugLog("ActionHandler.Modify", "End applying handler");
+            DebugLogHelper.Log("ActionHandler.Modify", "End applying handler");
         }
 
         #endregion
