@@ -43,16 +43,17 @@ using System.Windows;
 [assembly: PluginNotValidForProfile((int)ProfileVersion.Fifa18)]
 [assembly: PluginNotValidForProfile((int)ProfileVersion.Fifa19)]
 [assembly: PluginNotValidForProfile((int)ProfileVersion.Fifa20)]
-#if FROSTY_107
-[assembly: PluginNotValidForProfile((int)ProfileVersion.DeadSpace)]
-#endif
+
+// Not every 1.0.7 fork have specific ProfileVersion. Use hard-coded integer instead.
+// If you have another profile to add here, please be sure to tell me..
+[assembly: PluginNotValidForProfile(20230127)] // Dead Space from HarGabt
 
 [assembly: RegisterCustomHandler(CustomHandlerType.Ebx, typeof(FsLocalizationCustomActionHandler), ebxType: "UITextDatabase")]
 [assembly: RegisterLocalizedStringDatabase(typeof(FsLocalizationStringDatabase))]
 
-// https://github.com/CadeEvs/FrostyToolsuite/pull/311
 // Starting Frosty 1.0.6.3, Dyvinia added PluginManagerType to RegisterMenuExtension attribute.
 // On Frosty 1.0.7 and 1.0.6.2 or earlier, the PluginManagerType does not exist, writing nothing equals to PluginManagerType.Editor
+// Learn more: https://github.com/CadeEvs/FrostyToolsuite/pull/311
 #if FROSTY_1063_LATER
 [assembly: RegisterMenuExtension(typeof(ModifyStringMenuExtension), PluginManagerType.Editor)]
 [assembly: RegisterMenuExtension(typeof(ModifyMultipleStringsMenuExtension), PluginManagerType.Editor)]
