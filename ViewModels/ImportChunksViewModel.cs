@@ -2,6 +2,7 @@ using Frosty.Controls;
 using Frosty.Core;
 using Frosty.Core.Controls;
 using Frosty.Core.Windows;
+using FsLocalizationPlugin.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -101,17 +102,17 @@ namespace FsLocalizationPlugin.ViewModels
         {
             if (!File.Exists(HistogramFilePath) && !File.Exists(BinaryFilePath))
             {
-                FrostyMessageBox.Show("Histogram file and Binary Strings file not found", "Import Chunks from Files - Flammenwerfer", MessageBoxButton.OK);
+                FrostyMessageBox.Show("Materials missing! Histogram file and Binary Strings file not found", "Import Chunks from Files - Flammenwerfer", MessageBoxButton.OK);
                 return;
             }
             if (!File.Exists(HistogramFilePath))
             {
-                FrostyMessageBox.Show("Histogram file not found", "Import Chunks from Files - Flammenwerfer", MessageBoxButton.OK);
+                FrostyMessageBox.Show("Material missing! Histogram file not found", "Import Chunks from Files - Flammenwerfer", MessageBoxButton.OK);
                 return;
             }
             if (!File.Exists(BinaryFilePath))
             {
-                FrostyMessageBox.Show("Binary Strings file not found", "Import Chunks from Files - Flammenwerfer", MessageBoxButton.OK);
+                FrostyMessageBox.Show("Material missing! Binary Strings file not found", "Import Chunks from Files - Flammenwerfer", MessageBoxButton.OK);
                 return;
             }
 
@@ -120,17 +121,38 @@ namespace FsLocalizationPlugin.ViewModels
             int importedCount = 0;
             bool cancelled = false;
 
+            // Tracks every id this run touches, so a cancel can put the database back exactly how it was
+            HashSet<uint> touchedIds = new HashSet<uint>();
+            Dictionary<uint, string> priorModifiedValues = new Dictionary<uint, string>();
+            List<uint> priorUnmodifiedIds = new List<uint>();
+            List<uint> priorRemovedIds = new List<uint>();
+
+            void RecordPriorState(uint id)
+            {
+                if (!touchedIds.Add(id))
+                    return;
+
+                if (Database.IsStringRemoved(id))
+                    priorRemovedIds.Add(id);
+                else if (Database.isStringEdited(id))
+                    priorModifiedValues[id] = Database.GetString(id);
+                else
+                    priorUnmodifiedIds.Add(id);
+            }
+
             FrostyTaskWindow.Show(owner, "Import Chunks from Files", "Loading", task =>
             {
                 try
                 {
-                    const int totalParts = 3;
+                    int totalParts = DeleteExistingStrings ? 3 : 2;
+                    int currentPart = 0;
                     cancelToken.Token.ThrowIfCancellationRequested();
 
                     if (DeleteExistingStrings)
                     {
-                        task.TaskLogger.Log("[1/3] Deleting all existing strings");
-                        LocalizationHelper.ReportProgress(task.TaskLogger, 0, 1, currentPart: 1, totalParts);
+                        currentPart++;
+                        task.TaskLogger.Log("[{0}/{1}] Removing all existing strings", currentPart, totalParts);
+                        LocalizationHelper.ReportProgress(task.TaskLogger, 0, 1, currentPart, totalParts);
                         cancelToken.Token.ThrowIfCancellationRequested();
                         Thread.Sleep(1);
 
@@ -139,15 +161,17 @@ namespace FsLocalizationPlugin.ViewModels
                         int totalDelete = existingStrings.Count;
                         foreach (uint id in existingStrings)
                         {
+                            RecordPriorState(id);
                             Database.RemoveString(id);
                             deletedCount++;
                             cancelToken.Token.ThrowIfCancellationRequested();
-                            LocalizationHelper.ReportProgress(task.TaskLogger, deletedCount, totalDelete, currentPart: 1, totalParts);
+                            LocalizationHelper.ReportProgress(task.TaskLogger, deletedCount, totalDelete, currentPart, totalParts);
                         }
                     }
 
-                    task.TaskLogger.Log("[2/3] Reading Chunks");
-                    LocalizationHelper.ReportProgress(task.TaskLogger, 0, 1, currentPart: 2, totalParts);
+                    currentPart++;
+                    task.TaskLogger.Log("[{0}/{1}] Reading Chunks", currentPart, totalParts);
+                    LocalizationHelper.ReportProgress(task.TaskLogger, 0, 1, currentPart, totalParts);
                     cancelToken.Token.ThrowIfCancellationRequested();
                     Thread.Sleep(1);
 
@@ -158,8 +182,9 @@ namespace FsLocalizationPlugin.ViewModels
                         dictionary = Flammen.ReadStrings(histogram, binary);
                     }
 
-                    task.TaskLogger.Log("[3/3] Importing Strings");
-                    LocalizationHelper.ReportProgress(task.TaskLogger, 0, 1, currentPart: 3, totalParts);
+                    currentPart++;
+                    task.TaskLogger.Log("[{0}/{1}] Importing Strings", currentPart, totalParts);
+                    LocalizationHelper.ReportProgress(task.TaskLogger, 0, 1, currentPart, totalParts);
                     cancelToken.Token.ThrowIfCancellationRequested();
                     Thread.Sleep(1);
 
@@ -167,7 +192,7 @@ namespace FsLocalizationPlugin.ViewModels
                     int current = 0;
                     foreach (KeyValuePair<uint, string> kvp in dictionary)
                     {
-                        LocalizationHelper.ReportProgress(task.TaskLogger, ++current, totalCount, currentPart: 3, totalParts);
+                        LocalizationHelper.ReportProgress(task.TaskLogger, ++current, totalCount, currentPart, totalParts);
                         cancelToken.Token.ThrowIfCancellationRequested();
 
                         if (NoImportEmptyOrNull && string.IsNullOrEmpty(kvp.Value))
@@ -175,6 +200,7 @@ namespace FsLocalizationPlugin.ViewModels
                         if (NoOverwriteSameStrings && Database.GetString(kvp.Key) == kvp.Value)
                             continue;
 
+                        RecordPriorState(kvp.Key);
                         Database.SetString(kvp.Key, kvp.Value);
                         importedCount++;
                     }
@@ -185,11 +211,50 @@ namespace FsLocalizationPlugin.ViewModels
                 }
             }, showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
 
-            string cancelSuffix = cancelled ? " (cancelled)" : "";
-            if (deletedCount == 0)
-                App.Logger.Log("Import chunks from files completed. Imported {0} strings to language {1}{2}", importedCount, SelectedLanguage, cancelSuffix);
+            if (cancelled)
+            {
+                if (touchedIds.Count == 0)
+                {
+                    App.Logger.Log("Imbuition interrupted! Import chunks from files canceled. Nothing touched yet");
+                }
+                else if (FrostyMessageBox.Show($"Temporal Ward Activated! The cast was interrupted, but {touchedIds.Count} string(s) were already altered. Restore them to how they were before?", "Import Chunks from Files - Flammenwerfer", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    FlammenwerferOptions.DebugLog("ImportChunksViewModel.Import", "Restoring {0} prior value(s), {1} database revert(s), {2} re-removal(s)", priorModifiedValues.Count, priorUnmodifiedIds.Count, priorRemovedIds.Count);
+
+                    FrostyTaskWindow.Show(owner, "Invoking Temporal Ward", "Restoring Strings", restoreTask =>
+                    {
+                        int restored = 0;
+                        foreach (KeyValuePair<uint, string> kvp in priorModifiedValues)
+                        {
+                            Database.SetString(kvp.Key, kvp.Value);
+                            LocalizationHelper.ReportProgress(restoreTask.TaskLogger, ++restored, touchedIds.Count);
+                        }
+                        foreach (uint id in priorUnmodifiedIds)
+                        {
+                            Database.RevertString(id);
+                            LocalizationHelper.ReportProgress(restoreTask.TaskLogger, ++restored, touchedIds.Count);
+                        }
+                        foreach (uint id in priorRemovedIds)
+                        {
+                            Database.RemoveString(id);
+                            LocalizationHelper.ReportProgress(restoreTask.TaskLogger, ++restored, touchedIds.Count);
+                        }
+                    });
+
+                    App.Logger.Log("Imbuition interrupted, but the Temporal Ward was activated! Import chunks from files canceled. Restored {0} change(s) ({1} removed, {2} modified).", touchedIds.Count, deletedCount, importedCount);
+                }
+                else
+                {
+                    App.Logger.Log("Imbuition interrupted, and you rejected the Temporal Ward! Import chunks from files canceled. {0} change(s) were kept ({1} removed, {2} modified). You may want to revert the database.", touchedIds.Count, deletedCount, importedCount);
+                }
+            }
             else
-                App.Logger.Log("Import chunks from files completed. Removed {0} strings, imported {1} strings to language {2}{3}", deletedCount, importedCount, SelectedLanguage, cancelSuffix);
+            {
+                if (deletedCount == 0)
+                    App.Logger.Log("Imbuition successful! Import chunks from files completed. Imported {0} strings to language {1}", importedCount, SelectedLanguage);
+                else
+                    App.Logger.Log("Imbuition successful! Import chunks from files completed. Removed {0} strings, imported {1} strings to language {2}", deletedCount, importedCount, SelectedLanguage);
+            }
 
             CloseRequested?.Invoke(!cancelled);
         }

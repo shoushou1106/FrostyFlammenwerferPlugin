@@ -6,6 +6,7 @@ using FrostySdk;
 using FrostySdk.IO;
 using FrostySdk.Managers;
 using FrostySdk.Resources;
+using FsLocalizationPlugin.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -61,6 +62,7 @@ namespace FsLocalizationPlugin
 
         public void SaveToMod(FrostyModWriter writer, AssetEntry entry)
         {
+            FlammenwerferOptions.DebugLog("ActionHandler.SaveToMod", "Saving {0} to mod", entry.Name);
             writer.AddResource(new FsLocalizationResource(entry as EbxAssetEntry, writer.ResourceManifest));
         }
 
@@ -82,6 +84,7 @@ namespace FsLocalizationPlugin
                 actions.Add(AssetName + " [" + resourceName + "];" + resourceType + ";" + action);
             }
 
+            FlammenwerferOptions.DebugLog("ActionHandler.GetResourceActions", "{0} has {1} action(s)", name, actions.Count);
             return actions;
         }
 
@@ -91,14 +94,20 @@ namespace FsLocalizationPlugin
             ModifiedFsLocalizationAsset oldFs = (ModifiedFsLocalizationAsset)existing;
 
             if (oldFs == null)
+            {
+                FlammenwerferOptions.DebugLog("ActionHandler.Load", "First mod touching this asset, {0} string(s), {1} removal(s)", newFs.strings.Count, newFs.stringsToRemove.Count);
                 return newFs;
+            }
 
             oldFs.Merge(newFs);
+            FlammenwerferOptions.DebugLog("ActionHandler.Load", "Merged mod, now {0} string(s), {1} removal(s)", oldFs.strings.Count, oldFs.stringsToRemove.Count);
             return oldFs;
         }
 
         public void Modify(AssetEntry origEntry, AssetManager am, RuntimeResources runtimeResources, object data, out byte[] outData)
         {
+            FlammenwerferOptions.DebugLog("ActionHandler.Modify", "Start applying handler");
+
             try
             {
                 ModifiedFsLocalizationAsset modFs = data as ModifiedFsLocalizationAsset;
@@ -166,7 +175,7 @@ namespace FsLocalizationPlugin
             catch (Exception ex)
             {
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine("An unhandled exception has occurred");
+                sb.AppendLine("Inferno Out of Control! An unhandled exception has occurred.");
                 sb.Append("Type=");
                 sb.AppendLine(ex.GetType().ToString());
                 sb.Append("HResult=");
@@ -177,10 +186,21 @@ namespace FsLocalizationPlugin
                 sb.AppendLine(ex.Source);
                 sb.AppendLine("StackTrace:");
                 sb.AppendLine(ex.StackTrace);
-                App.Logger.LogError(sb.ToString());
+                sb.AppendLine("Returning a placeholder object. Your game may crash. But Frosty survive for you to read this message.");
+                App.Logger.LogError("{0}", sb.ToString());
 
-                outData = null;
+                // Return placeholder data instead of null, so Mod Manager doesn't crash and the
+                // user can read the log above. The mod is already broken at this point.
+                using (EbxBaseWriter writer = EbxBaseWriter.CreateWriter(new MemoryStream()))
+                {
+                    // Create a new EbxAsset without calling AssetManager. So it works on some 1.0.7 Mod Manager.
+                    EbxAsset ebxAsset = new EbxAsset(TypeLibrary.CreateObject(origEntry.Type));
+                    writer.WriteAsset(ebxAsset);
+                    origEntry.OriginalSize = writer.Length;
+                    outData = Utils.CompressFile(writer.ToByteArray());
+                }
             }
+            FlammenwerferOptions.DebugLog("ActionHandler.Modify", "End applying handler");
         }
 
         #endregion

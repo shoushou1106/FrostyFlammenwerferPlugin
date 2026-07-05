@@ -1,5 +1,7 @@
+using Frosty.Controls;
 using Frosty.Core;
 using Frosty.Core.Windows;
+using FsLocalizationPlugin.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -198,6 +200,11 @@ namespace FsLocalizationPlugin.ViewModels
                 default: taskTitle = "Replacing Strings"; break;
             }
 
+            // Tracks every id this run touches, so a cancel can put the database back exactly how it was
+            Dictionary<uint, string> priorModifiedValues = new Dictionary<uint, string>();
+            List<uint> priorUnmodifiedIds = new List<uint>();
+            List<uint> priorRemovedIds = new List<uint>();
+
             FrostyTaskWindow.Show(owner, taskTitle, "", task =>
             {
                 try
@@ -207,11 +214,18 @@ namespace FsLocalizationPlugin.ViewModels
                         cancelToken.Token.ThrowIfCancellationRequested();
 
                         string value = Database.GetString(id);
-                        task.TaskLogger.Log("{0}", value); // arg, not template - value may contain literal braces
+                        task.TaskLogger.Log("{0}", value);
                         LocalizationHelper.ReportProgress(task.TaskLogger, ++processed, totalCount);
 
                         if (!regex.IsMatch(value))
                             continue;
+
+                        if (Database.IsStringRemoved(id))
+                            priorRemovedIds.Add(id);
+                        else if (Database.isStringEdited(id))
+                            priorModifiedValues[id] = value;
+                        else
+                            priorUnmodifiedIds.Add(id);
 
                         switch (action)
                         {
@@ -235,18 +249,81 @@ namespace FsLocalizationPlugin.ViewModels
                 }
             }, showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
 
-            string cancelSuffix = cancelled ? " (cancelled)" : "";
-            switch (action)
+            if (cancelled)
             {
-                case BulkAction.Replace:
-                    App.Logger.Log("Replaced {0} instance(s) matching \"{1}\" with \"{2}\"{3}", affected, FilterValue, EditText, cancelSuffix);
-                    break;
-                case BulkAction.Revert:
-                    App.Logger.Log("Reverted {0} string(s) matching \"{1}\" to their original value{2}", affected, FilterValue, cancelSuffix);
-                    break;
-                case BulkAction.Remove:
-                    App.Logger.Log("Removed {0} string(s) matching \"{1}\"{2}", affected, FilterValue, cancelSuffix);
-                    break;
+                int touchedCount = priorModifiedValues.Count + priorUnmodifiedIds.Count + priorRemovedIds.Count;
+
+                if (touchedCount == 0)
+                {
+                    App.Logger.Log("Mass cast interrupted! Nothing touched yet.");
+                }
+                else if (FrostyMessageBox.Show($"Temporal Ward Activated! The mass cast was interrupted, but {touchedCount} string(s) were already altered. Restore them to how they were before?", "Modify Multiple Strings - Flammenwerfer", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    FlammenwerferOptions.DebugLog("ModifyMultipleStringsViewModel.Process", "Restoring {0} prior value(s), {1} baseline revert(s), {2} re-removal(s)", priorModifiedValues.Count, priorUnmodifiedIds.Count, priorRemovedIds.Count);
+
+                    FrostyTaskWindow.Show(owner, "Invoking Temporal Ward", "Restoring Strings", restoreTask =>
+                    {
+                        int restored = 0;
+                        foreach (KeyValuePair<uint, string> kvp in priorModifiedValues)
+                        {
+                            Database.SetString(kvp.Key, kvp.Value);
+                            LocalizationHelper.ReportProgress(restoreTask.TaskLogger, ++restored, touchedCount);
+                        }
+                        foreach (uint id in priorUnmodifiedIds)
+                        {
+                            Database.RevertString(id);
+                            LocalizationHelper.ReportProgress(restoreTask.TaskLogger, ++restored, touchedCount);
+                        }
+                        foreach (uint id in priorRemovedIds)
+                        {
+                            Database.RemoveString(id);
+                            LocalizationHelper.ReportProgress(restoreTask.TaskLogger, ++restored, touchedCount);
+                        }
+                    });
+
+                    switch (action)
+                    {
+                        case BulkAction.Replace:
+                            App.Logger.Log("Mass forge interrupted, but the Temporal Ward was activated! Restored {0} string(s) matching \"{1}\"", touchedCount, FilterValue);
+                            break;
+                        case BulkAction.Revert:
+                            App.Logger.Log("Mass extinguish interrupted, but the Temporal Ward was activated! Restored {0} string(s) matching \"{1}\"", touchedCount, FilterValue);
+                            break;
+                        case BulkAction.Remove:
+                            App.Logger.Log("Mass scorch interrupted, but the Temporal Ward was activated! Restored {0} string(s) matching \"{1}\"", touchedCount, FilterValue);
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (action)
+                    {
+                        case BulkAction.Replace:
+                            App.Logger.Log("Mass forge interrupted, and you rejected the Temporal Ward! {0} string(s) matching \"{1}\" were kept. You may want to revert the database.", touchedCount, FilterValue);
+                            break;
+                        case BulkAction.Revert:
+                            App.Logger.Log("Mass extinguish interrupted, and you rejected the Temporal Ward! {0} string(s) matching \"{1}\" were kept. You may want to revert the database.", touchedCount, FilterValue);
+                            break;
+                        case BulkAction.Remove:
+                            App.Logger.Log("Mass scorch interrupted, and you rejected the Temporal Ward! {0} string(s) matching \"{1}\" were kept. You may want to revert the database.", touchedCount, FilterValue);
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                switch (action)
+                {
+                    case BulkAction.Replace:
+                        App.Logger.Log("Mass flames forged! Replaced {0} string(s) matching \"{1}\" with \"{2}\"", affected, FilterValue, EditText);
+                        break;
+                    case BulkAction.Revert:
+                        App.Logger.Log("Mass flames extinguished! Reverted {0} string(s) matching \"{1}\"", affected, FilterValue);
+                        break;
+                    case BulkAction.Remove:
+                        App.Logger.Log("Mass flames scorched! Removed {0} string(s) matching \"{1}\"", affected, FilterValue);
+                        break;
+                }
             }
 
             RecomputeMatchCount();

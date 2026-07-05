@@ -4,6 +4,7 @@ using Frosty.Core.Windows;
 using FrostySdk.Ebx;
 using FrostySdk.IO;
 using FrostySdk.Managers;
+using FsLocalizationPlugin.Options;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -119,7 +120,7 @@ namespace FsLocalizationPlugin.ViewModels
             Dictionary<string, LanguageExportOptions> languageLookup = LanguageOptions.ToDictionary(l => l.Language);
             bool cancelled = false;
 
-            FrostyTaskWindow.Show(owner, "Exporting Chunks to Files", "Loading", task =>
+            FrostyTaskWindow.Show(owner, "Exporting to Chunk Files", "Loading", task =>
             {
                 string origLanguage = Config.Get("Language", "English", ConfigScope.Game);
                 try
@@ -181,7 +182,11 @@ namespace FsLocalizationPlugin.ViewModels
                                 {
                                     writer.Write(newStringData);
                                 }
-                                App.Logger.Log("{0} binary chunk ({1}), file size: {2}, exported to {3}", lang, localizedText.BinaryChunk, (uint)newStringData.Length, langOption.BinaryPath);
+                                // Add [ExportChunksViewModel] because Flammen.WriteAll write a lot of logs when Debug enabled
+                                if (FlammenwerferOptions.DebugLoggingEnabled)
+                                    App.Logger.Log("[ExportChunksViewModel] Exported {0} string binary chunk, chunk size: {1}, file path: {2}, id: {3}", lang, (uint)newStringData.Length, langOption.BinaryPath, localizedText.BinaryChunk);
+                                else
+                                    App.Logger.Log("Exported {0} string binary chunk, chunk size: {1}, file path: {2}, id: {3}", lang, (uint)newStringData.Length, langOption.BinaryPath, localizedText.BinaryChunk);
                             }
 
                             LocalizationHelper.ReportProgress(task.TaskLogger, 3, 4, currentPart, totalParts);
@@ -193,7 +198,11 @@ namespace FsLocalizationPlugin.ViewModels
                                 {
                                     writer.Write(newHistogramData);
                                 }
-                                App.Logger.Log("{0} histogram chunk ({1}), file size: {2}, exported to {3}", lang, localizedText.HistogramChunk, (uint)newHistogramData.Length, langOption.HistogramPath);
+                                // Add [ExportChunksViewModel] because Flammen.WriteAll write a lot of logs when Debug enabled
+                                if (FlammenwerferOptions.DebugLoggingEnabled)
+                                    App.Logger.Log("[ExportChunksViewModel] Exported {0} histogram chunk, chunk size: {1}, file path: {2}, id: {3}", lang, (uint)newHistogramData.Length, langOption.HistogramPath, localizedText.HistogramChunk);
+                                else
+                                    App.Logger.Log("Exported {0} histogram chunk, chunk size: {1}, file path: {2}, id: {3}", lang, (uint)newHistogramData.Length, langOption.HistogramPath, localizedText.HistogramChunk);
                             }
 
                             LocalizationHelper.ReportProgress(task.TaskLogger, 4, 4, currentPart, totalParts);
@@ -201,12 +210,12 @@ namespace FsLocalizationPlugin.ViewModels
                         }
                     }
 
-                    App.Logger.Log("Chunks export to files completed");
+                    App.Logger.Log("Flames crystallized! Export to chunk files completed");
                 }
                 catch (OperationCanceledException)
                 {
                     cancelled = true;
-                    App.Logger.Log("Chunks export to files canceled");
+                    App.Logger.Log("Crystallization interrupted! Export to chunk files canceled");
                 }
                 finally
                 {

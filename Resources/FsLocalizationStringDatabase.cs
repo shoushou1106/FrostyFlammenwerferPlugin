@@ -3,6 +3,7 @@ using FrostySdk.Ebx;
 using FrostySdk.IO;
 using FrostySdk.Managers;
 using FrostySdk.Resources;
+using FsLocalizationPlugin.Options;
 using FsLocalizationPlugin.Windows;
 using System;
 using System.Collections.Generic;
@@ -50,9 +51,7 @@ namespace FsLocalizationPlugin
             if (fsMagic != 0xABCD0001)
             {
                 // Legacy FsLocalizationPlugin format
-#if FROSTY_DEVELOPER
-                App.Logger.Log("[Debug] FsLocalization Old Format Detected");
-#endif
+                FlammenwerferOptions.DebugLog("ModifiedResource.ReadInternal", "FsLocalization Old Format Detected");
                 int legacyCount = (int)fsMagic;
                 for (int i = 0; i < legacyCount; i++)
                 {
@@ -81,9 +80,7 @@ namespace FsLocalizationPlugin
                 if (flammenMagic == FlammenwerferExtensionMagic)
                 {
                     uint formatVersion = reader.ReadUInt();
-#if FROSTY_DEVELOPER
-                    App.Logger.Log($"[Debug] Flammenwerfer Extended Format Detected, Version {formatVersion}");
-#endif
+                    FlammenwerferOptions.DebugLog("ModifiedResource.ReadInternal", "Flammenwerfer Extended Format Detected, Version {0}", formatVersion);
                     if (formatVersion == FlammenwerferExtensionFormatVersion)
                     {
                         // FormatVersion: 1
@@ -98,12 +95,10 @@ namespace FsLocalizationPlugin
                     }
                     // Else: newer, unrecognized format version - nothing more to read safely.
                 }
-#if FROSTY_DEVELOPER
                 else
                 {
-                    App.Logger.Log("[Debug] FsLocalization New Format Detected");
+                    FlammenwerferOptions.DebugLog("ModifiedResource.ReadInternal", "FsLocalization New Format Detected");
                 }
-#endif
             }
             catch
             {
@@ -270,11 +265,11 @@ namespace FsLocalizationPlugin
                 subscribedTextEntry = null;
             }
 
+            bool foundLanguage = false;
+
             foreach (EbxAssetEntry entry in App.AssetManager.EnumerateEbx("LocalizationAsset"))
             {
                 dynamic localizationAsset = App.AssetManager.GetEbx(entry).RootObject;
-
-                bool foundLanguage = false;
 
                 foreach (PointerRef pointer in localizationAsset.LocalizedTexts)
                 {
@@ -282,14 +277,14 @@ namespace FsLocalizationPlugin
                     if (textEntry == null)
                         continue;
 
-                    loadedDatabase = App.AssetManager.GetEbxAs<FsLocalizationAsset>(textEntry);
-
                     // Peek at the language before committing.
                     // One LocalizationAsset can list texts for several languages.
-                    dynamic localizedText = loadedDatabase.RootObject;
+                    FsLocalizationAsset candidate = App.AssetManager.GetEbxAs<FsLocalizationAsset>(textEntry);
+                    dynamic localizedText = candidate.RootObject;
                     if (localizedText.Language.ToString() != language)
                         continue;
 
+                    loadedDatabase = candidate;
                     subscribedTextEntry = textEntry;
                     textEntry.AssetModified += OnLoadedTextAssetModified;
 
@@ -303,6 +298,12 @@ namespace FsLocalizationPlugin
                     break;
             }
 
+            if (!foundLanguage)
+            {
+                FlammenwerferOptions.DebugLog("Database.Initialize", "No LocalizationAsset found for language {0}", language);
+                return;
+            }
+
             // Load chunk
             if (stringChunk != Guid.Empty && histogramChunk != Guid.Empty)
             {
@@ -313,6 +314,7 @@ namespace FsLocalizationPlugin
                 {
                     // Only load if chunk exists
                     strings = Flammen.ReadStrings(histogramEntry, chunkEntry);
+                    FlammenwerferOptions.DebugLog("Database.Initialize", "Loaded {0} strings for language {1}", strings.Count, language);
                 }
             }
         }

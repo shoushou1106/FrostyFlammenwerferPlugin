@@ -3,6 +3,7 @@ using Frosty.Core.Attributes;
 using FrostySdk;
 using FsLocalizationPlugin;
 using FsLocalizationPlugin.Extensions;
+using FsLocalizationPlugin.Options;
 using System.Runtime.InteropServices;
 using System.Windows;
 
@@ -50,6 +51,8 @@ using System.Windows;
 
 [assembly: RegisterCustomHandler(CustomHandlerType.Ebx, typeof(FsLocalizationCustomActionHandler), ebxType: "UITextDatabase")]
 [assembly: RegisterLocalizedStringDatabase(typeof(FsLocalizationStringDatabase))]
+
+[assembly: RegisterOptionsExtension(typeof(FlammenwerferOptions), PluginManagerType.Both)]
 
 // Starting Frosty 1.0.6.3, Dyvinia added PluginManagerType to RegisterMenuExtension attribute.
 // On Frosty 1.0.7 and 1.0.6.2 or earlier, the PluginManagerType does not exist, writing nothing equals to PluginManagerType.Editor

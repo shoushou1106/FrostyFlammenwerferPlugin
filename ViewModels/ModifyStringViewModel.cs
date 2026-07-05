@@ -66,11 +66,11 @@ namespace FsLocalizationPlugin.ViewModels
             get
             {
                 if (!IsValid)
-                    return "Invalid hash or string ID";
+                    return "Invalid Hash or String ID";
                 if (IsRemoved)
-                    return "String is removed";
+                    return "String is Removed";
                 if (!HasStringValue)
-                    return "No string exists";
+                    return "No String Exists";
                 return string.Empty;
             }
         }
@@ -103,9 +103,13 @@ namespace FsLocalizationPlugin.ViewModels
             if (!(ParsedHash is uint hash))
                 return;
 
-            Database.SetString(hash, EditText);
             // EditText may contain literal braces (e.g. "{PlayerName}") - pass as an arg, not the format template.
-            App.Logger.Log("String {0:X8} added/modified, value: {1}", hash, EditText);
+            if (HasStringValue)
+                App.Logger.Log("Flame forged! String {0} modified, value: {1}", hash.ToString("X"), EditText);
+            else
+                App.Logger.Log("Flame forged! String {0} added, value: {1}", hash.ToString("X"), EditText);
+
+            Database.SetString(hash, EditText);
             OnPropertiesChanged(StateDependentProperties);
             CloseIfConfigured();
         }
@@ -116,7 +120,7 @@ namespace FsLocalizationPlugin.ViewModels
                 return;
 
             Database.RevertString(hash);
-            App.Logger.Log($"String {hash:X8} reverted to its original value");
+            App.Logger.Log("Flame extinguished! String {0} reverted", hash.ToString("X"));
             OnPropertiesChanged(StateDependentProperties);
             CloseIfConfigured();
         }
@@ -127,7 +131,7 @@ namespace FsLocalizationPlugin.ViewModels
                 return;
 
             Database.RemoveString(hash);
-            App.Logger.Log($"String {hash:X8} removed");
+            App.Logger.Log("Flame scorched! String {0} removed", hash.ToString("X"));
             OnPropertiesChanged(StateDependentProperties);
             CloseIfConfigured();
         }

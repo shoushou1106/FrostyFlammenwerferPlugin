@@ -1,6 +1,7 @@
 using Frosty.Core;
 using FrostySdk.IO;
 using FrostySdk.Managers;
+using FsLocalizationPlugin.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -143,9 +144,9 @@ namespace FsLocalizationPlugin
                         // AddCharsToHistogram always runs first in WriteAll,
                         // so reaching here means the histogram and strings fell out of sync.
                         throw new ArgumentException(
-                            $"Unable to encode character '{c}' (U+{(int)c:X4}) to bytes." + Environment.NewLine +
-                            "This character is not present in the histogram at all." + Environment.NewLine +
-                            "Expand the histogram with this character before encoding, or the game won't be able to display it either." + Environment.NewLine +
+                            $"Temporal dislocation! Unable to encode character '{c}' (U+{(int)c:X4}) to bytes." + Environment.NewLine +
+                            "This character is not present in the histogram." + Environment.NewLine +
+                            "Consider expanding the histogram by adding more characters, or report this bug on GitHub." + Environment.NewLine +
                             $"Full string: {str}",
                             nameof(str));
                     }
@@ -177,9 +178,9 @@ namespace FsLocalizationPlugin
                         if (!shiftFound)
                         {
                             throw new ArgumentException(
-                                $"Unable to encode character '{c}' (U+{(int)c:X4}) to bytes." + Environment.NewLine +
+                                $"No kindling found! Unable to encode character '{c}' (U+{(int)c:X4}) to bytes." + Environment.NewLine +
                                 "The histogram does not contain a valid shift mapping for this character." + Environment.NewLine +
-                                "Consider expanding the histogram by adding more characters." + Environment.NewLine +
+                                "Consider expanding the histogram by adding more characters, or report this bug on GitHub." + Environment.NewLine +
                                 $"Full string: {str}",
                                 nameof(str));
                         }
@@ -270,7 +271,7 @@ namespace FsLocalizationPlugin
 
                     if ((int)shiftNum >= HistogramAsciiThreshold)
                     {
-                        throw new ArgumentException("Too many characters to add to histogram. Maximum capacity exceeded.");
+                        throw new ArgumentException("Crucible overloaded! Too many characters to add to histogram. Maximum capacity exceeded.");
                     }
 
                     shiftNumsSet.Add(shiftNum);
@@ -312,6 +313,8 @@ namespace FsLocalizationPlugin
             // Add remaining section
             updatedSection.AddRange(section.Skip(insertedStart));
 
+            FlammenwerferOptions.DebugLog("Flammen.AddCharsToHistogram", "Added {0} new characters to histogram, original dataOffSize: {1}, new dataOffSize: {2}", newChars.Count, dataOffSize, dataOffSize + (uint)newChars.Count);
+
             section = updatedSection;
             dataOffSize += (uint)newChars.Count;
         }
@@ -324,6 +327,8 @@ namespace FsLocalizationPlugin
             if (stringsBinaryChunk == null)
                 throw new ArgumentNullException(nameof(stringsBinaryChunk));
 
+            FlammenwerferOptions.DebugLog("Flammen.ReadStrings", "Read histogram and strings from {0}(Histogram) and {1}(String Binary)", histogramChunk.Id, stringsBinaryChunk.Id);
+            
             List<ushort> histogramSection;
             // Read histogram chunk
             using (var stream = App.AssetManager.GetChunk(histogramChunk))
@@ -346,6 +351,8 @@ namespace FsLocalizationPlugin
             if (stringsBinaryChunk == null)
                 throw new ArgumentNullException(nameof(stringsBinaryChunk));
 
+            FlammenwerferOptions.DebugLog("Flammen.ReadStrings", "Read histogram and strings from stream");
+
             // Read histogram chunk
             List<ushort> histogramSection = ReadHistogram(histogramChunk);
 
@@ -364,7 +371,7 @@ namespace FsLocalizationPlugin
             {
                 uint magic = reader.ReadUInt();
                 if (magic != HistogramMagic)
-                    throw new InvalidDataException($"Magic fizzled, invalid histogram chunk. Got {magic:X}.");
+                    throw new InvalidDataException($"Spell fizzled, invalid histogram magic signature. Got {magic:X}.");
 
                 uint fileSize = reader.ReadUInt();
                 reader.ReadUInt(); // dataOffSize
@@ -391,7 +398,7 @@ namespace FsLocalizationPlugin
                 // Read and validate header
                 uint magic = reader.ReadUInt();
                 if (magic != StringMagic)
-                    throw new InvalidDataException($"Magic fizzled, invalid strings binary chunk. Got {magic:X}.");
+                    throw new InvalidDataException($"Spell fizzled! Invalid strings binary chunk magic signature. Got {magic:X}.");
 
                 reader.ReadUInt(); // fileSize
                 reader.ReadUInt(); // listSize
@@ -448,7 +455,7 @@ namespace FsLocalizationPlugin
             {
                 uint histogramMagic = reader.ReadUInt();
                 if (histogramMagic != HistogramMagic)
-                    throw new InvalidDataException($"Magic fizzled, invalid histogram chunk. Got {histogramMagic:X}.");
+                    throw new InvalidDataException($"Spell fizzled! Invalid histogram magic signature. Got {histogramMagic:X}.");
 
                 uint histogramFileSize = reader.ReadUInt();
                 histogramDataOffSize = reader.ReadUInt();
@@ -469,7 +476,7 @@ namespace FsLocalizationPlugin
                 // Read and validate header
                 uint stringMagic = reader.ReadUInt();
                 if (stringMagic != StringMagic)
-                    throw new InvalidDataException($"Magic failed, invalid strings binary chunk. Got {stringMagic:X}.");
+                    throw new InvalidDataException($"Spell fizzled! Invalid strings binary magic signature. Got {stringMagic:X}.");
 
                 reader.ReadUInt(); // fileSize
                 reader.ReadUInt(); // listSize
@@ -500,15 +507,19 @@ namespace FsLocalizationPlugin
                 }
             }
 
+            FlammenwerferOptions.DebugLog("Flammen.WriteAll", "Readed histogram and {0} strings", stringList.Count);
+
             // Merge modified strings with existing strings
             foreach (KeyValuePair<uint, string> data in modifiedData)
             {
                 stringList[data.Key] = data.Value;
             }
+            FlammenwerferOptions.DebugLog("Flammen.WriteAll", "Modified {0} strings", modifiedData.Count);
             foreach (uint id in stringToRemove)
             {
                 stringList.Remove(id);
             }
+            FlammenwerferOptions.DebugLog("Flammen.WriteAll", "Removed {0} strings", stringToRemove.Count());
 
             // Add new characters to histogram
             AddCharsToHistogram(stringList.Values, ref histogramDataOffSize, ref histogramSection);
@@ -538,8 +549,12 @@ namespace FsLocalizationPlugin
 
                 // Update file size
                 uint fileSize = (uint)(writer.Position - 8);
+
+                FlammenwerferOptions.DebugLog("Flammen.WriteHistogramChunk", "Finish writting histogram chunk, chunk size: {0}", writer.Position);
+
                 writer.Position = 4;
                 writer.Write(fileSize);
+
 
                 return writer.ToByteArray();
             }
@@ -604,6 +619,9 @@ namespace FsLocalizationPlugin
 
                 // Update file size
                 uint fileSize = (uint)(writer.Position - 8);
+
+                FlammenwerferOptions.DebugLog("Flammen.WriteStringChunk", "Finish writting string chunk, chunk size: {0}", writer.Position);
+
                 writer.Position = 4;
                 writer.Write(fileSize);
 
