@@ -11,7 +11,7 @@ Flammenwerfer Plugin is a [Frosty Toolsuite v1](https://github.com/CadeEvs/Frost
 
 ## What it is
 
-Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by GalaxyMan2015 and Mophead, with my thanks and respect). But it allows you to mod with almost any character. It reads and writes the same project and mod format, completely safe to upgrade.
+Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by GalaxyMan2015 and Mophead, with my thanks and respect). But it allows you to mod with almost any language. It reads and writes the same project and mod format, completely safe to upgrade.
 
 ## Features
 
