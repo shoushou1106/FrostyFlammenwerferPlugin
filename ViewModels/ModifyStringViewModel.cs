@@ -105,9 +105,9 @@ namespace FsLocalizationPlugin.ViewModels
 
             // EditText may contain literal braces (e.g. "{PlayerName}") - pass as an arg, not the format template.
             if (HasStringValue)
-                App.Logger.Log("Flame forged! String {0} modified, value: {1}", hash.ToString("X"), EditText);
+                App.Logger.Log("Flame forged! String {0} modified, value: {1}", hash.ToString("X8"), EditText);
             else
-                App.Logger.Log("Flame forged! String {0} added, value: {1}", hash.ToString("X"), EditText);
+                App.Logger.Log("Flame forged! String {0} added, value: {1}", hash.ToString("X8"), EditText);
 
             Database.SetString(hash, EditText);
             OnPropertiesChanged(StateDependentProperties);
@@ -120,7 +120,7 @@ namespace FsLocalizationPlugin.ViewModels
                 return;
 
             Database.RevertString(hash);
-            App.Logger.Log("Flame extinguished! String {0} reverted", hash.ToString("X"));
+            App.Logger.Log("Flame extinguished! String {0} reverted", hash.ToString("X8"));
             OnPropertiesChanged(StateDependentProperties);
             CloseIfConfigured();
         }
@@ -131,7 +131,7 @@ namespace FsLocalizationPlugin.ViewModels
                 return;
 
             Database.RemoveString(hash);
-            App.Logger.Log("Flame scorched! String {0} removed", hash.ToString("X"));
+            App.Logger.Log("Flame scorched! String {0} removed", hash.ToString("X8"));
             OnPropertiesChanged(StateDependentProperties);
             CloseIfConfigured();
         }
