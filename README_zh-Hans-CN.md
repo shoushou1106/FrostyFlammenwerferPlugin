@@ -137,4 +137,5 @@
 - [HarGabt](https://github.com/HarGabt) 的[分支](https://github.com/HarGabt/FrostyFlammenwerferPlugin)
 - [Max Alex](https://github.com/zyf722) 和其的 [BF1CHS](https://github.com/BF1CHS)
 - [NFSToolHB](https://github.com/Punpude/NFSToolHB)
-- Claude 和 Gemini 写了 README 和注释。
+- Claude 写了 README 和注释
+- Gemini 起有趣的名字和日志

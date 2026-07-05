@@ -121,4 +121,5 @@ The assembly is intentionally still named `FsLocalizationPlugin.dll` in the code
 - [HarGabt](https://github.com/HarGabt)'s [fork](https://github.com/HarGabt/FrostyFlammenwerferPlugin)
 - [Max Alex](https://github.com/zyf722) and their [BF1CHS](https://github.com/BF1CHS)
 - [NFSToolHB](https://github.com/Punpude/NFSToolHB)
-- Claude and Gemini. For writing README and Comments.
+- Claude for writing README and Comments
+- Gemini for interesting naming and logging
