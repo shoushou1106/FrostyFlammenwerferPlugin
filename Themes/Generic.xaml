@@ -7,8 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:fdev="FrostyDeveloper">
 
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="/FrostyControls;component/Themes/Generic.xaml"/>
-    </ResourceDictionary.MergedDictionaries>
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/FrostyControls;component/Themes/Generic.xaml"/>
+  </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>

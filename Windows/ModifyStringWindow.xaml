@@ -207,7 +207,7 @@
           </Button>
 
 
-          
+
 
           <Button x:Name="ModifyButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto" Command="{Binding ModifyCommand}">
             <Button.Content>

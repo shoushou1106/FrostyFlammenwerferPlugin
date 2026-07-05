@@ -13,59 +13,59 @@
         DragEnter="Window_DragEnter"
         DragLeave="Window_DragLeave"
         >
-    <!-- View model: ViewModels/ImportChunksViewModel.cs -->
+  <!-- View model: ViewModels/ImportChunksViewModel.cs -->
 
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/FrostyControls;component/Themes/Generic.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/FrostyControls;component/Themes/Generic.xaml"/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
 
-    <Grid Background="{StaticResource WindowBackground}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+  <Grid Background="{StaticResource WindowBackground}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="{StaticResource ListBackground}"/>
-        <StackPanel x:Name="MainStackPanel" Grid.Row="0" Margin="5, 10, 5, 10">
-            <WrapPanel Orientation="Horizontal" Margin="3">
-                <Label Width="Auto">
-                    <Label.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Database.png"
+    <Border Grid.Row="0" Background="{StaticResource ListBackground}"/>
+    <StackPanel x:Name="MainStackPanel" Grid.Row="0" Margin="5, 10, 5, 10">
+      <WrapPanel Orientation="Horizontal" Margin="3">
+        <Label Width="Auto">
+          <Label.Content>
+            <StackPanel Orientation="Horizontal">
+              <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Database.png"
                                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Foreground="{StaticResource FontColor}" Text="Binary Strings: "/>
-                        </StackPanel>
-                    </Label.Content>
-                </Label>
-                <Button Padding="6, 3, 6, 3" Margin="0, 2, 0, 2" Width="Auto" Command="{Binding BrowseCommand}" CommandParameter="Binary">
-                    <Button.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
+              <TextBlock Foreground="{StaticResource FontColor}" Text="Binary Strings: "/>
+            </StackPanel>
+          </Label.Content>
+        </Label>
+        <Button Padding="6, 3, 6, 3" Margin="0, 2, 0, 2" Width="Auto" Command="{Binding BrowseCommand}" CommandParameter="Binary">
+          <Button.Content>
+            <StackPanel Orientation="Horizontal">
+              <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
                                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Foreground="{StaticResource FontColor}" Text="Browse"/>
-                        </StackPanel>
-                    </Button.Content>
-                </Button>
-                <Label x:Name="BinaryDragTips" Width="Auto">
-                    <Label.Style>
-                        <Style TargetType="{x:Type Label}">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding BinaryFilePath}" Value="">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Label.Style>
-                    <Label.Content>
-                        <TextBlock Foreground="{StaticResource FontColor}" Text="or drag file here"/>
-                    </Label.Content>
-                </Label>
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
+              <TextBlock Foreground="{StaticResource FontColor}" Text="Browse"/>
+            </StackPanel>
+          </Button.Content>
+        </Button>
+        <Label x:Name="BinaryDragTips" Width="Auto">
+          <Label.Style>
+            <Style TargetType="{x:Type Label}">
+              <Setter Property="Visibility" Value="Collapsed"/>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding BinaryFilePath}" Value="">
+                  <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Label.Style>
+          <Label.Content>
+            <TextBlock Foreground="{StaticResource FontColor}" Text="or drag file here"/>
+          </Label.Content>
+        </Label>
+        <TextBox Padding="2.5" Margin="2" Width="Auto"
         BorderThickness="1"
         Text="{Binding BinaryFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         AcceptsTab="False"
@@ -74,44 +74,44 @@
         VerticalScrollBarVisibility="Disabled"
         HorizontalScrollBarVisibility="Disabled"
         >
-                </TextBox>
-            </WrapPanel>
+        </TextBox>
+      </WrapPanel>
 
-            <WrapPanel Orientation="Horizontal" Margin="3">
-                <Label Width="Auto">
-                    <Label.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Grid.png"
+      <WrapPanel Orientation="Horizontal" Margin="3">
+        <Label Width="Auto">
+          <Label.Content>
+            <StackPanel Orientation="Horizontal">
+              <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Grid.png"
                                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Foreground="{StaticResource FontColor}" Text="Histogram: "/>
-                        </StackPanel>
-                    </Label.Content>
-                </Label>
-                <Button Padding="6, 3, 6, 3" Margin="0, 2, 0, 2" Width="Auto" Command="{Binding BrowseCommand}" CommandParameter="Histogram">
-                    <Button.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
+              <TextBlock Foreground="{StaticResource FontColor}" Text="Histogram: "/>
+            </StackPanel>
+          </Label.Content>
+        </Label>
+        <Button Padding="6, 3, 6, 3" Margin="0, 2, 0, 2" Width="Auto" Command="{Binding BrowseCommand}" CommandParameter="Histogram">
+          <Button.Content>
+            <StackPanel Orientation="Horizontal">
+              <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
                                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Foreground="{StaticResource FontColor}" Text="Browse"/>
-                        </StackPanel>
-                    </Button.Content>
-                </Button>
-                <Label x:Name="HistogramDragTips" Width="Auto">
-                    <Label.Style>
-                        <Style TargetType="{x:Type Label}">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HistogramFilePath}" Value="">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Label.Style>
-                    <Label.Content>
-                        <TextBlock Foreground="{StaticResource FontColor}" Text="or drag file here"/>
-                    </Label.Content>
-                </Label>
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
+              <TextBlock Foreground="{StaticResource FontColor}" Text="Browse"/>
+            </StackPanel>
+          </Button.Content>
+        </Button>
+        <Label x:Name="HistogramDragTips" Width="Auto">
+          <Label.Style>
+            <Style TargetType="{x:Type Label}">
+              <Setter Property="Visibility" Value="Collapsed"/>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding HistogramFilePath}" Value="">
+                  <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Label.Style>
+          <Label.Content>
+            <TextBlock Foreground="{StaticResource FontColor}" Text="or drag file here"/>
+          </Label.Content>
+        </Label>
+        <TextBox Padding="2.5" Margin="2" Width="Auto"
                     BorderThickness="1"
                     Text="{Binding HistogramFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     AcceptsTab="False"
@@ -120,179 +120,179 @@
                     VerticalScrollBarVisibility="Disabled"
                     HorizontalScrollBarVisibility="Disabled"
                     >
-                </TextBox>
-            </WrapPanel>
+        </TextBox>
+      </WrapPanel>
 
-            <WrapPanel Orientation="Horizontal" Margin="3">
-                <Label Width="Auto">
-                    <Label.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;"
+      <WrapPanel Orientation="Horizontal" Margin="3">
+        <Label Width="Auto">
+          <Label.Content>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;"
                                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
                                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Foreground="{StaticResource FontColor}" Text="Language: "/>
-                        </StackPanel>
-                    </Label.Content>
-                </Label>
-                <ComboBox x:Name="LanguageComboBox" MinWidth="140" Width="Auto" Margin="2"
+              <TextBlock Foreground="{StaticResource FontColor}" Text="Language: "/>
+            </StackPanel>
+          </Label.Content>
+        </Label>
+        <ComboBox x:Name="LanguageComboBox" MinWidth="140" Width="Auto" Margin="2"
                     ItemsSource="{Binding Languages}"
                     SelectedItem="{Binding SelectedLanguage}">
-                </ComboBox>
-            </WrapPanel>
+        </ComboBox>
+      </WrapPanel>
 
-            <StackPanel Margin="3" Orientation="Vertical">
-                <Label Width="Auto">
-                    <Label.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyCore;component/Images/Settings.png"
+      <StackPanel Margin="3" Orientation="Vertical">
+        <Label Width="Auto">
+          <Label.Content>
+            <StackPanel Orientation="Horizontal">
+              <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyCore;component/Images/Settings.png"
                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Foreground="{StaticResource FontColor}" Text="Options: "/>
-                        </StackPanel>
-                    </Label.Content>
-                </Label>
-
-                <WrapPanel Orientation="Vertical" Margin="15, 0, 0, 0">
-                    <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
-                        <Label Width="Auto" Cursor="Hand" MouseLeftButtonUp="ToggleAdjacentCheckBox">
-                            <Label.Content>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Foreground="{StaticResource FontColor}" Text="Do not import empty or null strings: "/>
-                                </StackPanel>
-                            </Label.Content>
-                        </Label>
-                        <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                  IsChecked="{Binding NoImportEmptyOrNull}"/>
-                    </WrapPanel>
-
-                    <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
-                        <Label Width="Auto" Cursor="Hand" MouseLeftButtonUp="ToggleAdjacentCheckBox">
-                            <Label.Content>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Foreground="{StaticResource FontColor}" Text="Remove all existing strings: "/>
-                                </StackPanel>
-                            </Label.Content>
-                        </Label>
-                        <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                  IsChecked="{Binding DeleteExistingStrings}"/>
-                    </WrapPanel>
-
-                    <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
-                        <WrapPanel.Style>
-                            <Style TargetType="WrapPanel">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding DeleteExistingStrings}" Value="True">
-                                        <Setter Property="IsEnabled" Value="False"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </WrapPanel.Style>
-                        <Label Width="Auto" Cursor="Hand" MouseLeftButtonUp="ToggleAdjacentCheckBox">
-                            <Label.Content>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Foreground="{StaticResource FontColor}" Text="Do not overwrite same existing strings: "/>
-                                </StackPanel>
-                            </Label.Content>
-                        </Label>
-                        <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                  IsChecked="{Binding NoOverwriteSameStrings}">
-                        </CheckBox>
-                    </WrapPanel>
-                </WrapPanel>
+              <TextBlock Foreground="{StaticResource FontColor}" Text="Options: "/>
             </StackPanel>
-        </StackPanel>
-        <Grid x:Name="NormalFooterGrid" Grid.Row="1" Height="38">
-            <Grid Margin="5">
-                <DockPanel LastChildFill="False">
-                    <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}">
-                        <Button.Content>
-                            <StackPanel Orientation="Horizontal">
-                                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyControls;component/Images/Clear.png"
+          </Label.Content>
+        </Label>
+
+        <WrapPanel Orientation="Vertical" Margin="15, 0, 0, 0">
+          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
+            <Label Width="Auto" Cursor="Hand" MouseLeftButtonUp="ToggleAdjacentCheckBox">
+              <Label.Content>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Foreground="{StaticResource FontColor}" Text="Do not import empty or null strings: "/>
+                </StackPanel>
+              </Label.Content>
+            </Label>
+            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  IsChecked="{Binding NoImportEmptyOrNull}"/>
+          </WrapPanel>
+
+          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
+            <Label Width="Auto" Cursor="Hand" MouseLeftButtonUp="ToggleAdjacentCheckBox">
+              <Label.Content>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Foreground="{StaticResource FontColor}" Text="Remove all existing strings: "/>
+                </StackPanel>
+              </Label.Content>
+            </Label>
+            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  IsChecked="{Binding DeleteExistingStrings}"/>
+          </WrapPanel>
+
+          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
+            <WrapPanel.Style>
+              <Style TargetType="WrapPanel">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding DeleteExistingStrings}" Value="True">
+                    <Setter Property="IsEnabled" Value="False"/>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </WrapPanel.Style>
+            <Label Width="Auto" Cursor="Hand" MouseLeftButtonUp="ToggleAdjacentCheckBox">
+              <Label.Content>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Foreground="{StaticResource FontColor}" Text="Do not overwrite same existing strings: "/>
+                </StackPanel>
+              </Label.Content>
+            </Label>
+            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  IsChecked="{Binding NoOverwriteSameStrings}">
+            </CheckBox>
+          </WrapPanel>
+        </WrapPanel>
+      </StackPanel>
+    </StackPanel>
+    <Grid x:Name="NormalFooterGrid" Grid.Row="1" Height="38">
+      <Grid Margin="5">
+        <DockPanel LastChildFill="False">
+          <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}">
+            <Button.Content>
+              <StackPanel Orientation="Horizontal">
+                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyControls;component/Images/Clear.png"
                                    RenderOptions.BitmapScalingMode="HighQuality"/>
-                                <TextBlock Foreground="{StaticResource FontColor}" Text="Cancel"/>
-                            </StackPanel>
-                        </Button.Content>
-                    </Button>
+                <TextBlock Foreground="{StaticResource FontColor}" Text="Cancel"/>
+              </StackPanel>
+            </Button.Content>
+          </Button>
 
-                    <Button x:Name="ConfirmButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto"
+          <Button x:Name="ConfirmButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto"
                             Command="{Binding ImportCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
-                        <Button.Content>
-                            <StackPanel Orientation="Horizontal">
-                                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Import.png"
+            <Button.Content>
+              <StackPanel Orientation="Horizontal">
+                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Import.png"
                                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                                <TextBlock Foreground="{StaticResource FontColor}" Text="Import"/>
-                            </StackPanel>
-                        </Button.Content>
-                    </Button>
+                <TextBlock Foreground="{StaticResource FontColor}" Text="Import"/>
+              </StackPanel>
+            </Button.Content>
+          </Button>
 
-                    <Button x:Name="StartOverButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto" Command="{Binding StartOverCommand}">
-                        <Button.Content>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Margin="0, 1, 5, 0" Text="&#xe72c;"
+          <Button x:Name="StartOverButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto" Command="{Binding StartOverCommand}">
+            <Button.Content>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="0, 1, 5, 0" Text="&#xe72c;"
                                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
                                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                                <TextBlock Foreground="{StaticResource FontColor}" Text="Start Over"/>
-                            </StackPanel>
-                        </Button.Content>
-                    </Button>
+                <TextBlock Foreground="{StaticResource FontColor}" Text="Start Over"/>
+              </StackPanel>
+            </Button.Content>
+          </Button>
 
-                </DockPanel>
-            </Grid>
-        </Grid>
-
-        <Grid x:Name="DragOverlayGrid" Grid.Row="0" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="1"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid x:Name="BinaryDropZone" Grid.Column="0" AllowDrop="True" Drop="BinaryDropZone_Drop" Background="{StaticResource ListBackground}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Row="1" Text="Drop here for" Foreground="{StaticResource FontColor}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <TextBlock Grid.Row="2" Text="Binary Strings" Foreground="{StaticResource FontColor}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Grid>
-            <Border Grid.Column="1" Background="{StaticResource ControlBackground}"/>
-            <Grid x:Name="HistogramDropZone" Grid.Column="2" AllowDrop="True" Drop="HistogramDropZone_Drop" Background="{StaticResource ListBackground}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Row="1" Text="Drop here for" Foreground="{StaticResource FontColor}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <TextBlock Grid.Row="2" Text="Histogram" Foreground="{StaticResource FontColor}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Grid>
-        </Grid>
-
-        <Grid x:Name="DragFooterGrid" Grid.Row="1" Height="38" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid Margin="5">
-                <DockPanel LastChildFill="False">
-                    <Button x:Name="BackFromDragButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Click="BackFromDragButton_Click">
-                        <Button.Content>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Margin="0,1,5,0" Text="&#xE72B;"
-                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
-                                <TextBlock Foreground="{StaticResource FontColor}" Text="Back"/>
-                            </StackPanel>
-                        </Button.Content>
-                    </Button>
-                </DockPanel>
-            </Grid>
-        </Grid>
-
+        </DockPanel>
+      </Grid>
     </Grid>
+
+    <Grid x:Name="DragOverlayGrid" Grid.Row="0" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="1"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+      <Grid x:Name="BinaryDropZone" Grid.Column="0" AllowDrop="True" Drop="BinaryDropZone_Drop" Background="{StaticResource ListBackground}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="1" Text="Drop here for" Foreground="{StaticResource FontColor}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <TextBlock Grid.Row="2" Text="Binary Strings" Foreground="{StaticResource FontColor}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      </Grid>
+      <Border Grid.Column="1" Background="{StaticResource ControlBackground}"/>
+      <Grid x:Name="HistogramDropZone" Grid.Column="2" AllowDrop="True" Drop="HistogramDropZone_Drop" Background="{StaticResource ListBackground}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="1" Text="Drop here for" Foreground="{StaticResource FontColor}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <TextBlock Grid.Row="2" Text="Histogram" Foreground="{StaticResource FontColor}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      </Grid>
+    </Grid>
+
+    <Grid x:Name="DragFooterGrid" Grid.Row="1" Height="38" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+      <Grid Margin="5">
+        <DockPanel LastChildFill="False">
+          <Button x:Name="BackFromDragButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Click="BackFromDragButton_Click">
+            <Button.Content>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="0,1,5,0" Text="&#xE72B;"
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                <TextBlock Foreground="{StaticResource FontColor}" Text="Back"/>
+              </StackPanel>
+            </Button.Content>
+          </Button>
+        </DockPanel>
+      </Grid>
+    </Grid>
+
+  </Grid>
 </local:FlammenwerferWindowBase>

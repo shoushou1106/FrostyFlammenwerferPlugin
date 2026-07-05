@@ -22,7 +22,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/shoushou1106/FrostyFlammenwerferPlugin/</RepositoryUrl>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - 1.0.7|x64' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\DeveloperDebug\1.0.7\</OutputPath>
@@ -43,7 +43,7 @@
     <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_1062_EARLIER</DefineConstants>
     <IsDebug>true</IsDebug>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.7|x64'">
     <OutputPath>bin\ReleaseFinal\1.0.7\</OutputPath>
     <DefineConstants>TRACE;FROSTY_107</DefineConstants>
@@ -64,13 +64,13 @@
     <Optimize>true</Optimize>
     <IsDebug>false</IsDebug>
   </PropertyGroup>
-    
+
   <!-- Integrated Workflow detection -->
   <PropertyGroup>
     <IsIntegratedWorkflow>false</IsIntegratedWorkflow>
     <IsIntegratedWorkflow Condition="Exists('..\..\Plugins\') And Exists('..\..\FrostyPlugin\FrostyCore.csproj')">true</IsIntegratedWorkflow>
   </PropertyGroup>
-  
+
   <!-- Integrated Workflow only -->
   <Target Name="CopyPluginDebug" AfterTargets="PostBuildEvent" Condition="$(IsIntegratedWorkflow) And $(IsDebug)">
     <!-- Not renaming for debug -->
