@@ -18,11 +18,7 @@ using FrostySdk.Managers.Entries;
 
 namespace FsLocalizationPlugin.ViewModels
 {
-    /// <summary>
-    /// Backs the Export Chunks to Files window - re-encodes each modified language's
-    /// histogram and/or strings binary chunk and writes it to a file, without needing a
-    /// full mod build.
-    /// </summary>
+    /// <summary>Backs the Export Chunks to Files window: re-encodes a language's chunks and writes them to files, without a full mod build.</summary>
     public sealed class ExportChunksViewModel : ViewModelBase
     {
         private LanguageExportOptions selectedLanguageOption;
@@ -39,7 +35,7 @@ namespace FsLocalizationPlugin.ViewModels
             {
                 LanguageExportOptions opt = new LanguageExportOptions(lang)
                 {
-                    // Compatible with FrostySaveFileDialog's own remembered-path keys.
+                    // Keys match FrostySaveFileDialog's remembered-path keys.
                     BinaryPath = BuildDefaultPath(Config.Get("LocalizedStrings_BinaryChunkExportPath", string.Empty), lang, "BinaryStringsChunk"),
                     HistogramPath = BuildDefaultPath(Config.Get("LocalizedStrings_HistogramChunkExportPath", string.Empty), lang, "HistogramChunk"),
                 };
@@ -56,12 +52,12 @@ namespace FsLocalizationPlugin.ViewModels
             CancelCommand = new RelayCommand(_ => CloseRequested?.Invoke(false));
         }
 
-        /// <summary>Raised when the window should close, with the DialogResult to use.</summary>
+        /// <summary>Raised to close the window, with the DialogResult.</summary>
         public event Action<bool?> CloseRequested;
 
         private FsLocalizationStringDatabase Database { get; }
 
-        /// <summary>Whether any language currently has modifications to export. When false, the window shows a placeholder instead of the export form.</summary>
+        /// <summary>Whether any language has modifications to export. False shows a placeholder instead of the form.</summary>
         public bool HasModifiedLanguages { get; }
 
         public ObservableCollection<LanguageExportOptions> LanguageOptions { get; }
@@ -157,8 +153,6 @@ namespace FsLocalizationPlugin.ViewModels
                             task.TaskLogger.Log("[{0}/{1}] Exporting {2}", ++currentPart, totalParts, lang);
                             LocalizationHelper.ReportProgress(task.TaskLogger, 0, 4, currentPart, totalParts);
                             cancelToken.Token.ThrowIfCancellationRequested();
-                            // Gives the task window a chance to repaint the status update
-                            // above before the (synchronous, CPU-bound) work below runs.
                             Thread.Sleep(1);
 
                             Config.Add("Language", lang, ConfigScope.Game);
@@ -187,9 +181,6 @@ namespace FsLocalizationPlugin.ViewModels
                                 {
                                     writer.Write(newStringData);
                                 }
-                                // langOption.BinaryPath is a filesystem path the user picked
-                                // or typed - Windows paths can legally contain braces, so
-                                // this goes through as a format argument like the rest here.
                                 App.Logger.Log("{0} binary chunk ({1}), file size: {2}, exported to {3}", lang, localizedText.BinaryChunk, (uint)newStringData.Length, langOption.BinaryPath);
                             }
 
@@ -219,28 +210,19 @@ namespace FsLocalizationPlugin.ViewModels
                 }
                 finally
                 {
-                    // Restore whatever language was active before the export started,
-                    // whether it finished, was cancelled, or threw - previously this was
-                    // only done on the successful path, so a cancel left the editor on
-                    // whatever language the export loop last switched to.
+                    // Restore the original language whether this finished, cancelled, or threw.
                     Config.Add("Language", origLanguage, ConfigScope.Game);
                     Config.Save();
                     Database.Initialize();
                 }
             }, showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
 
-            // FrostyTaskWindow.Show blocks until the callback above returns, so it's safe
-            // to read `cancelled` and close here - setting DialogResult from inside the
-            // callback itself (as this window used to) would be a cross-thread violation.
+            // Show() blocks until the callback returns, so cancelled is safe to read here.
             CloseRequested?.Invoke(!cancelled);
         }
     }
 
-    /// <summary>
-    /// Per-language export choices in the Export Chunks to Files window: whether to
-    /// export the binary strings chunk and/or the histogram chunk for this language, and
-    /// where to write each one.
-    /// </summary>
+    /// <summary>Per-language export choices: whether to export the binary/histogram chunk, and where to write each.</summary>
     public sealed class LanguageExportOptions : ViewModelBase
     {
         private bool exportBinary;

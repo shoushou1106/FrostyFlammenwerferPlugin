@@ -15,8 +15,7 @@ namespace FsLocalizationPlugin.Extensions
 
         protected override void OnClicked()
         {
-            // Stay open after Modify/Revert/Remove - this menu entry is for batch-editing
-            // several strings in one sitting, unlike the single-action dialogs elsewhere.
+            // Stay open for batch editing.
             new Windows.ModifyStringWindow(Application.Current.MainWindow, closeAfterConfirm: false).ShowDialog();
         }
     }

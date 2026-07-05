@@ -11,27 +11,18 @@ using System.Linq;
 using FrostySdk.Managers.Entries;
 #endif
 
-
 namespace FsLocalizationPlugin
 {
     /// <summary>
-    /// Shared helpers for localization string IDs, chunk-owning language discovery, and
-    /// the handful of small routines that used to be copy-pasted across every Windows/*
-    /// code-behind file. Kept in the flat <c>FsLocalizationPlugin</c> namespace alongside
-    /// <see cref="Flammen"/> so both the editor windows and the format layer can reach it
-    /// without an extra <c>using</c>.
+    /// Shared helpers for string IDs and language discovery, used by the editor windows
+    /// and the format layer. Kept flat alongside <see cref="Flammen"/>.
     /// </summary>
     public static class LocalizationHelper
     {
         private static List<string> cachedLanguages;
         private static string cachedProfileName;
 
-        /// <summary>
-        /// Computes a hash for a string ID using a custom hashing algorithm.
-        /// This is compatible with Frostbite's FsLocalization string ID hashing.
-        /// </summary>
-        /// <param name="stringId">The string ID to hash.</param>
-        /// <returns>The 32-bit hash value.</returns>
+        /// <summary>Hashes a string ID, compatible with Frostbite's FsLocalization hashing.</summary>
         public static uint HashStringId(string stringId)
         {
             if (string.IsNullOrEmpty(stringId))
@@ -45,14 +36,7 @@ namespace FsLocalizationPlugin
             return result;
         }
 
-        /// <summary>
-        /// Attempts to resolve a user-typed value - a string ID (<c>ID_FLAME</c>), a bare
-        /// 8-digit hex hash (<c>DEADBEEF</c>), or a <c>0x</c>-prefixed hex hash - into its
-        /// 32-bit string hash.
-        /// </summary>
-        /// <param name="hashOrId">The raw text entered by the user. May be null.</param>
-        /// <param name="hash">The resolved hash, if parsing succeeded.</param>
-        /// <returns><see langword="true"/> if <paramref name="hashOrId"/> could be parsed.</returns>
+        /// <summary>Resolves a string ID (<c>ID_FLAME</c>), bare 8-digit hex hash, or 0x-prefixed hex hash into its 32-bit hash.</summary>
         public static bool TryParseHashOrId(string hashOrId, out uint hash)
         {
             hash = 0;
@@ -79,27 +63,14 @@ namespace FsLocalizationPlugin
             }
             catch
             {
-                // Malformed hex, or a wildly out-of-range hash - treat it as unparsable.
+                // Malformed or out-of-range hex - unparsable.
             }
             return false;
         }
 
-        /// <summary>
-        /// Enumerates every language a <c>LocalizationAsset</c> in the currently loaded
-        /// profile provides text for.
-        /// </summary>
-        /// <param name="modifiedOnly">
-        /// When <see langword="true"/>, only languages that currently have a modified
-        /// (edited) localized-text asset are returned. Never cached, since modification
-        /// state changes as the user edits strings.
-        /// </param>
-        /// <returns>
-        /// A sorted, de-duplicated list of language names (e.g. <c>English</c>). When
-        /// <paramref name="modifiedOnly"/> is <see langword="false"/> and no
-        /// <c>LocalizationAsset</c> is found at all, falls back to a single-item list
-        /// containing <c>English</c>. When <paramref name="modifiedOnly"/> is
-        /// <see langword="true"/>, an empty result simply means nothing is modified yet.
-        /// </returns>
+        /// <summary>Every language a LocalizationAsset in the current profile provides text for.</summary>
+        /// <param name="modifiedOnly">Only languages with a modified localized-text asset. Never cached.</param>
+        /// <returns>Sorted, de-duplicated language names. Falls back to "English" if none found (unless modifiedOnly).</returns>
         public static List<string> GetLocalizedLanguages(bool modifiedOnly = false)
         {
             if (!modifiedOnly && cachedLanguages != null && cachedProfileName == ProfilesLibrary.ProfileName)
@@ -140,35 +111,14 @@ namespace FsLocalizationPlugin
             return result;
         }
 
-        /// <summary>
-        /// Clears the cached full language list built by <see cref="GetLocalizedLanguages"/>.
-        /// The set of languages a game profile provides is effectively fixed for the
-        /// lifetime of an editor session, so this only needs to be called if a different
-        /// game profile is loaded into the same process.
-        /// </summary>
+        /// <summary>Clears the cached language list. Only needed if a different game profile loads into the same process.</summary>
         public static void InvalidateLanguageCache()
         {
             cachedLanguages = null;
             cachedProfileName = null;
         }
 
-        /// <summary>
-        /// Reports progress for a multi-part, multi-item background operation through a
-        /// <see cref="FrostyTaskWindow"/>'s logger, using the <c>"progress:"</c> prefix
-        /// convention <see cref="FrostyTaskLogger"/> understands.
-        /// </summary>
-        /// <param name="logger">The task window's logger (<c>task.TaskLogger</c>).</param>
-        /// <param name="current">The 1-based index of the current item within its part.</param>
-        /// <param name="total">The total number of items in the current part.</param>
-        /// <param name="currentPart">The 1-based index of the current part of the overall operation.</param>
-        /// <param name="totalParts">The total number of parts in the overall operation.</param>
-        /// <param name="detail">The 1-based index of the current sub-step of an item, if items have sub-steps.</param>
-        /// <param name="totalDetails">The total number of sub-steps per item.</param>
-        /// <remarks>
-        /// <see cref="ILogger.Log"/> already runs on the background thread that the task
-        /// window's callback executes on and returns immediately, so this reports
-        /// synchronously - no need to hop through another <c>Task.Run</c>.
-        /// </remarks>
+        /// <summary>Reports progress for a multi-part background operation via a FrostyTaskWindow's logger.</summary>
         public static void ReportProgress(ILogger logger, double current, double total, double currentPart = 1, double totalParts = 1, double detail = 1, double totalDetails = 1)
         {
             if (total <= 0)

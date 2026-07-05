@@ -3,10 +3,7 @@ using System;
 
 namespace FsLocalizationPlugin.ViewModels
 {
-    /// <summary>
-    /// Backs the Modify String window - Flammenwerfer's flagship dialog for adding,
-    /// modifying, reverting, or removing a single localized string by hash or string ID.
-    /// </summary>
+    /// <summary>Backs the Modify String window: add, modify, revert, or remove one string by hash or string ID.</summary>
     public sealed class ModifyStringViewModel : LanguageAwareViewModelBase
     {
         private static readonly string[] StateDependentProperties =
@@ -21,12 +18,7 @@ namespace FsLocalizationPlugin.ViewModels
         private string hashOrId = string.Empty;
         private string editText = string.Empty;
 
-        /// <param name="database">The active string database.</param>
-        /// <param name="closeAfterAction">
-        /// Whether Modify/Revert/Remove should close the window once they've acted -
-        /// matches the original FsLocalizationPlugin's single-action-then-close dialog.
-        /// Pass <see langword="false"/> for a stay-open, batch-editing experience instead.
-        /// </param>
+        /// <param name="closeAfterAction">Close after action.</param>
         public ModifyStringViewModel(FsLocalizationStringDatabase database, bool closeAfterAction = true) : base(database)
         {
             this.closeAfterAction = closeAfterAction;
@@ -38,7 +30,7 @@ namespace FsLocalizationPlugin.ViewModels
             CancelCommand = new RelayCommand(_ => CloseRequested?.Invoke(false));
         }
 
-        /// <summary>Raised when the window should close, with the DialogResult to use.</summary>
+        /// <summary>Raised to close the window, with the DialogResult.</summary>
         public event Action<bool?> CloseRequested;
 
         public string HashOrId
@@ -59,19 +51,16 @@ namespace FsLocalizationPlugin.ViewModels
 
         private uint? ParsedHash => LocalizationHelper.TryParseHashOrId(HashOrId, out uint hash) ? hash : (uint?)null;
 
-        /// <summary>Whether HashOrId could be parsed into a hash at all.</summary>
         public bool IsValid => ParsedHash.HasValue;
 
-        /// <summary>Whether the string has been marked for removal.</summary>
         public bool IsRemoved => ParsedHash is uint hash && Database.IsStringRemoved(hash);
 
-        /// <summary>Whether there's a current value to preview (baseline or modified, and not removed).</summary>
+        /// <summary>Whether there's a value to preview (baseline or modified, not removed).</summary>
         public bool HasStringValue => ParsedHash is uint hash && Database.TryGetString(hash, out _);
 
-        /// <summary>The current value of the string, when <see cref="HasStringValue"/> is true.</summary>
         public string StringValue => ParsedHash is uint hash && Database.TryGetString(hash, out string value) ? value : string.Empty;
 
-        /// <summary>Explains why the value preview is hidden, for the invalid/not-found/removed states.</summary>
+        /// <summary>Why the value preview is hidden, for the invalid/not-found/removed states.</summary>
         public string StatusMessage
         {
             get
@@ -86,10 +75,10 @@ namespace FsLocalizationPlugin.ViewModels
             }
         }
 
-        /// <summary>Whether the current value shown is a modification rather than the unmodified baseline value.</summary>
+        /// <summary>Whether the current value is a modification, not the unmodified baseline.</summary>
         public bool IsModified => ParsedHash is uint hash && Database.isStringEdited(hash);
 
-        /// <summary>Whether HashOrId looks like a string ID (e.g. <c>ID_FLAME</c>) rather than a raw hash, so the UI can show the computed hash alongside it.</summary>
+        /// <summary>Whether HashOrId looks like a string ID (e.g. <c>ID_FLAME</c>) rather than a raw hash.</summary>
         public bool ShowIdToHash => HashOrId.StartsWith("ID");
 
         public string IdToHash => LocalizationHelper.HashStringId(HashOrId).ToString("X8");
@@ -115,10 +104,7 @@ namespace FsLocalizationPlugin.ViewModels
                 return;
 
             Database.SetString(hash, EditText);
-            // EditText is arbitrary (possibly user-typed, or containing the game's own
-            // "{PlaceholderName}"-style tokens) - pass it as a format argument rather than
-            // baking it into the template, or a literal brace in it would make ILogger's
-            // internal string.Format throw.
+            // EditText may contain literal braces (e.g. "{PlayerName}") - pass as an arg, not the format template.
             App.Logger.Log("String {0:X8} added/modified, value: {1}", hash, EditText);
             OnPropertiesChanged(StateDependentProperties);
             CloseIfConfigured();

@@ -1,8 +1,5 @@
-> [!NOTE]
-> 此插件正在开发中。
-
 > [!WARNING]
-> 此插件尚未达到生产可用标准。请勿发布基于此插件的模组或 Frosty 分支。
+> 此插件正在开发中。未达到生产可用标准。请勿发布基于此插件的模组或 Frosty 分支。
 
 # Frosty 喷火器插件
 
@@ -36,7 +33,7 @@
 
 与原版 `FsLocalizationPlugin` 的双向兼容是喷火器插件的核心特性和目标，这也是为什么这两个插件共享相同工程/模组格式的原因：
 
-| 工程或模组由……保存 | 用喷火器插件打开 | 用 FsLocalizationPlugin 打开 |
+| 工程或模组由……保存 | 用 喷火器插件 打开 | 用 FsLocalizationPlugin 打开 |
 | --- | --- | --- |
 | FsLocalizationPlugin | 正常加载 | 正常加载（不然呢） |
 | 喷火器插件 | 正常加载 | 正常加载 |
@@ -82,7 +79,7 @@
 
 ## 生成和开发工作流
 
-我们支持两种工作流，会自动识别并进行切换：
+我们支持两种工作流，项目文件会自动识别并进行切换：
 
 - **独立工作流**：此仓库和您的 Frosty 仓库位于同一文件夹中。更适合新手。
 
@@ -132,7 +129,7 @@
 
 - 在 Release 配置下。集成工作流在将输出复制到 Frosty 的 `bin\` 文件夹时，会自动将输出**重命名**为 “FlammenwerferPlugin.dll”。
 
-- 在 Debug 配置下。集成工作流在将输出复制到 Frosty 的 `bin\` 文件夹时，**不会重命名**，但是会顺便带上 pdb 文件。
+- 在 Debug 配置下。集成工作流在将输出复制到 Frosty 的 `bin\` 文件夹时，**不会**重命名，但是会顺便带上 pdb 文件。
 
 ## 特别鸣谢
 
@@ -140,3 +137,4 @@
 - [HarGabt](https://github.com/HarGabt) 的[分支](https://github.com/HarGabt/FrostyFlammenwerferPlugin)
 - [Max Alex](https://github.com/zyf722) 和其的 [BF1CHS](https://github.com/BF1CHS)
 - [NFSToolHB](https://github.com/Punpude/NFSToolHB)
+- Claude 和 Gemini 写了 README 和注释。

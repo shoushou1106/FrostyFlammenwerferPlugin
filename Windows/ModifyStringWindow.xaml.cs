@@ -8,12 +8,7 @@ namespace FsLocalizationPlugin.Windows
     {
         private readonly ModifyStringViewModel viewModel;
 
-        /// <param name="owner">The window to center over and block input to.</param>
-        /// <param name="closeAfterConfirm">
-        /// Whether Modify/Revert/Remove should close the window once they've acted. The
-        /// Tools &gt; Flammenwerfer menu entry passes <see langword="false"/> for a
-        /// stay-open, batch-editing experience; everywhere else uses the default.
-        /// </param>
+        /// <param name="closeAfterConfirm">Close after action.</param>
         public ModifyStringWindow(Window owner, bool closeAfterConfirm = true)
         {
             Owner = owner;

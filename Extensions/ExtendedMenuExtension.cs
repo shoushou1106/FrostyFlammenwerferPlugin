@@ -4,12 +4,7 @@ using System.Windows.Media;
 
 namespace FsLocalizationPlugin.Extensions
 {
-    /// <summary>
-    /// Common base for every clickable menu entry - caches the command/icon each entry
-    /// exposes, since Frosty re-reads these properties on every menu render (the
-    /// original per-extension code allocated a fresh <see cref="RelayCommand"/> and
-    /// re-parsed its icon's pack URI on every single read).
-    /// </summary>
+    /// <summary>Common base for every clickable menu entry. Caches the command/icon, since Frosty re-reads these on every menu render.</summary>
     public abstract class ExtendedMenuExtension : MenuExtension
     {
         private static readonly Dictionary<string, ImageSource> IconCache = new Dictionary<string, ImageSource>();
@@ -21,12 +16,7 @@ namespace FsLocalizationPlugin.Extensions
         /// <summary>Invoked when the user clicks this menu item.</summary>
         protected abstract void OnClicked();
 
-        /// <summary>
-        /// Resolves an icon from a WPF pack URI (e.g. one of Frosty's own
-        /// <c>pack://application:,,,/FrostyEditor;component/Images/*.png</c> icons),
-        /// parsing and freezing it only once per URI no matter how many times Frosty
-        /// reads <see cref="MenuExtension.Icon"/>.
-        /// </summary>
+        /// <summary>Resolves and freezes an icon from a pack URI, parsing each URI only once.</summary>
         protected static ImageSource GetIcon(string packUri)
         {
             if (!IconCache.TryGetValue(packUri, out ImageSource icon))

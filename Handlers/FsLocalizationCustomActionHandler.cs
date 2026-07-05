@@ -22,25 +22,14 @@ namespace FsLocalizationPlugin
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 {
     /// <summary>
-    /// The mod merge/bake pipeline for <c>UITextDatabase</c> ebx assets - registered via
-    /// <c>[assembly: RegisterCustomHandler(CustomHandlerType.Ebx, typeof(FsLocalizationCustomActionHandler), ebxType: "UITextDatabase")]</c>
-    /// in <c>Properties/AssemblyInfo.cs</c>. Frosty calls into this from two different
-    /// places, hence the two regions below:
+    /// The mod merge/bake pipeline for <c>UITextDatabase</c> ebx assets, registered in
+    /// <c>Properties/AssemblyInfo.cs</c>.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// <b>Editor side</b> (building a mod from the current project): <see cref="SaveToMod"/>
-    /// serializes the <see cref="ModifiedFsLocalizationAsset"/> diff straight into the
-    /// <c>.fbmod</c> file.
-    /// </para>
-    /// <para>
-    /// <b>Mod Manager side</b> (applying one or more mods to the game): <see cref="Load"/>
-    /// merges the diffs of every mod touching the same asset (via
-    /// <see cref="ModifiedFsLocalizationAsset.Merge"/>), <see cref="GetResourceActions"/>
-    /// describes what a mod changes for the mod info UI, and <see cref="Modify"/> is the
-    /// actual "bake into the game" step: it regenerates the histogram and strings-binary
-    /// chunks from the merged diff and registers them as new runtime chunk resources.
-    /// </para>
+    /// Editor side: <see cref="SaveToMod"/> serializes the diff into the .fbmod file.
+    /// Mod Manager side: <see cref="Load"/> merges diffs from multiple mods,
+    /// <see cref="GetResourceActions"/> describes changes for the mod info UI, and
+    /// <see cref="Modify"/> applies the merged diff into new histogram/strings-binary chunks.
     /// </remarks>
     public class FsLocalizationCustomActionHandler : ICustomActionHandler
     {
@@ -70,10 +59,6 @@ namespace FsLocalizationPlugin
 
         #region -- Editor Specific --
 
-        /// <summary>
-        /// Serializes a modified <c>UITextDatabase</c> child asset's diff into the mod
-        /// being written.
-        /// </summary>
         public void SaveToMod(FrostyModWriter writer, AssetEntry entry)
         {
             writer.AddResource(new FsLocalizationResource(entry as EbxAssetEntry, writer.ResourceManifest));
@@ -83,9 +68,6 @@ namespace FsLocalizationPlugin
 
         #region -- Mod Manager Specific --
 
-        /// <summary>
-        /// Describes the strings a mod adds/changes, for Frosty Mod Manager's mod info UI.
-        /// </summary>
         public IEnumerable<string> GetResourceActions(string name, byte[] data)
         {
             ModifiedFsLocalizationAsset newFs = (ModifiedFsLocalizationAsset)ModifiedResource.Read(data);
@@ -103,10 +85,6 @@ namespace FsLocalizationPlugin
             return actions;
         }
 
-        /// <summary>
-        /// Merges a newly loaded mod's diff into any existing diff already accumulated
-        /// for the same asset from a previously loaded mod.
-        /// </summary>
         public object Load(object existing, byte[] newData)
         {
             ModifiedFsLocalizationAsset newFs = (ModifiedFsLocalizationAsset)ModifiedResource.Read(newData);
@@ -119,11 +97,6 @@ namespace FsLocalizationPlugin
             return oldFs;
         }
 
-        /// <summary>
-        /// Bakes the merged diff into the game: regenerates the histogram and
-        /// strings-binary chunks via <see cref="Flammen.WriteAll"/>, compresses them, and
-        /// registers them as new runtime chunk resources.
-        /// </summary>
         public void Modify(AssetEntry origEntry, AssetManager am, RuntimeResources runtimeResources, object data, out byte[] outData)
         {
             try

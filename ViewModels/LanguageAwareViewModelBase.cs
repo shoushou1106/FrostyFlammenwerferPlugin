@@ -3,11 +3,7 @@ using System.Collections.Generic;
 
 namespace FsLocalizationPlugin.ViewModels
 {
-    /// <summary>
-    /// Base for view models with a language picker that switches the active
-    /// <see cref="FsLocalizationStringDatabase"/> language for as long as their window is
-    /// open, then restores whatever language was active before the window was opened.
-    /// </summary>
+    /// <summary>Base for view models with a language picker: switches the active database language while the window is open, then restores it on close.</summary>
     public abstract class LanguageAwareViewModelBase : ViewModelBase
     {
         private readonly string originalLanguage;
@@ -39,19 +35,12 @@ namespace FsLocalizationPlugin.ViewModels
             }
         }
 
-        /// <summary>
-        /// Called after the active language has changed and the database has been
-        /// re-initialized for it, so a subclass can refresh whatever depends on it.
-        /// </summary>
+        /// <summary>Called after the language changes and the database re-initializes for it.</summary>
         protected virtual void OnLanguageChanged()
         {
         }
 
-        /// <summary>
-        /// Restores the language that was active before this view model switched it, if
-        /// it did. Call this when the owning window closes - languages picked in one of
-        /// these dialogs are scoped to that dialog, not a lasting change to the editor.
-        /// </summary>
+        /// <summary>Restores the language active before this view model switched it. Call on window close.</summary>
         public void RestoreOriginalLanguage()
         {
             if (Config.Get("Language", "English", ConfigScope.Game) == originalLanguage)

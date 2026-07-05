@@ -9,10 +9,7 @@ using System.Windows;
 
 namespace FsLocalizationPlugin.ViewModels
 {
-    /// <summary>
-    /// Backs the Modify Multiple Strings window - finds strings by plain text or regex
-    /// across the whole database and bulk-replaces, reverts, or removes them.
-    /// </summary>
+    /// <summary>Backs the Modify Multiple Strings window: finds strings by plain text or regex, then bulk-replaces, reverts, or removes them.</summary>
     public sealed class ModifyMultipleStringsViewModel : LanguageAwareViewModelBase
     {
         private enum BulkAction
@@ -33,11 +30,7 @@ namespace FsLocalizationPlugin.ViewModels
         private int matchCount;
         private string patternError;
 
-        /// <param name="database">The active string database.</param>
-        /// <param name="closeAfterAction">
-        /// Whether Replace/Revert/Remove should close the window once they've acted. Pass
-        /// <see langword="false"/> for a stay-open, run-several-passes experience instead.
-        /// </param>
+        /// <param name="closeAfterAction">Close after Replace/Revert/Remove. False stays open for another pass.</param>
         public ModifyMultipleStringsViewModel(FsLocalizationStringDatabase database, bool closeAfterAction = true) : base(database)
         {
             this.closeAfterAction = closeAfterAction;
@@ -50,10 +43,10 @@ namespace FsLocalizationPlugin.ViewModels
             RecomputeMatchCount();
         }
 
-        /// <summary>Raised when the window should close, with the DialogResult to use.</summary>
+        /// <summary>Raised to close the window, with the DialogResult.</summary>
         public event Action<bool?> CloseRequested;
 
-        /// <summary>The text or pattern strings are matched against.</summary>
+        /// <summary>Text or pattern to match against.</summary>
         public string FilterValue
         {
             get => filterValue;
@@ -64,7 +57,7 @@ namespace FsLocalizationPlugin.ViewModels
             }
         }
 
-        /// <summary>The replacement text for the Replace action.</summary>
+        /// <summary>Replacement text for the Replace action.</summary>
         public string EditText
         {
             get => editText;
@@ -83,18 +76,14 @@ namespace FsLocalizationPlugin.ViewModels
             set { if (SetProperty(ref matchWholeWord, value)) RecomputeMatchCount(); }
         }
 
-        /// <summary>
-        /// When set, FilterValue is used as a raw regular expression instead of being
-        /// escaped as plain text. <see cref="CaseSensitive"/> and <see cref="MatchWholeWord"/>
-        /// don't apply in this mode - write them into the pattern yourself.
-        /// </summary>
+        /// <summary>Use FilterValue as a raw regex. CaseSensitive/MatchWholeWord don't apply then - write them into the pattern yourself.</summary>
         public bool UseRegex
         {
             get => useRegex;
             set { if (SetProperty(ref useRegex, value)) RecomputeMatchCount(); }
         }
 
-        /// <summary>When set, a match replaces the whole string value with <see cref="EditText"/> instead of just the matched portion.</summary>
+        /// <summary>Replace the whole string value with EditText instead of just the matched portion.</summary>
         public bool ReplaceEntireString
         {
             get => replaceEntireString;
@@ -107,7 +96,7 @@ namespace FsLocalizationPlugin.ViewModels
             private set => SetProperty(ref matchCount, value);
         }
 
-        /// <summary>A human-readable summary of the live match count, or the pattern error if the current input isn't a valid pattern.</summary>
+        /// <summary>Live match count, or the pattern error if invalid.</summary>
         public string MatchSummary => PatternError != null
             ? $"Invalid pattern: {PatternError}"
             : $"{MatchCount} string{(MatchCount == 1 ? "" : "s")} match{(MatchCount == 1 ? "es" : "")}";
@@ -147,16 +136,12 @@ namespace FsLocalizationPlugin.ViewModels
             {
                 if (UseRegex)
                 {
-                    // Case sensitivity and whole-word are plain-text-mode conveniences -
-                    // a raw regex is used exactly as written, so it's on the user to add
-                    // \b or (?i) themselves if they want that.
+                    // Used as-is. Case/whole-word are plain-text-mode only.
                     regex = new Regex(FilterValue);
                 }
                 else
                 {
-                    // Plain-text mode must escape the input - otherwise a search for
-                    // something like "1.0 (beta)" gets misinterpreted as a regex and
-                    // either throws or matches the wrong thing.
+                    // Escape, or a search like "1.0 (beta)" misparses as regex.
                     string pattern = Regex.Escape(FilterValue);
                     if (MatchWholeWord)
                         pattern = $@"\b{pattern}\b";
@@ -222,11 +207,7 @@ namespace FsLocalizationPlugin.ViewModels
                         cancelToken.Token.ThrowIfCancellationRequested();
 
                         string value = Database.GetString(id);
-                        // Pass as a format argument, not the template - value is arbitrary
-                        // database content and may itself contain literal braces (Frostbite
-                        // strings commonly do, e.g. "{PlayerName}"), which ILogger.Log would
-                        // otherwise try to parse as a composite-format placeholder and throw.
-                        task.TaskLogger.Log("{0}", value);
+                        task.TaskLogger.Log("{0}", value); // arg, not template - value may contain literal braces
                         LocalizationHelper.ReportProgress(task.TaskLogger, ++processed, totalCount);
 
                         if (!regex.IsMatch(value))
@@ -254,9 +235,6 @@ namespace FsLocalizationPlugin.ViewModels
                 }
             }, showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
 
-            // FilterValue/EditText are arbitrary (user-typed patterns/replacement text) and
-            // passed as format arguments rather than baked into the template, for the same
-            // reason as above - a literal brace in either would otherwise crash the logger.
             string cancelSuffix = cancelled ? " (cancelled)" : "";
             switch (action)
             {

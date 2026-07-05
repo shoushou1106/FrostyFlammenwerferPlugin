@@ -11,11 +11,7 @@ using System.Windows;
 
 namespace FsLocalizationPlugin.ViewModels
 {
-    /// <summary>
-    /// Backs the Import Chunks from Files window - reads a histogram/strings-binary
-    /// chunk pair exported by <see cref="ExportChunksViewModel"/> (or any compatible
-    /// tool) and merges them into the currently selected language.
-    /// </summary>
+    /// <summary>Backs the Import Chunks from Files window: reads a histogram/strings-binary chunk pair and merges it into the selected language.</summary>
     public sealed class ImportChunksViewModel : LanguageAwareViewModelBase
     {
         private string binaryFilePath = string.Empty;
@@ -32,7 +28,7 @@ namespace FsLocalizationPlugin.ViewModels
             CancelCommand = new RelayCommand(_ => CloseRequested?.Invoke(false));
         }
 
-        /// <summary>Raised when the window should close, with the DialogResult to use.</summary>
+        /// <summary>Raised to close the window, with the DialogResult.</summary>
         public event Action<bool?> CloseRequested;
 
         public string BinaryFilePath
@@ -137,11 +133,8 @@ namespace FsLocalizationPlugin.ViewModels
                         LocalizationHelper.ReportProgress(task.TaskLogger, 0, 1, currentPart: 1, totalParts);
                         cancelToken.Token.ThrowIfCancellationRequested();
                         Thread.Sleep(1);
-                        App.Logger.Log("Tip: removed strings can be restored with Revert (Modify Multiple Strings).");
 
-                        // Snapshot first: EnumerateStrings() is a lazy iterator over the
-                        // same dictionary RemoveString mutates, so removing while iterating
-                        // it directly throws "collection was modified".
+                        // Snapshot first. Removing while iterating this directly throws "collection was modified".
                         List<uint> existingStrings = Database.EnumerateStrings().ToList();
                         int totalDelete = existingStrings.Count;
                         foreach (uint id in existingStrings)
@@ -174,8 +167,6 @@ namespace FsLocalizationPlugin.ViewModels
                     int current = 0;
                     foreach (KeyValuePair<uint, string> kvp in dictionary)
                     {
-                        // Was hardcoded to currentPart: 2 (the "reading chunks" part) here -
-                        // this is the "[3/3] Importing" part, so progress needs to say 3.
                         LocalizationHelper.ReportProgress(task.TaskLogger, ++current, totalCount, currentPart: 3, totalParts);
                         cancelToken.Token.ThrowIfCancellationRequested();
 
@@ -194,8 +185,6 @@ namespace FsLocalizationPlugin.ViewModels
                 }
             }, showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
 
-            // SelectedLanguage is engine-defined and safe in practice, but passed as a
-            // format argument anyway for consistency with the other logging here.
             string cancelSuffix = cancelled ? " (cancelled)" : "";
             if (deletedCount == 0)
                 App.Logger.Log("Import chunks from files completed. Imported {0} strings to language {1}{2}", importedCount, SelectedLanguage, cancelSuffix);

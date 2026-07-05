@@ -1,8 +1,5 @@
-> [!NOTE]
-> This plugin is still under development.
-
 > [!WARNING]
-> This plugin is not production-ready. Do not release a mod or Frosty fork with this yet.
+> This plugin is still under development. Not production-ready. Do not release a mod or Frosty fork with this yet.
 
 # Frosty Flammenwerfer Plugin
 
@@ -10,7 +7,7 @@
 
 > 🔥 ***Flammenwerfer Plugin***, where ❄️ ***Frosty*** meets the dance of inferno.
 
-Flammenwerfer Plugin is a [Frosty Toolsuite v1](https://github.com/CadeEvs/FrostyToolsuite) plugin, ported from [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/), a tool for editing Frostbite's FsLocalization data. The goal is: build the next-gen of Frosty modding experiences, becoming an essential plugin for everyone, and there will be no more language barriers.
+Flammenwerfer Plugin is a [Frosty Toolsuite v1](https://github.com/CadeEvs/FrostyToolsuite) plugin, ported from [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/), a tool for editing Frostbite's FsLocalization data. The goal: the next-gen of Frosty modding experiences, an essential plugin for everyone, and there will be no more language barriers.
 
 ## What it is
 
@@ -18,7 +15,7 @@ Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by Gal
 
 ## Features
 
-- **Automatic histogram expansion:** Every Frostbite game with FsLocalization use a histogram: a small table mapping bytes to the characters it knows how to render. Type a character that isn't in that table and vanilla `FsLocalizationPlugin` will errors out. Flammenwerfer Plugin **grows the histogram** for you, so the game can display it.
+- **Automatic histogram expansion:** Every Frostbite game with FsLocalization uses a histogram: a small table mapping bytes to the characters it knows how to render. Type a character that isn't in that table and vanilla `FsLocalizationPlugin` errors out. Flammenwerfer Plugin **grows the histogram** for you, so the game can display it.
 - **Work as usual:** It has all the features of vanilla `FsLocalizationPlugin`, plus performance and stability upgrades.
 - **Even without another plugin**: You can add/modify a string without another plugin from Frosty Editor's menu bar. Just in case you need it.
 - **Bulk find & replace:** Now featuring regular-expression matching.
@@ -26,7 +23,7 @@ Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by Gal
 
 ### Extended Features
 
-- **String removal:** Because why not. Removing a string will result the game to display the original `ID_`.
+- **String removal:** Because why not. Removing a string makes the game display the original `ID_`.
 
 ## Compatibility
 
@@ -40,16 +37,16 @@ Two-way compatibility with the original `FsLocalizationPlugin` is Flammenwerfer 
 
 A few things worth knowing:
 
-- You can't run both plugins at once — pick one in `Plugins` folder.
-- Auto-grown histograms are a Flammenwerfer-only feature; `FsLocalizationPlugin` won't crash but report error is Logs, and the game will display a blank when a character is not found in histogram.
-- This plugin isn't valid for every game — Some Frostbite games use another format, like Dragon Age: Inquisition, Mass Effect Andromeda, Anthem, FIFA series, or Dead Space.
-- If you open a Flammenwerfer project with extended features using `FsLocalizationPlugin`, all extended features will be ignored. If you save the project at this point, you will **lose** all saved extended features. Be careful!
-- Due to limits of FsLocalization format, characters bigger than `0xFFFF` is **not supported**. That means no **Emojis** 😭😭😭. (Also no some **rare CJK characters**, **historical characters**, and **ancient scripts**)
+- You can't run both plugins at once. Pick one in `Plugins` folder.
+- Auto-grown histograms are a Flammenwerfer-only feature. `FsLocalizationPlugin` won't crash but will log an error, and the game shows a blank when a character isn't in the histogram.
+- This plugin isn't valid for every game, some Frostbite games use another format, like Dragon Age: Inquisition, Mass Effect Andromeda, Anthem, FIFA series, or Dead Space.
+- Open a Flammenwerfer project with extended features using `FsLocalizationPlugin`, those extended features will get ignored. If you save at this point, you will **lose** all saved extended features. Be careful!
+- FsLocalization format have limits, it can't fit characters bigger than `0xFFFF`. That means no **emojis** 😭😭 (also no some **rare CJK characters**, **historical characters**, and **ancient scripts**).
 
 ## Install
 
 1. Download the plugin from [GitHub Releases](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases).
-   - Also grab the `.pdb` if you want to debug, rename both the dll and pdb to `FsLocalizationPlugin`.
+   - Also grab the `.pdb` if you want to debug, rename both the `.dll` and `.pdb` to `FsLocalizationPlugin`.
 2. Delete or disable `FsLocalizationPlugin.dll` in your Frosty `Plugins` folder.
    - Disabling is safer than deleting: rename it to something that isn't `.dll`, e.g. `FsLocalizationPlugin.dll.disable`.
 3. Place the downloaded file in the `Plugins` folder.
@@ -57,18 +54,18 @@ A few things worth knowing:
 
 ## Frosty 1.0.7 and community forks
 
-The 1.0.7 release here targets the official 1.0.7 build, which doesn't work with Mod Manager. If you're using a community fork instead — such as [HarGabt's](https://github.com/HarGabt/FrostyToolsuite) — there's a good chance this exact build won't load. Frosty has a lot of forks, and building a release for every one of them isn't realistic.
+The 1.0.7 release here targets the official 1.0.7 build, which doesn't work with Mod Manager. If you're using a community fork instead, such as [HarGabt's](https://github.com/HarGabt/FrostyToolsuite). There's a good chance this exact build won't load. Frosty has a lot of forks, and building a release for every one of them isn't realistic.
 
 If the plugin doesn't work with your fork:
 
-- Check is there an update for the fork, the author may already integrated it for you.
-- If not, build it yourself (see below) or ask the fork's author to integrate it — please keep the link to this repository (`github.com/shoushou1106/FrostyFlammenwerferPlugin`) attached when you do.
+- Check whether the fork has an update, the author may have already integrated it for you.
+- If not, build it yourself (see below) or ask the fork's author to integrate it. Please keep the link to this repository attached when you do. (`https://github.com/shoushou1106/FrostyFlammenwerferPlugin`)
 
-None of this affects your data: projects and mods use the same format regardless of which build is it, so it'll keep working no matter who built your copy of the plugin.
+None of this affects your data: projects and mods use the same format no matter which build made them, so they keep working no matter who built your copy of the plugin.
 
 ## Build and Development Workflow
 
-Two workflows are supported, they will switch automatically:
+Two workflows are supported. The project file switches between them automatically:
 
 - **Separate Workflow:** this repo and your Frosty checkout live side by side in the same folder. More beginner-friendly.
 - **Integrated Workflow:** this repo is a git submodule inside `FrostyToolsuite\Plugins`.
@@ -80,7 +77,7 @@ Two workflows are supported, they will switch automatically:
 
 1. [Clone](https://docs.github.com/repositories/creating-and-managing-repositories/cloning-a-repository) FrostyToolsuite and this repo into the same parent directory. Frosty can be the [official build](https://github.com/CadeEvs/FrostyToolsuite) or a fork.<br><img width="338" height="161" alt="Screenshot 2025-10-29 165404" src="https://github.com/user-attachments/assets/e14bcc7e-78be-458b-84ca-dfb9f951928d" />
 
-2. Open `FrostyFlammenwerferPlugin.sln`. With Visual Studio 2022 or newer on a modern PC running Windows 10 or newer.
+2. Open `FrostyFlammenwerferPlugin.sln` with Visual Studio 2022 or newer, on Windows 10 or newer.
 
 > [!NOTE]
 > The solution requires FrostyCore, FrostySdk, FrostyControls, and FrostyHash to be present in the sibling Frosty checkout.
@@ -96,7 +93,7 @@ Two workflows are supported, they will switch automatically:
 
    - You can also switch the Frosty version quickly from the bottom-right corner.<br/><img width="347" height="347" alt="image" src="https://github.com/user-attachments/assets/5e8ffb3d-ae8f-4a1b-97ab-a4ff5e4c3f4e" />
 
-6. Right-click the project in Solution Explorer and choose **Build**. If you changed the Frosty version, switched branches, or anything else Frosty-related, use **Rebuild** instead — an incremental build won't pick up a Frosty version switch correctly.<br><img width="439.5" height="180.75" alt="image" src="https://github.com/user-attachments/assets/2833c7c4-bd4a-4b71-806d-8397fcfba32a" />
+6. Right-click the project in Solution Explorer and choose **Build**. If you changed the Frosty version, switched branches, or anything else Frosty-related, use **Rebuild** instead. An incremental build won't pick up a Frosty version switch correctly.<br><img width="439.5" height="180.75" alt="image" src="https://github.com/user-attachments/assets/2833c7c4-bd4a-4b71-806d-8397fcfba32a" />
 
 7. The built plugin is in `bin\`.
 
@@ -107,7 +104,7 @@ Two workflows are supported, they will switch automatically:
    git submodule add https://github.com/shoushou1106/FrostyFlammenwerferPlugin Plugins/FrostyFlammenwerferPlugin
    ```
 2. Ignore `FrostyFlammenwerferPlugin.sln`. Remove the vanilla FsLocalizationPlugin project from your solution and add `FrostyFlammenwerferPlugin/FsLocalizationPlugin.csproj` from the Plugins folder instead.<br/><img width="369" height="103" alt="image" src="https://github.com/user-attachments/assets/104b27f7-c97f-4ba6-a15a-551eb887ee72" />
-3. Open Configuration Manager to manage this plugin's build configuration — note it's still named `FsLocalizationPlugin` there. Visual Studio saves this in the `.sln` file, so it's less hassle than it sounds.<br/><img width="128" height="142" alt="image" src="https://github.com/user-attachments/assets/e325d226-7bee-4bd6-aa3e-5b5487b4c33d" /><br/><img width="502" height="352" alt="image" src="https://github.com/user-attachments/assets/5191bc34-a5fe-43a6-9a97-a3de68c90957" />
+3. Open Configuration Manager to manage this plugin's build configuration, note it's still named `FsLocalizationPlugin` there. Visual Studio saves this in the `.sln` file, so it's less hassle than it sounds.<br/><img width="128" height="142" alt="image" src="https://github.com/user-attachments/assets/e325d226-7bee-4bd6-aa3e-5b5487b4c33d" /><br/><img width="502" height="352" alt="image" src="https://github.com/user-attachments/assets/5191bc34-a5fe-43a6-9a97-a3de68c90957" />
 4. Change the plugin name if you'd like.<br><img width="777" height="252" alt="image" src="https://github.com/user-attachments/assets/773f4f86-f18d-4ab2-97d5-25258d4ba2f6" />
 
 > [!IMPORTANT]
@@ -115,9 +112,8 @@ Two workflows are supported, they will switch automatically:
 
 The assembly is intentionally still named `FsLocalizationPlugin.dll` in the codebase (for backwards compatibility).
 
-- On Release config, integrated workflow will automatically **rename** the output to `FlammenwerferPlugin.dll` when copying it into your Frosty `bin\` folder.
-
-- On Debug config, integrated workflow will **NOT rename** the output, but it **also grab the pdb** when copying it into your Frosty `bin\` folder.
+- On Release config, integrated workflow **renames** the output to `FlammenwerferPlugin.dll` when copying it into your Frosty `bin\` folder.
+- On Debug config, integrated workflow does **not** rename the output, but **also copies the pdb** into your Frosty `bin\` folder.
 
 ## Special Thanks
 
@@ -125,3 +121,4 @@ The assembly is intentionally still named `FsLocalizationPlugin.dll` in the code
 - [HarGabt](https://github.com/HarGabt)'s [fork](https://github.com/HarGabt/FrostyFlammenwerferPlugin)
 - [Max Alex](https://github.com/zyf722) and their [BF1CHS](https://github.com/BF1CHS)
 - [NFSToolHB](https://github.com/Punpude/NFSToolHB)
+- Claude and Gemini. For writing README and Comments.

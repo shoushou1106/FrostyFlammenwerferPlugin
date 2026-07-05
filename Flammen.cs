@@ -14,38 +14,25 @@ using FrostySdk.Managers.Entries;
 namespace FsLocalizationPlugin
 {
     /// <summary>
-    /// Reads and writes the two Frostbite chunk types that back a game's localized text:
-    /// the <b>histogram</b> chunk, a lookup table mapping single- and double-byte codes to
-    /// Unicode code points, and the <b>strings binary</b> chunk, a table of string-ID
-    /// hashes plus histogram-encoded, null-terminated string data.
+    /// Reads and writes the histogram chunk and strings-binary chunk that back a game's
+    /// localized text.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// <b>Histogram chunk layout</b> (magic <c>0x00039001</c>): <c>uint magic</c>,
-    /// <c>uint fileSize</c> (byte count following the two header fields),
-    /// <c>uint dataOffSize</c> (see <see cref="AddCharsToHistogram"/>), followed by a flat
-    /// table of <c>ushort</c> code points. The table's first 128 entries are the identity
-    /// mapping for ASCII; everything from index <c>0x80</c> onward is populated (and grown)
-    /// by <see cref="AddCharsToHistogram"/>.
-    /// </para>
-    /// <para>
-    /// <b>Strings binary chunk layout</b> (magic <c>0x00039000</c>): <c>uint magic</c>,
-    /// <c>uint fileSize</c>, <c>uint listSize</c> (string count), <c>uint dataOffset</c>
-    /// (fixed at <see cref="StringDefaultDataOffset"/>), <c>uint stringsOffset</c>, a
-    /// null-terminated section-name string, padding out to <c>dataOffset</c>, then
-    /// <c>listSize</c> pairs of (<c>uint</c> string-ID hash, <c>uint</c> offset into the
-    /// string data relative to <c>stringsOffset</c>), followed by the histogram-encoded,
-    /// null-terminated string data itself.
-    /// </para>
+    /// Histogram chunk (magic <c>0x00039001</c>): magic, fileSize, dataOffSize, then a flat
+    /// table of ushort code points (first 128 = ASCII identity, rest grown by
+    /// <see cref="AddCharsToHistogram"/>).
+    /// <para/>
+    /// Strings binary chunk (magic <c>0x00039000</c>): magic, fileSize, listSize, dataOffset
+    /// (fixed at <see cref="StringDefaultDataOffset"/>), stringsOffset, a null-terminated
+    /// section name, padding to dataOffset, then listSize (hash, offset) pairs, then the
+    /// histogram-encoded null-terminated string data.
     /// </remarks>
     public class Flammen
     {
-        // String chunk constants
         private const uint StringMagic = 0x00039000;
         private const uint StringDefaultDataOffset = 0x8C;
         private const uint StringHashPairSize = 8;
 
-        // Histogram constants
         private const uint HistogramMagic = 0x00039001;
         private const int HistogramAsciiThreshold = 0x80;
         private const int HistogramMaxShiftValue = 0xFF;
@@ -53,23 +40,13 @@ namespace FsLocalizationPlugin
         private const int HistogramShiftNumStartIndex = 0x40;
         private const int HistogramShiftEndIndex = 0x1FE;
 
-        /// <summary>
-        /// Decodes a histogram-encoded binary string into its Unicode representation.
-        /// </summary>
+        /// <summary>Decodes a histogram-encoded binary string into Unicode.</summary>
         /// <param name="binString">The raw, histogram-encoded bytes (as a string of chars 0-255).</param>
         /// <param name="section">The histogram code-point table to decode against.</param>
-        /// <returns>The decoded string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="binString"/> or <paramref name="section"/> is null.</exception>
         /// <remarks>
-        /// Bytes below <c>0x80</c> pass through as ASCII. Bytes at or above <c>0x80</c> are
-        /// looked up in the histogram: if the mapped value is itself &gt;= <c>0x80</c>, it's
-        /// used directly as the code point; otherwise it's a shift number, and the *next*
-        /// byte (which must also be &gt;= <c>0x80</c>) combines with it to index further into
-        /// the table. This differs from the original Python <c>flammenwerfer</c>
-        /// implementation, which guards the second byte with <c>&gt; 0x80</c> rather than
-        /// <c>&gt;= 0x80</c> - that stricter check caused a "no proper shift" failure the
-        /// moment a game launched with zero modified strings, so the looser guard here is a
-        /// deliberate fix, not an oversight.
+        /// Bytes &lt; 0x80 pass through as ASCII. Bytes &gt;= 0x80 look up the histogram: if
+        /// the mapped value is itself &gt;= 0x80 it's used directly, otherwise it's a shift
+        /// number combined with the next byte.
         /// </remarks>
         public static string DecodeString(string binString, List<ushort> section)
         {
@@ -87,12 +64,12 @@ namespace FsLocalizationPlugin
 
                 if (currentByte < HistogramAsciiThreshold)
                 {
-                    // ASCII character - decode directly
+                    // ASCII character: Decode directly
                     sb.Append((char)currentByte);
                 }
                 else
                 {
-                    // Non-ASCII character - decode using histogram
+                    // Non-ASCII character: Decode using histogram
                     ushort mappedValue = section[currentByte];
 
                     if (mappedValue >= HistogramAsciiThreshold)
@@ -120,22 +97,11 @@ namespace FsLocalizationPlugin
             return sb.ToString();
         }
 
-        /// <summary>
-        /// Encodes a string into histogram-encoded bytes, building a fresh character-to-index
-        /// lookup from <paramref name="section"/> before encoding.
-        /// </summary>
-        /// <param name="str">The string to encode.</param>
-        /// <param name="shifts">The histogram indices usable as two-byte shift prefixes, in the order they should be tried.</param>
-        /// <param name="section">The histogram code-point table to encode against.</param>
-        /// <returns>The encoded byte array with a trailing null terminator.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when a character cannot be encoded.</exception>
+        /// <summary>Encodes a string into histogram-encoded bytes, building a fresh char-to-index lookup first.</summary>
         /// <remarks>
-        /// This overload exists for API compatibility - it builds a lookup dictionary on
-        /// every call. Encoding many strings against the same histogram (as
-        /// <see cref="WriteAll"/> does) should build that dictionary once with
-        /// <see cref="BuildCharIndex"/> and call the <see cref="EncodeString(string, List{int}, List{char}, Dictionary{char, int})"/>
-        /// overload directly instead.
+        /// For encoding many strings against the same histogram (as <see cref="WriteAll"/>
+        /// does), build the lookup once with <see cref="BuildCharIndex"/> and call the
+        /// 4-argument overload directly instead.
         /// </remarks>
         public static byte[] EncodeString(string str, List<int> shifts, List<char> section)
         {
@@ -145,17 +111,8 @@ namespace FsLocalizationPlugin
             return EncodeString(str, shifts, section, BuildCharIndex(section));
         }
 
-        /// <summary>
-        /// Encodes a string into histogram-encoded bytes using a precomputed character-to-index
-        /// lookup, as produced by <see cref="BuildCharIndex"/>.
-        /// </summary>
-        /// <param name="str">The string to encode.</param>
-        /// <param name="shifts">The histogram indices usable as two-byte shift prefixes, in the order they should be tried.</param>
-        /// <param name="section">The histogram code-point table to encode against.</param>
-        /// <param name="charIndex">A map from character to its first occurrence's index in <paramref name="section"/>.</param>
-        /// <returns>The encoded byte array with a trailing null terminator.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when a character cannot be encoded.</exception>
+        /// <summary>Encodes a string into histogram-encoded bytes using a precomputed char-to-index lookup.</summary>
+        /// <param name="charIndex">From <see cref="BuildCharIndex"/>.</param>
         public static byte[] EncodeString(string str, List<int> shifts, List<char> section, Dictionary<char, int> charIndex)
         {
             if (str == null)
@@ -183,10 +140,8 @@ namespace FsLocalizationPlugin
                     // Non-ASCII character - encode using histogram
                     if (!charIndex.TryGetValue(c, out int index))
                     {
-                        // AddCharsToHistogram is always run before encoding in WriteAll, so a
-                        // character missing from the histogram at this point means the
-                        // histogram and the strings being encoded have fallen out of sync -
-                        // that's a bug, not something to quietly paper over.
+                        // AddCharsToHistogram always runs first in WriteAll,
+                        // so reaching here means the histogram and strings fell out of sync.
                         throw new ArgumentException(
                             $"Unable to encode character '{c}' (U+{(int)c:X4}) to bytes." + Environment.NewLine +
                             "This character is not present in the histogram at all." + Environment.NewLine +
@@ -202,7 +157,7 @@ namespace FsLocalizationPlugin
                     }
                     else
                     {
-                        // Multi-byte encoding - find appropriate shift
+                        // Multi-byte encoding: Find appropriate shift
                         bool shiftFound = false;
 
                         foreach (int shift in shifts)
@@ -232,24 +187,17 @@ namespace FsLocalizationPlugin
                 }
             }
 
-            // Add null terminator
             binString.Add(0x00);
             return binString.ToArray();
         }
 
-        /// <summary>
-        /// Builds a character-to-index lookup for a histogram section, for use with
-        /// <see cref="EncodeString(string, List{int}, List{char}, Dictionary{char, int})"/>.
-        /// </summary>
-        /// <param name="section">The histogram code-point table to index.</param>
-        /// <returns>A map from character to the index of its <i>first</i> occurrence in <paramref name="section"/>.</returns>
+        /// <summary>Builds a char-to-index lookup for a histogram section.</summary>
+        /// <returns>Character to the index of its <i>first</i> occurrence in <paramref name="section"/>.</returns>
         /// <remarks>
-        /// First-occurrence-wins matters: the histogram legitimately contains repeated
-        /// values (e.g. padding zeroes), and the original character-by-character
-        /// <c>List.FindIndex</c> lookup this replaces always returned the first match. Using
-        /// anything other than first-wins here would change which byte gets emitted for a
-        /// repeated character and silently produce a different (though still technically
-        /// valid) encoded chunk.
+        /// First-occurrence-wins matters: the histogram has repeated values (e.g. padding
+        /// zeroes), and the old per-char <c>List.FindIndex</c> lookup always took the first
+        /// match. Anything else here would change which byte gets emitted for a repeated
+        /// character.
         /// </remarks>
         public static Dictionary<char, int> BuildCharIndex(List<char> section)
         {
@@ -265,14 +213,7 @@ namespace FsLocalizationPlugin
             return charIndex;
         }
 
-        /// <summary>
-        /// Adds new characters to the histogram section, automatically calculating and adding necessary shifts.
-        /// </summary>
-        /// <param name="strings">The strings containing characters to add to the histogram.</param>
-        /// <param name="dataOffSize">Reference to the histogram data offset size, updated with new character count.</param>
-        /// <param name="section">Reference to the histogram, updated with new characters.</param>
-        /// <exception cref="ArgumentNullException">Thrown when strings or section is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when too many characters are added.</exception>
+        /// <summary>Grows the histogram with any characters from <paramref name="strings"/> it doesn't already have, adding shifts as needed.</summary>
         public static void AddCharsToHistogram(IEnumerable<string> strings, ref uint dataOffSize, ref List<char> section)
         {
             if (strings == null)
@@ -342,7 +283,7 @@ namespace FsLocalizationPlugin
             {
                 List<char> newShiftNums = CalculateShiftNumsAndMappings(CalculateBytePositions(newChars));
 
-                // The number of shift_nums doesn't change - the algorithm ends
+                // The number of shift_nums doesn't change. The algorithm ends
                 if (newShiftNums.Count == shiftNumsCount)
                 {
                     shiftNums = newShiftNums;
@@ -375,14 +316,7 @@ namespace FsLocalizationPlugin
             dataOffSize += (uint)newChars.Count;
         }
 
-        /// <summary>
-        /// Reads and decodes all localized strings from histogram and strings binary chunks.
-        /// </summary>
-        /// <param name="histogramChunk">The histogram chunk containing character mappings.</param>
-        /// <param name="stringsBinaryChunk">The strings binary chunk containing encoded strings.</param>
-        /// <returns>Dictionary mapping string hash to decoded strings.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        /// <exception cref="InvalidDataException">Thrown when chunk format is invalid.</exception>
+        /// <summary>Reads and decodes all localized strings from a histogram and strings-binary chunk.</summary>
         public static Dictionary<uint, string> ReadStrings(ChunkAssetEntry histogramChunk, ChunkAssetEntry stringsBinaryChunk)
         {
             if (histogramChunk == null)
@@ -404,14 +338,7 @@ namespace FsLocalizationPlugin
             }
         }
 
-        /// <summary>
-        /// Reads and decodes all localized strings from histogram and strings binary chunks.
-        /// </summary>
-        /// <param name="histogramChunk">The histogram chunk containing character mappings.</param>
-        /// <param name="stringsBinaryChunk">The strings binary chunk containing encoded strings.</param>
-        /// <returns>Dictionary mapping string hash to decoded strings.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        /// <exception cref="InvalidDataException">Thrown when chunk format is invalid.</exception>
+        /// <summary>Reads and decodes all localized strings from a histogram and strings-binary chunk.</summary>
         public static Dictionary<uint, string> ReadStrings(Stream histogramChunk, Stream stringsBinaryChunk)
         {
             if (histogramChunk == null)
@@ -437,7 +364,7 @@ namespace FsLocalizationPlugin
             {
                 uint magic = reader.ReadUInt();
                 if (magic != HistogramMagic)
-                    throw new InvalidDataException($"Magic failed, invalid histogram chunk. Got {magic:X}.");
+                    throw new InvalidDataException($"Magic fizzled, invalid histogram chunk. Got {magic:X}.");
 
                 uint fileSize = reader.ReadUInt();
                 reader.ReadUInt(); // dataOffSize
@@ -464,7 +391,7 @@ namespace FsLocalizationPlugin
                 // Read and validate header
                 uint magic = reader.ReadUInt();
                 if (magic != StringMagic)
-                    throw new InvalidDataException($"Magic failed, invalid strings binary chunk. Got {magic:X}.");
+                    throw new InvalidDataException($"Magic fizzled, invalid strings binary chunk. Got {magic:X}.");
 
                 reader.ReadUInt(); // fileSize
                 reader.ReadUInt(); // listSize
@@ -500,18 +427,8 @@ namespace FsLocalizationPlugin
             return stringList;
         }
 
-        /// <summary>
-        /// Writes updated histogram and strings binary data, merging modified strings with existing data.
-        /// </summary>
-        /// <param name="am">The AssetManager to use.</param>
-        /// <param name="histogramChunk">The original histogram chunk.</param>
-        /// <param name="stringsBinaryChunk">The original strings binary chunk.</param>
-        /// <param name="modifiedData">Dictionary of modified strings to merge.</param>
-        /// <param name="stringToRemove">Hashes of strings to remove. Not supported by the original FsLocalizationPlugin.</param>
-        /// <param name="newHistogramData">Output parameter containing the new histogram chunk data.</param>
-        /// <param name="newStringData">Output parameter containing the new strings binary chunk data.</param>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        /// <exception cref="InvalidDataException">Thrown when chunk format is invalid.</exception>
+        /// <summary>Merges modified/removed strings into the existing chunks and re-emits both.</summary>
+        /// <param name="stringToRemove">Hashes to remove. Not supported by the original FsLocalizationPlugin.</param>
         public static void WriteAll(AssetManager am, ChunkAssetEntry histogramChunk, ChunkAssetEntry stringsBinaryChunk, Dictionary<uint, string> modifiedData, IEnumerable<uint> stringToRemove, out byte[] newHistogramData, out byte[] newStringData)
         {
             if (histogramChunk == null)
@@ -531,7 +448,7 @@ namespace FsLocalizationPlugin
             {
                 uint histogramMagic = reader.ReadUInt();
                 if (histogramMagic != HistogramMagic)
-                    throw new InvalidDataException($"Magic failed, invalid histogram chunk. Got {histogramMagic:X}.");
+                    throw new InvalidDataException($"Magic fizzled, invalid histogram chunk. Got {histogramMagic:X}.");
 
                 uint histogramFileSize = reader.ReadUInt();
                 histogramDataOffSize = reader.ReadUInt();
@@ -611,7 +528,7 @@ namespace FsLocalizationPlugin
             using (NativeWriter writer = new NativeWriter(new MemoryStream()))
             {
                 writer.Write(HistogramMagic);
-                writer.Write(0xDEADBEEF); // Placeholder for file size
+                writer.Write(0xDEADBEEF); // Placeholder file size
                 writer.Write(dataOffSize);
 
                 foreach (char c in section)
@@ -642,7 +559,7 @@ namespace FsLocalizationPlugin
 
                 // Write header
                 writer.Write(StringMagic);
-                writer.Write(0xDEADBEEF); // Placeholder for file size
+                writer.Write(0xDEADBEEF); // Placeholder file size
                 writer.Write(listSize);
                 writer.Write(dataOffset);
                 writer.Write(stringsOffset);
@@ -654,6 +571,11 @@ namespace FsLocalizationPlugin
 
                 // Get histogram shifts for encoding
                 List<int> histogramShifts = new List<int>();
+                // Use >= instead of > HistogramAsciiThreshold
+                // This fixes the bug that adding too little characters
+                // to the histogram or not adding any new characters will result:
+                // "The histogram does not contain a valid shift mapping for this character."
+                // Learn more: https://github.com/shoushou1106/FrostyFlammenwerferPlugin/pull/4
                 for (int i = HistogramShiftEndIndex; i >= HistogramAsciiThreshold; i--)
                 {
                     if (histogramSection[i] < HistogramAsciiThreshold)
@@ -662,10 +584,8 @@ namespace FsLocalizationPlugin
                     }
                 }
 
-                // Build the character lookup once for this whole batch of strings, rather than
-                // linearly scanning the histogram section for every non-ASCII character of
-                // every string - with a large database and a grown histogram, that scan used
-                // to dominate mod-bake time.
+                // Built once for the whole batch.
+                // A per-char linear scan here used to dominate handler apply time.
                 Dictionary<char, int> charIndex = BuildCharIndex(histogramSection);
 
                 // Write hash pairs and encode strings
