@@ -1,0 +1,132 @@
+name: Build Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      frosty_repo:
+        description: "GitHub repo of Frosty to build on (owner/repo)"
+        required: false
+        default: "CadeEvs/FrostyToolsuite"
+        type: string
+      frosty_ref:
+        description: "Branch/Tag/SHA (Blank = Repo's Default Branch)"
+        required: false
+        default: ""
+        type: string
+      config:
+        description: "Configuration to Build"
+        required: true
+        default: "Debug - 1.0.6.3 or Later"
+        type: choice
+        options:
+          - "Debug - 1.0.6.2 or Earlier"
+          - "Debug - 1.0.6.3 or Later"
+          - "Debug - 1.0.7"
+          - "Release - 1.0.6.2 or Earlier"
+          - "Release - 1.0.6.3 or Later"
+          - "Release - 1.0.7"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Resolve effective parameters
+        id: params
+        shell: pwsh
+        run: |
+          $isDispatch = "${{ github.event_name }}" -eq "workflow_dispatch"
+          $repo   = if ($isDispatch) { "${{ inputs.frosty_repo }}" } else { "CadeEvs/FrostyToolsuite" }
+          $ref    = if ($isDispatch) { "${{ inputs.frosty_ref }}" }  else { "" }
+          $config = if ($isDispatch) { "${{ inputs.config }}" }      else { "Debug - 1.0.6.3 or Later" }
+          if ([string]::IsNullOrWhiteSpace($repo))   { $repo = "CadeEvs/FrostyToolsuite" }
+          if ([string]::IsNullOrWhiteSpace($config)) { $config = "Debug - 1.0.6.3 or Later" }
+
+          # Keep this switch in sync with FsLocalizationPlugin.csproj's OutputPath values.
+          $outputPath = switch ($config) {
+            "Debug - 1.0.6.2 or Earlier"   { "bin\DeveloperDebug\1.0.6.2orEarlier\" }
+            "Debug - 1.0.6.3 or Later"     { "bin\DeveloperDebug\1.0.6.3orLater\" }
+            "Debug - 1.0.7"                { "bin\DeveloperDebug\1.0.7\" }
+            "Release - 1.0.6.2 or Earlier" { "bin\ReleaseFinal\1.0.6.2orEarlier\" }
+            "Release - 1.0.6.3 or Later"   { "bin\ReleaseFinal\1.0.6.3orLater\" }
+            "Release - 1.0.7"              { "bin\ReleaseFinal\1.0.7\" }
+          }
+
+          "repo=$repo"               >> $env:GITHUB_OUTPUT
+          "ref=$ref"                 >> $env:GITHUB_OUTPUT
+          "config=$config"           >> $env:GITHUB_OUTPUT
+          "output-path=$outputPath"  >> $env:GITHUB_OUTPUT
+
+      - name: Checkout plugin repo
+        uses: actions/checkout@v4
+        with:
+          path: FrostyFlammenwerferPlugin
+
+      - name: Checkout Frosty repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.params.outputs.repo }}
+          ref: ${{ steps.params.outputs.ref }}
+          submodules: recursive
+          path: FrostyToolsuite
+
+      - uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+
+      - name: Build
+        shell: pwsh
+        working-directory: FrostyFlammenwerferPlugin
+        run: >-
+          msbuild "FrostyFlammenwerferPlugin.sln"
+          -t:Restore,Build
+          -p:Configuration="${{ steps.params.outputs.config }}"
+          -p:Platform="x64"
+          -p:RestorePackagesConfig=true
+          -p:BuildProjectReferences=true
+          -maxcpucount
+          -verbosity:normal
+
+      - name: Package
+        id: package
+        shell: pwsh
+        working-directory: FrostyFlammenwerferPlugin
+        run: |
+          $outputPath = "${{ steps.params.outputs.output-path }}"
+          $config = "${{ steps.params.outputs.config }}"
+          $dll = Join-Path $outputPath "FsLocalizationPlugin.dll"
+          $pdb = Join-Path $outputPath "FsLocalizationPlugin.pdb"
+          if (-not (Test-Path $dll)) { throw "Expected build output not found: $dll" }
+
+          if ($config.StartsWith("Release")) {
+            # Mirrors the Integrated Workflow's rename, which doesn't fire in this sibling-folder layout.
+            # No pdb for Release - matches what a real shipped build looks like.
+            $renamedDll = Join-Path $outputPath "FlammenwerferPlugin.dll"
+            Copy-Item $dll $renamedDll -Force
+            "dll-path=$renamedDll" >> $env:GITHUB_OUTPUT
+            "pdb-path=" >> $env:GITHUB_OUTPUT
+          } else {
+            # Debug build - keep the real assembly name, ship the pdb for debugging.
+            "dll-path=$dll" >> $env:GITHUB_OUTPUT
+            "pdb-path=$pdb" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Upload DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlammenwerferPlugin-${{ steps.params.outputs.config }}-${{ github.run_number }}
+          path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.dll-path }}
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Upload PDB (Debug only)
+        if: steps.package.outputs.pdb-path != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlammenwerferPlugin-${{ steps.params.outputs.config }}-${{ github.run_number }}-pdb
+          path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.pdb-path }}
+          retention-days: 90
+          if-no-files-found: error

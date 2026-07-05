@@ -1,0 +1,196 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: "Build all 3 configs as..."
+        required: true
+        default: "Release"
+        type: choice
+        options:
+          - "Release"
+          - "Debug"
+      source_1062:
+        description: "Frosty repo for 1.0.6.2 or Earlier (owner/repo@ref, blank = CadeEvs@1.0.6.2, blank ref = default branch)"
+        required: false
+        default: "CadeEvs/FrostyToolsuite@1.0.6.2"
+        type: string
+      source_1063:
+        description: "Frosty repo for 1.0.6.3 or Later (owner/repo@ref, blank = CadeEvs@1.0.6.4, blank ref = default branch)"
+        required: false
+        default: "CadeEvs/FrostyToolsuite@1.0.6.4"
+        type: string
+      source_107:
+        description: "Frosty repo for 1.0.7 (owner/repo@ref, blank = CadeEvs@1.0.7, blank ref = default branch)"
+        required: false
+        default: "CadeEvs/FrostyToolsuite@1.0.7"
+        type: string
+
+jobs:
+  prepare:
+    runs-on: windows-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version from csproj
+        id: version
+        shell: pwsh
+        run: |
+          $content = Get-Content "FsLocalizationPlugin.csproj" -Raw
+          if ($content -notmatch '<Version>(.*?)</Version>') {
+            throw "Could not find <Version> in FsLocalizationPlugin.csproj"
+          }
+          "version=$($Matches[1])" >> $env:GITHUB_OUTPUT
+          "tag=v$($Matches[1])"    >> $env:GITHUB_OUTPUT
+
+      - name: Build matrix for the 3 version targets
+        id: matrix
+        shell: pwsh
+        run: |
+          function Parse-Source($raw, $label) {
+            $parts = $raw -split '@', 2
+            return @{ repo = $parts[0].Trim(); ref = if ($parts.Count -gt 1) { $parts[1].Trim() } else { "" } }
+          }
+
+          $buildType = "${{ inputs.build_type }}"
+          $outputRoot = if ($buildType -eq "Debug") { "bin\DeveloperDebug" } else { "bin\ReleaseFinal" }
+
+          # Keep this table in sync with FsLocalizationPlugin.csproj's OutputPath values.
+          $families = @(
+            @{ suffix = "1.0.6.2orEarlier"; versionLabel = "1.0.6.2 or Earlier"; sourceRaw = "${{ inputs.source_1062 }}" }
+            @{ suffix = "1.0.6.3orLater";   versionLabel = "1.0.6.3 or Later";   sourceRaw = "${{ inputs.source_1063 }}" }
+            @{ suffix = "1.0.7";            versionLabel = "1.0.7";             sourceRaw = "${{ inputs.source_107 }}"  }
+          )
+
+          $include = @()
+          foreach ($family in $families) {
+            $config = "$buildType - $($family.versionLabel)"
+            $parsed = Parse-Source $family.sourceRaw $config
+            $include += @{
+              config     = $config
+              suffix     = $family.suffix
+              outputPath = "$outputRoot\$($family.suffix)\"
+              repo       = $parsed.repo
+              ref        = $parsed.ref
+            }
+          }
+
+          $json = ($include | ConvertTo-Json -Compress -AsArray)
+          "matrix={`"include`":$json}" >> $env:GITHUB_OUTPUT
+
+  build:
+    needs: prepare
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Checkout plugin repo
+        uses: actions/checkout@v4
+        with:
+          path: FrostyFlammenwerferPlugin
+
+      - name: Checkout Frosty repo (${{ matrix.config }})
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repo }}
+          ref: ${{ matrix.ref }}
+          submodules: recursive
+          path: FrostyToolsuite
+
+      - uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+
+      - name: Build
+        shell: pwsh
+        working-directory: FrostyFlammenwerferPlugin
+        run: >-
+          msbuild "FrostyFlammenwerferPlugin.sln"
+          -t:Restore,Build
+          -p:Configuration="${{ matrix.config }}"
+          -p:Platform="x64"
+          -p:RestorePackagesConfig=true
+          -p:BuildProjectReferences=true
+          -maxcpucount
+          -verbosity:normal
+
+      - name: Rename and package
+        id: package
+        shell: pwsh
+        working-directory: FrostyFlammenwerferPlugin
+        run: |
+          $outputPath = "${{ matrix.outputPath }}"
+          $dll = Join-Path $outputPath "FsLocalizationPlugin.dll"
+          if (-not (Test-Path $dll)) { throw "Expected build output not found: $dll" }
+
+          # The dll itself always keeps this exact name, inside the zip and on disk.
+          # Only the zip (and, for Debug, the standalone pdb) get the version/Frosty-target naming.
+          $renamedDll = Join-Path $outputPath "FlammenwerferPlugin.dll"
+          Copy-Item $dll $renamedDll -Force
+
+          $baseName = "FlammenwerferPlugin_${{ needs.prepare.outputs.version }}_Frosty${{ matrix.suffix }}"
+
+          $zipName = "$baseName.zip"
+          Compress-Archive -Path $renamedDll -DestinationPath $zipName -Force
+          "zip-name=$zipName" >> $env:GITHUB_OUTPUT
+
+          if ("${{ inputs.build_type }}" -eq "Debug") {
+            # Debug build - ship the pdb too, unzipped. Release never ships a pdb.
+            $pdb = Join-Path $outputPath "FsLocalizationPlugin.pdb"
+            if (Test-Path $pdb) {
+              $pdbName = "$baseName.pdb"
+              Copy-Item $pdb $pdbName -Force
+              "pdb-name=$pdbName" >> $env:GITHUB_OUTPUT
+            } else {
+              "pdb-name=" >> $env:GITHUB_OUTPUT
+            }
+          } else {
+            "pdb-name=" >> $env:GITHUB_OUTPUT
+          }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-asset-${{ matrix.suffix }}
+          path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.zip-name }}
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Upload PDB (Debug only)
+        if: steps.package.outputs.pdb-name != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-asset-${{ matrix.suffix }}-pdb
+          path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.pdb-name }}
+          retention-days: 90
+          if-no-files-found: error
+
+  release:
+    needs: [ prepare, build ]
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-asset-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create draft release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ needs.prepare.outputs.tag }}" `
+            (Get-ChildItem release-assets -File).FullName `
+            --repo "${{ github.repository }}" `
+            --target "${{ github.sha }}" `
+            --title "${{ needs.prepare.outputs.tag }}" `
+            --draft `
+            --generate-notes
