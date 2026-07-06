@@ -1,4 +1,4 @@
-name: Build Test
+name: Build
 
 on:
   push:
@@ -192,7 +192,7 @@ jobs:
       - name: Upload DLL
         uses: actions/upload-artifact@v7
         with:
-          name: FlammenwerferPlugin ${{ steps.params.outputs.config }} ${{ github.run_number }}
+          name: FlammenwerferPlugin - ${{ steps.params.outputs.config }} - ${{ github.run_number }}
           path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.dll-path }}
           retention-days: 90
           if-no-files-found: error
@@ -201,7 +201,7 @@ jobs:
         if: steps.package.outputs.pdb-path != ''
         uses: actions/upload-artifact@v7
         with:
-          name: FlammenwerferPlugin ${{ steps.params.outputs.config }} ${{ github.run_number }} (pdb)
+          name: FlammenwerferPlugin - ${{ steps.params.outputs.config }} - ${{ github.run_number }} (pdb)
           path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.pdb-path }}
           retention-days: 90
           if-no-files-found: error
