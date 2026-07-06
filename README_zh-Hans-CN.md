@@ -73,13 +73,34 @@
 
 - 检查该分支有没有新版，作者是否已经集成此插件。
 
-- 如果没有，请自行生成（见下文）或联系分支的作者进行集成，请在联系时附上此仓库的链接 （`github.com/shoushou1106/FrostyFlammenwerferPlugin`）。
+- 如果没有，请联系分支的作者进行集成，或者自行生成（见下文，很简单的）
+
+- 请务必在联系时附上此仓库的链接 `github.com/shoushou1106/FrostyFlammenwerferPlugin`
 
 不过这无论怎样都不会影响您的数据：无论哪个版本、哪个生成，工程和模组都使用相同的格式，因此无论谁生成了您的插件副本，都会正常工作。
 
+## 快速生成
+
+通过 GitHub Actions 使用快速构建，只需几步即可基于您使用的 Frosty 分支构建您自己的喷火器插件。建议在您的开发者为您集成前使用此方法作为临时替代。
+
+> [!NOTE]
+> 使用此方法需要一个 GitHub 账户。创建是免费的，并且只需要电子邮件。
+
+1. 在 GitHub 上 **[分叉](https://docs.github.com/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)** 此仓库。<br/><img width="537" height="247" alt="Screenshot 2026-07-06 at 9 12 11 PM" src="https://github.com/user-attachments/assets/0b16e070-c265-4e0f-8647-70b080352a2c" />
+
+2. 在您自己的分支里，导航到 **Actions**<br/><img width="722" height="287" alt="Screenshot 2026-07-06 at 9 15 07 PM" src="https://github.com/user-attachments/assets/d46c56c1-d1a5-4aa3-9e13-a819ea80cc4a" />
+
+3. 点击 **Quick Build** 工作流。桌面端是左侧，移动端是顶部。
+
+4. 点击 **[Run workflow](https://docs.github.com/actions/how-tos/manage-workflow-runs/manually-run-a-workflow)**，并跟从指示<br/><img width="830" height="429" alt="Screenshot 2026-07-06 at 9 09 42 PM" src="https://github.com/user-attachments/assets/835c25e0-0a67-4e7f-b9c7-22c171eb2a14" />
+
+   - 配置为使用 HarGabt 的分支构建喷火器插件 v0.4.0 的示例：<TODO: 上传截图/>
+
+5. 等待运行结束，您的文件会出现在 **Artifacts** 区域。<br/><img width="1472" height="734" alt="Screenshot 2026-07-06 at 9 18 47 PM" src="https://github.com/user-attachments/assets/8648111c-3ddd-4212-b9b6-7aa9903d90fc" />
+
 ## 生成和开发工作流
 
-我们支持两种工作流，项目文件会自动识别并进行切换：
+我们支持两种面向开发者的工作流，项目文件会自动识别并进行切换：
 
 - **独立工作流**：此仓库和您的 Frosty 仓库位于同一文件夹中。更适合新手。
 
@@ -88,7 +109,7 @@
 ### 独立工作流
 
 > [!NOTE]
-> 本教程是面向新手编写的。
+> 本教程是面向新手编写的，但我十分建议新手使用上方的“快速生成”。
 
 1. 在同一个父文件夹里[克隆](https://docs.github.com/repositories/creating-and-managing-repositories/cloning-a-repository) FrostyToolsuite 和此仓库。Frosty 可以是[官方版](https://github.com/CadeEvs/FrostyToolsuite)或其他分支。<br><img width="338" height="161" alt="Screenshot 2025-10-29 165404" src="https://github.com/user-attachments/assets/e14bcc7e-78be-458b-84ca-dfb9f951928d" />
 
@@ -101,7 +122,7 @@
 
 4. 更改插件名。<br><img width="777" height="252" alt="image" src="https://github.com/user-attachments/assets/773f4f86-f18d-4ab2-97d5-25258d4ba2f6" />
 
-> [!IMPORTANT]
+> [!TIP]
 > 在你的构建版本中增加一些记号来区分官方版本。这样可以避免混淆，尤其是在分发时。
 
 5. 在顶部的工具栏更改生成配置，请确保与您正在用于生成的 Frosty 版本相匹配。<br><img width="178" height="212" alt="image" src="https://github.com/user-attachments/assets/9b157cd2-d18c-4bb7-9eb2-35eb78cd623c" />
@@ -122,7 +143,7 @@
 3. 打开配置管理器来管理这个插件的生成配置。请注意显示的名字是`FsLocalizationPlugin`。Visual Studio 会把您的配置保存在 .sln 文件中，这可能比你想的要方便。<br/><img width="128" height="142" alt="image" src="https://github.com/user-attachments/assets/e325d226-7bee-4bd6-aa3e-5b5487b4c33d" /><br/><img width="502" height="352" alt="image" src="https://github.com/user-attachments/assets/5191bc34-a5fe-43a6-9a97-a3de68c90957" />
 4. 更改插件名称，如果您觉得有必要。<br><img width="777" height="252" alt="image" src="https://github.com/user-attachments/assets/773f4f86-f18d-4ab2-97d5-25258d4ba2f6" />
 
-> [!IMPORTANT]
+> [!TIP]
 > 在你的构建版本中增加一些记号来区分官方版本。这样可以避免混淆，尤其是在分发时。
 
 在代码库中，程序集被有意命名为“FsLocalizationPlugin.dll”（为了向后兼容）。
