@@ -1,10 +1,6 @@
-name: Build
+name: Quick Build
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
     inputs:
       frosty_repo:
@@ -15,7 +11,7 @@ on:
       frosty_ref:
         description: "Branch/Tag/SHA (Blank = Repo's Default Branch)"
         required: false
-        default: ""
+        default: "1.0.6.4"
         type: string
       config:
         description: "Configuration to Build"
@@ -38,10 +34,9 @@ jobs:
         id: params
         shell: pwsh
         run: |
-          $isDispatch = "${{ github.event_name }}" -eq "workflow_dispatch"
-          $repo   = if ($isDispatch) { "${{ inputs.frosty_repo }}" } else { "CadeEvs/FrostyToolsuite" }
-          $ref    = if ($isDispatch) { "${{ inputs.frosty_ref }}" }  else { "" }
-          $config = if ($isDispatch) { "${{ inputs.config }}" }      else { "Debug - 1.0.6.3 or Later" }
+          $repo   = "${{ inputs.frosty_repo }}"
+          $ref    = "${{ inputs.frosty_ref }}"
+          $config = "${{ inputs.config }}"
           if ([string]::IsNullOrWhiteSpace($repo))   { $repo = "CadeEvs/FrostyToolsuite" }
           if ([string]::IsNullOrWhiteSpace($config)) { $config = "Debug - 1.0.6.3 or Later" }
 
@@ -105,7 +100,7 @@ jobs:
             Get-ChildItem $sdkIncludeRoot -Directory | Where-Object { Test-SdkVersion $_.Name $requestedPrefix } | Select-Object -First 1
           } else { $null }
           if ($installed) {
-            Write-Host "Windows SDK $($installed.Name) already covers requested $requestedPrefix."
+            Write-Host "Skipping. Windows SDK $($installed.Name) already covers requested $requestedPrefix."
             exit 0
           }
 

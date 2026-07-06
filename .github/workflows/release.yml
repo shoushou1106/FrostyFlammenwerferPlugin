@@ -135,7 +135,7 @@ jobs:
             Get-ChildItem $sdkIncludeRoot -Directory | Where-Object { Test-SdkVersion $_.Name $requestedPrefix } | Select-Object -First 1
           } else { $null }
           if ($installed) {
-            Write-Host "Windows SDK $($installed.Name) already covers requested $requestedPrefix."
+            Write-Host "Skipping. Windows SDK $($installed.Name) already covers requested $requestedPrefix."
             exit 0
           }
 
