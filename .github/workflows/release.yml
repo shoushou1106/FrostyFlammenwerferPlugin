@@ -107,6 +107,84 @@ jobs:
         with:
           msbuild-architecture: x64
 
+      - name: Ensure required Windows SDK is installed
+        shell: pwsh
+        run: |
+          $vcxprojPath = "FrostyToolsuite\FrostyHash\FrostyHash.vcxproj"
+          $content = Get-Content $vcxprojPath -Raw
+          if ($content -notmatch '<WindowsTargetPlatformVersion>([\d\.]+)</WindowsTargetPlatformVersion>') {
+            Write-Host "Skipping. No WindowsTargetPlatformVersion found in $vcxprojPath"
+            exit 0
+          }
+          $requestedVersion = $Matches[1]
+          Write-Host "FrostyHash.vcxproj requests Windows SDK $requestedVersion"
+
+          # Match on the first 3 components (major.minor.build) only - a project's requested
+          # version and an installer package's own version can differ in the trailing
+          # "revision" number (e.g. project asks for 10.0.18362.0, Microsoft's installer
+          # package is versioned 10.0.18362.1) without it being a different SDK.
+          if ($requestedVersion -notmatch '^(\d+\.\d+\.\d+)(?:\.\d+)?$') {
+            Write-Host "Version is unversioned/generic ('$requestedVersion') - MSBuild auto-resolves this to whatever's installed. Nothing to do."
+            exit 0
+          }
+          $requestedPrefix = $Matches[1]
+
+          function Test-SdkVersion($version, $prefix) {
+            return ($version -eq $prefix) -or ($version -like "$prefix.*")
+          }
+
+          $sdkIncludeRoot = "C:\Program Files (x86)\Windows Kits\10\Include"
+          $installed = if (Test-Path $sdkIncludeRoot) {
+            Get-ChildItem $sdkIncludeRoot -Directory | Where-Object { Test-SdkVersion $_.Name $requestedPrefix } | Select-Object -First 1
+          } else { $null }
+          if ($installed) {
+            Write-Host "Windows SDK $($installed.Name) already covers requested $requestedPrefix."
+            exit 0
+          }
+
+          # Download standalone installer package for legacy Windows SDK
+          # https://learn.microsoft.com/windows/apps/windows-sdk/downloads
+          # https://learn.microsoft.com/windows/apps/windows-sdk/downloads-archive
+          $knownSdkInstallers = @{
+            "10.0.28000.2270" = "https://go.microsoft.com/fwlink/?linkid=2370315"
+            "10.0.26100.8249" = "https://go.microsoft.com/fwlink/?linkid=2361308"
+            "10.0.22621.5040" = "https://go.microsoft.com/fwlink/?linkid=2311806"
+            "10.0.20348.3330" = "https://go.microsoft.com/fwlink/?linkid=2331862"
+            "10.0.19041.5609" = "https://go.microsoft.com/fwlink/?linkid=2311805"
+            "10.0.17763.7010" = "https://go.microsoft.com/fwlink/?linkid=2331960"
+            # Out of service SDKs
+            "10.0.22000.194" = "https://go.microsoft.com/fwlink/?linkid=2173743"
+            "10.0.18362.1" = "https://go.microsoft.com/fwlink/?linkid=2083338"
+            "10.0.17134.12" = "https://go.microsoft.com/fwlink/p/?linkid=870807"
+            "10.0.16299.91" = "https://go.microsoft.com/fwlink/p/?linkid=864422"
+            "10.0.15063.468" = "https://go.microsoft.com/fwlink/p/?LinkId=845298"
+            "10.0.14393.795" = "https://go.microsoft.com/fwlink/p/?LinkId=838916"
+            "10.0.10586.212" = "https://go.microsoft.com/fwlink/p/?LinkID=698771"
+            "10.0.10240" = "https://go.microsoft.com/fwlink/p/?LinkId=619296" # Note: The version will display as 10.0.26624 during setup.
+          }
+
+          $matchedKey = $knownSdkInstallers.Keys | Where-Object { Test-SdkVersion $_ $requestedPrefix } | Select-Object -First 1
+          if (-not $matchedKey) {
+            throw "Windows SDK $requestedPrefix.* isn't already installed and isn't in the known-installer list. Find its standalone installer at https://learn.microsoft.com/windows/apps/windows-sdk/downloads-archive and add it to `$knownSdkInstallers in this step."
+          }
+
+          $installerUrl = $knownSdkInstallers[$matchedKey]
+          $installerPath = Join-Path $env:RUNNER_TEMP "winsdksetup-$matchedKey.exe"
+          Write-Host "Downloading Windows SDK $matchedKey from $installerUrl"
+          Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath -UseBasicParsing
+
+          Write-Host "Installing Windows SDK $matchedKey (silent)..."
+          $proc = Start-Process -FilePath $installerPath -ArgumentList "/features + /quiet /norestart /ceip off" -Wait -PassThru
+          if ($proc.ExitCode -ne 0) {
+            throw "Windows SDK $matchedKey installer exited with code $($proc.ExitCode)."
+          }
+
+          $installed = Get-ChildItem $sdkIncludeRoot -Directory -ErrorAction SilentlyContinue | Where-Object { Test-SdkVersion $_.Name $requestedPrefix } | Select-Object -First 1
+          if (-not $installed) {
+            throw "Installer reported success but no folder matching $requestedPrefix.* exists under $sdkIncludeRoot."
+          }
+          Write-Host "Windows SDK $($installed.Name) installed."
+
       - name: Build
         shell: pwsh
         working-directory: FrostyFlammenwerferPlugin
