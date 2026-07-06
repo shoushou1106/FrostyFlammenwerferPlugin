@@ -37,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Read version from csproj
+      - name: Read version
         id: version
         shell: pwsh
         run: |
@@ -48,7 +48,7 @@ jobs:
           "version=$($Matches[1])" >> $env:GITHUB_OUTPUT
           "tag=v$($Matches[1])"    >> $env:GITHUB_OUTPUT
 
-      - name: Build matrix for the 3 version targets
+      - name: Build matrix
         id: matrix
         shell: pwsh
         run: |
@@ -90,7 +90,7 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     steps:
-      - name: Checkout plugin repo
+      - name: Checkout FlammenwerferPlugin repo
         uses: actions/checkout@v7
         with:
           path: FrostyFlammenwerferPlugin
@@ -103,11 +103,12 @@ jobs:
           submodules: recursive
           path: FrostyToolsuite
 
-      - uses: microsoft/setup-msbuild@v3
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
 
-      - name: Ensure required Windows SDK is installed
+      - name: Install Windows SDK (if required)
         shell: pwsh
         run: |
           $vcxprojPath = "FrostyToolsuite\FrostyHash\FrostyHash.vcxproj"
@@ -229,7 +230,8 @@ jobs:
             "pdb-name=" >> $env:GITHUB_OUTPUT
           }
 
-      - uses: actions/upload-artifact@v7
+      - name: Upload DLL
+        uses: actions/upload-artifact@v7
         with:
           name: release-asset-${{ matrix.suffix }}
           path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.zip-name }}
@@ -251,7 +253,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v8
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
         with:
           pattern: release-asset-*
           path: release-assets

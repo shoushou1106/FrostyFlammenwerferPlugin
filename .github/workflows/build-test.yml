@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build (${{ matrix.versionLabel }})
+    name: Build ${{ matrix.versionLabel }}
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -24,7 +24,7 @@ jobs:
             suffix: "1.0.7"
             source: "CadeEvs/FrostyToolsuite@1.0.7"
     steps:
-      - name: Resolve Frosty repo/ref
+      - name: Resolve parameters
         id: params
         shell: pwsh
         run: |
@@ -32,7 +32,7 @@ jobs:
           "repo=$($parts[0].Trim())" >> $env:GITHUB_OUTPUT
           "ref=$($parts[1].Trim())"  >> $env:GITHUB_OUTPUT
 
-      - name: Checkout plugin repo
+      - name: Checkout FlammenwerferPlugin repo
         uses: actions/checkout@v7
         with:
           path: FrostyFlammenwerferPlugin
@@ -49,7 +49,7 @@ jobs:
         with:
           msbuild-architecture: x64
 
-      - name: Ensure required Windows SDK is installed
+      - name: Install Windows SDK (if required)
         shell: pwsh
         run: |
           $vcxprojPath = "FrostyToolsuite\FrostyHash\FrostyHash.vcxproj"

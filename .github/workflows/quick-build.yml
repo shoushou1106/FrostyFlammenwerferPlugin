@@ -9,12 +9,12 @@ on:
         default: "CadeEvs/FrostyToolsuite"
         type: string
       frosty_ref:
-        description: "Branch/Tag/SHA (Blank = Repo's Default Branch)"
+        description: "Branch/Tag/SHA (blank = repo's default branch)"
         required: false
         default: "1.0.6.4"
         type: string
       config:
-        description: "Configuration to Build"
+        description: "Config to build"
         required: true
         default: "Debug - 1.0.6.3 or Later"
         type: choice
@@ -30,7 +30,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Resolve effective parameters
+      - name: Resolve parameters
         id: params
         shell: pwsh
         run: |
@@ -55,7 +55,7 @@ jobs:
           "config=$config"           >> $env:GITHUB_OUTPUT
           "output-path=$outputPath"  >> $env:GITHUB_OUTPUT
 
-      - name: Checkout plugin repo
+      - name: Checkout FlammenwerferPlugin repo
         uses: actions/checkout@v7
         with:
           path: FrostyFlammenwerferPlugin
@@ -68,11 +68,12 @@ jobs:
           submodules: recursive
           path: FrostyToolsuite
 
-      - uses: microsoft/setup-msbuild@v3
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
 
-      - name: Ensure required Windows SDK is installed
+      - name: Install Windows SDK (if required)
         shell: pwsh
         run: |
           $vcxprojPath = "FrostyToolsuite\FrostyHash\FrostyHash.vcxproj"
