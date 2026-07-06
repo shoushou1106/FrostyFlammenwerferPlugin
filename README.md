@@ -78,7 +78,7 @@ Use Quick Build via GitHub Actions, you can build your own Flammenwerfer Plugin 
 
 3. Choose **Quick Build** action. On the left if Desktop, top if Mobile.
 
-4. Click **Run workflow**, follow the instructions.<br/><img width="830" height="429" alt="Screenshot 2026-07-06 at 9 09 42 PM" src="https://github.com/user-attachments/assets/835c25e0-0a67-4e7f-b9c7-22c171eb2a14" />
+4. Click **[Run workflow](https://docs.github.com/actions/how-tos/manage-workflow-runs/manually-run-a-workflow)**, follow the instructions.<br/><img width="830" height="429" alt="Screenshot 2026-07-06 at 9 09 42 PM" src="https://github.com/user-attachments/assets/835c25e0-0a67-4e7f-b9c7-22c171eb2a14" />
 
 5. Wait for it to finish, and your files is avaliable in **Artifacts** section.<br/><img width="1472" height="734" alt="Screenshot 2026-07-06 at 9 18 47 PM" src="https://github.com/user-attachments/assets/8648111c-3ddd-4212-b9b6-7aa9903d90fc" />
 
