@@ -13,17 +13,17 @@ on:
           - "Debug"
       source_1062:
         description: "Frosty repo for 1.0.6.2 or Earlier (owner/repo@ref, blank = CadeEvs@1.0.6.2, blank ref = default branch)"
-        required: false
+        required: true
         default: "CadeEvs/FrostyToolsuite@1.0.6.2"
         type: string
       source_1063:
         description: "Frosty repo for 1.0.6.3 or Later (owner/repo@ref, blank = CadeEvs@1.0.6.4, blank ref = default branch)"
-        required: false
+        required: true
         default: "CadeEvs/FrostyToolsuite@1.0.6.4"
         type: string
       source_107:
         description: "Frosty repo for 1.0.7 (owner/repo@ref, blank = CadeEvs@1.0.7, blank ref = default branch)"
-        required: false
+        required: true
         default: "CadeEvs/FrostyToolsuite@1.0.7"
         type: string
 
@@ -35,7 +35,7 @@ jobs:
       tag: ${{ steps.version.outputs.tag }}
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Read version from csproj
         id: version
@@ -91,19 +91,19 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     steps:
       - name: Checkout plugin repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: FrostyFlammenwerferPlugin
 
       - name: Checkout Frosty repo (${{ matrix.config }})
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ${{ matrix.repo }}
           ref: ${{ matrix.ref }}
           submodules: recursive
           path: FrostyToolsuite
 
-      - uses: microsoft/setup-msbuild@v2
+      - uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
 
@@ -119,12 +119,9 @@ jobs:
           $requestedVersion = $Matches[1]
           Write-Host "FrostyHash.vcxproj requests Windows SDK $requestedVersion"
 
-          # Match on the first 3 components (major.minor.build) only - a project's requested
-          # version and an installer package's own version can differ in the trailing
-          # "revision" number (e.g. project asks for 10.0.18362.0, Microsoft's installer
-          # package is versioned 10.0.18362.1) without it being a different SDK.
+          # Match on the first 3 components (major.minor.build) only
           if ($requestedVersion -notmatch '^(\d+\.\d+\.\d+)(?:\.\d+)?$') {
-            Write-Host "Version is unversioned/generic ('$requestedVersion') - MSBuild auto-resolves this to whatever's installed. Nothing to do."
+            Write-Host "Skipping. Version is unversioned/generic ('$requestedVersion'). MSBuild will auto resolve this."
             exit 0
           }
           $requestedPrefix = $Matches[1]
@@ -232,7 +229,7 @@ jobs:
             "pdb-name=" >> $env:GITHUB_OUTPUT
           }
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-asset-${{ matrix.suffix }}
           path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.zip-name }}
@@ -241,7 +238,7 @@ jobs:
 
       - name: Upload PDB (Debug only)
         if: steps.package.outputs.pdb-name != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-asset-${{ matrix.suffix }}-pdb
           path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.pdb-name }}
@@ -254,7 +251,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: release-asset-*
           path: release-assets
