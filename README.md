@@ -71,15 +71,16 @@ Use Quick Build via GitHub Actions, you can build your own Flammenwerfer Plugin 
 > [!NOTE]
 > You will need a GitHub account to use this. It's free to create and only needs a email.
 
-1. **Fork** this repo on GitHub.
+1. **[Fork](https://docs.github.com/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)** this repo on GitHub.<br/><img width="537" height="247" alt="Screenshot 2026-07-06 at 9 12 11 PM" src="https://github.com/user-attachments/assets/0b16e070-c265-4e0f-8647-70b080352a2c" />
 
-2. Open **Actions** tab on GitHub
+2. Open **Actions** tab on GitHub<br/><img width="722" height="287" alt="Screenshot 2026-07-06 at 9 15 07 PM" src="https://github.com/user-attachments/assets/d46c56c1-d1a5-4aa3-9e13-a819ea80cc4a" />
+
 
 3. Choose **Quick Build** action. On the left if Desktop, top if Mobile.
 
-4. Click **Run workflow**, follow the instructions.
+4. Click **Run workflow**, follow the instructions.<br/><img width="830" height="429" alt="Screenshot 2026-07-06 at 9 09 42 PM" src="https://github.com/user-attachments/assets/835c25e0-0a67-4e7f-b9c7-22c171eb2a14" />
 
-5. Wait for it to finish, and your files is avaliable in **Artifacts** section.
+5. Wait for it to finish, and your files is avaliable in **Artifacts** section.<br/><img width="1472" height="734" alt="Screenshot 2026-07-06 at 9 18 47 PM" src="https://github.com/user-attachments/assets/8648111c-3ddd-4212-b9b6-7aa9903d90fc" />
 
 ## Build and Development Workflow
 
