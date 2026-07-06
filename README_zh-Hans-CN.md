@@ -159,4 +159,4 @@
 - [Max Alex](https://github.com/zyf722) 和其的 [BF1CHS](https://github.com/BF1CHS)
 - [NFSToolHB](https://github.com/Punpude/NFSToolHB)
 - Claude 写了 README 和注释
-- Gemini 起有趣的名字和日志
+- Gemini 注入了火焰魔法
