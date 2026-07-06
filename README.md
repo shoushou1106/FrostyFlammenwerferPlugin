@@ -73,12 +73,14 @@ Use Quick Build via GitHub Actions, you can build your own Flammenwerfer Plugin 
 
 1. **[Fork](https://docs.github.com/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)** this repo on GitHub.<br/><img width="537" height="247" alt="Screenshot 2026-07-06 at 9 12 11 PM" src="https://github.com/user-attachments/assets/0b16e070-c265-4e0f-8647-70b080352a2c" />
 
-2. Open **Actions** tab on GitHub<br/><img width="722" height="287" alt="Screenshot 2026-07-06 at 9 15 07 PM" src="https://github.com/user-attachments/assets/d46c56c1-d1a5-4aa3-9e13-a819ea80cc4a" />
+2. In your own fork, nagivate to **Actions** tab<br/><img width="722" height="287" alt="Screenshot 2026-07-06 at 9 15 07 PM" src="https://github.com/user-attachments/assets/d46c56c1-d1a5-4aa3-9e13-a819ea80cc4a" />
 
 
-3. Choose **Quick Build** action. On the left if Desktop, top if Mobile.
+3. Choose **Quick Build** workflow. On the left if Desktop, top if Mobile.
 
 4. Click **[Run workflow](https://docs.github.com/actions/how-tos/manage-workflow-runs/manually-run-a-workflow)**, follow the instructions.<br/><img width="830" height="429" alt="Screenshot 2026-07-06 at 9 09 42 PM" src="https://github.com/user-attachments/assets/835c25e0-0a67-4e7f-b9c7-22c171eb2a14" />
+
+   - Example config to build Flammenwerfer v0.4.0 with HarGabt's fork: <TODO: Upload Screenshot/>
 
 5. Wait for it to finish, and your files is avaliable in **Artifacts** section.<br/><img width="1472" height="734" alt="Screenshot 2026-07-06 at 9 18 47 PM" src="https://github.com/user-attachments/assets/8648111c-3ddd-4212-b9b6-7aa9903d90fc" />
 
