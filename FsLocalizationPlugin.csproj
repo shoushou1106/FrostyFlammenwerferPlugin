@@ -94,8 +94,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Resource Include="Images\tag_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz20.png" />
-    <Resource Include="Images\edit_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz20.png" />
+    <Resource Include="Images\tag_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
+    <Resource Include="Images\edit_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
     <Resource Include="Images\find_replace_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
     <Resource Include="Images\Tick_White.png" />
   </ItemGroup>

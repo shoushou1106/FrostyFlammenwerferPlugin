@@ -11,7 +11,7 @@ namespace FsLocalizationPlugin.Extensions
 
         public override string MenuItemName => "Modify String";
 
-        public override ImageSource Icon => GetIcon("pack://application:,,,/FsLocalizationPlugin;component/Images/edit_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz20.png");
+        public override ImageSource Icon => GetIcon("pack://application:,,,/FsLocalizationPlugin;component/Images/edit_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png");
 
         protected override void OnClicked()
         {
