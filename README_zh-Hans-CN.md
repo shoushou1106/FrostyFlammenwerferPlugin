@@ -9,6 +9,12 @@
 
 喷火器插件是一个 [Frosty v1](https://github.com/CadeEvs/FrostyToolsuite) 插件，从 [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/)，一个用于修改寒霜引擎 FsLocalization 数据的工具移植而来。愿景是：构建下一代 Frosty 模组体验，作为每个人的必装基础插件存在。从此再无语言障碍。
 
+## 需要测试者
+我需要模组(Mod)创作者/用户和火系法师协助测试此插件，只有几个人无法保证此插件的稳定性。您可以在 [Project](https://github.com/users/shoushou1106/projects/3) 查看路线图和未来计划。要贡献测试，您可以通过测试被标注为“In review”的项目，并在对应的 Issue 中报告测试结果，告知我是否有效或存在任何问题。非常感谢！
+如果您想参与测试但遇到问题或不清楚测试流程，请联系我：    
+Discord: `shoushou1106`
+QQ: `2420308592`
+
 ## 此插件是什么
 
 喷火器插件是 `FsLocalizationPlugin` 的直接替代品（由 GalaxyMan2015 和 Mophead 开发，向他们致谢）。但喷火器插件允许您使用几乎所有字符（例如中文字符）进行修改。读写相同的工程和模组格式，升级完全安全。
@@ -158,5 +164,5 @@
 - [HarGabt](https://github.com/HarGabt) 的[分支](https://github.com/HarGabt/FrostyFlammenwerferPlugin)
 - [Max Alex](https://github.com/zyf722) 和其的 [BF1CHS](https://github.com/BF1CHS)
 - [NFSToolHB](https://github.com/Punpude/NFSToolHB)
-- Claude 写了 README 和注释
+- Claude 写了代码，注释，和 README
 - Gemini 注入了火焰魔法
