@@ -71,15 +71,13 @@
                     >
         </TextBox>
         <TextBox Padding="2.5" Margin="2" Width="Auto"
-                    BorderThickness="1"
-                    Text="{Binding IdToHash, Mode=OneWay}"
-                    AcceptsTab="False"
-                    AcceptsReturn="False"
-                    AutoWordSelection="False"
-                    VerticalScrollBarVisibility="Disabled"
-                    HorizontalScrollBarVisibility="Disabled"
-                         IsReadOnly="True"
-                    >
+                 BorderThickness="1"
+                 Text="{Binding IdToHash, Mode=OneWay}"
+                 AutoWordSelection="False"
+                 VerticalScrollBarVisibility="Disabled"
+                 HorizontalScrollBarVisibility="Disabled"
+                 IsReadOnly="True"
+                 >
           <TextBox.Style>
             <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
               <Setter Property="Visibility" Value="Collapsed"/>
