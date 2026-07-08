@@ -9,6 +9,12 @@
 
 Flammenwerfer Plugin is a [Frosty Toolsuite v1](https://github.com/CadeEvs/FrostyToolsuite) plugin, ported from [flammenwerfer](https://github.com/BF1CHS/flammenwerfer/), a tool for editing Frostbite's FsLocalization data. The goal: the next-gen of Frosty modding experiences, an essential plugin for everyone, and there will be no more language barriers.
 
+## Testers Wanted
+I need mod creators/users and fire mages to assist in testing this project, a few people cannot ensure the plugin's stability. You can view our roadmap and future plans at [Project](https://github.com/users/shoushou1106/projects/3). You can contribute by testing items marked "In review" status, and report in corresponding Issue to let me know if they work or if there are any issues. Thank you very much.    
+If you would like to contribute in the testing but encounter problems or are unclear about the process, please contact me:   
+Discord: `shoushou1106`
+QQ: `2420308592`
+
 ## What it is
 
 Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by GalaxyMan2015 and Mophead, with my thanks and respect). But it allows you to mod with almost any language. It reads and writes the same project and mod format, completely safe to upgrade.
