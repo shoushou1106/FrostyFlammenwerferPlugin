@@ -8,17 +8,12 @@ namespace FsLocalizationPlugin.Windows
     {
         private readonly ModifyMultipleStringsViewModel viewModel;
 
-        /// <param name="closeAfterConfirm">Close after action.</param>
-        public ModifyMultipleStringsWindow(Window owner, bool closeAfterConfirm = true)
+        public ModifyMultipleStringsWindow(Window owner)
         {
             Owner = owner;
 
-            viewModel = new ModifyMultipleStringsViewModel(LocalizedStringDatabase.Current as FsLocalizationStringDatabase, closeAfterConfirm);
-            viewModel.CloseRequested += result =>
-            {
-                DialogResult = result;
-                Close();
-            };
+            viewModel = new ModifyMultipleStringsViewModel(LocalizedStringDatabase.Current as FsLocalizationStringDatabase);
+            viewModel.CloseRequested += HandleCloseRequested;
 
             InitializeComponent();
 

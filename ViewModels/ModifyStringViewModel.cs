@@ -14,16 +14,11 @@ namespace FsLocalizationPlugin.ViewModels
             nameof(CanModify), nameof(CanRevert), nameof(CanRemove),
         };
 
-        private readonly bool closeAfterAction;
-
         private string hashOrId = string.Empty;
         private string editText = string.Empty;
 
-        /// <param name="closeAfterAction">Close after action.</param>
-        public ModifyStringViewModel(FsLocalizationStringDatabase database, bool closeAfterAction = true) : base(database)
+        public ModifyStringViewModel(FsLocalizationStringDatabase database) : base(database)
         {
-            this.closeAfterAction = closeAfterAction;
-
             ModifyCommand = new RelayCommand(_ => Modify(), _ => CanModify);
             RevertCommand = new RelayCommand(_ => Revert(), _ => CanRevert);
             RemoveCommand = new RelayCommand(_ => Remove(), _ => CanRemove);
@@ -112,7 +107,7 @@ namespace FsLocalizationPlugin.ViewModels
 
             Database.SetString(hash, EditText);
             OnPropertiesChanged(StateDependentProperties);
-            CloseIfConfigured();
+            CloseRequested?.Invoke(true);
         }
 
         private void Revert()
@@ -123,7 +118,7 @@ namespace FsLocalizationPlugin.ViewModels
             Database.RevertString(hash);
             App.Logger.Log("Flame extinguished! String {0} reverted", hash.ToString("X8"));
             OnPropertiesChanged(StateDependentProperties);
-            CloseIfConfigured();
+            CloseRequested?.Invoke(true);
         }
 
         private void Remove()
@@ -134,13 +129,8 @@ namespace FsLocalizationPlugin.ViewModels
             Database.RemoveString(hash);
             App.Logger.Log("Flame scorched! String {0} removed", hash.ToString("X8"));
             OnPropertiesChanged(StateDependentProperties);
-            CloseIfConfigured();
+            CloseRequested?.Invoke(true);
         }
 
-        private void CloseIfConfigured()
-        {
-            if (closeAfterAction)
-                CloseRequested?.Invoke(true);
-        }
     }
 }

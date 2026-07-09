@@ -11,11 +11,7 @@ namespace FsLocalizationPlugin.Windows
             Owner = owner;
 
             ExportChunksViewModel viewModel = new ExportChunksViewModel(LocalizedStringDatabase.Current as FsLocalizationStringDatabase);
-            viewModel.CloseRequested += result =>
-            {
-                DialogResult = result;
-                Close();
-            };
+            viewModel.CloseRequested += HandleCloseRequested;
 
             InitializeComponent();
 

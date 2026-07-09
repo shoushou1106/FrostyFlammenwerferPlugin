@@ -21,12 +21,39 @@ namespace FsLocalizationPlugin.Windows
             Dispatcher.UnhandledException += OnDispatcherUnhandledException;
         }
 
+        /// <summary>Whether this window was opened with ShowDialog (vs Show).</summary>
+        protected bool IsShownAsDialog { get; private set; }
+
+        public new bool? ShowDialog()
+        {
+            // Tracked because DialogResult may only be set on dialog-shown windows,
+            // and close-after-action only applies to dialogs (Show windows stay open).
+            IsShownAsDialog = true;
+            return base.ShowDialog();
+        }
+
+        /// <summary>
+        /// Wire a view model's CloseRequested to this. ShowDialog windows close after a
+        /// confirmed action (result true); Show windows stay open for batch editing.
+        /// A false result (explicit cancel/exit) always closes.
+        /// </summary>
+        protected void HandleCloseRequested(bool? result)
+        {
+            if (result != false && !IsShownAsDialog)
+                return;
+
+            if (IsShownAsDialog)
+                DialogResult = result;
+            Close();
+        }
+
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             FrostyExceptionBox.Show(e.Exception, Title);
             e.Handled = true;
 
-            DialogResult = false;
+            if (IsShownAsDialog)
+                DialogResult = false;
             Close();
         }
 
@@ -37,11 +64,14 @@ namespace FsLocalizationPlugin.Windows
                 return;
 
             int index = panel.Children.IndexOf(label);
-            if (index < 0 || index + 1 >= panel.Children.Count)
+            if (index < 0)
                 return;
 
-            if (panel.Children[index + 1] is CheckBox checkBox)
-                checkBox.IsChecked = !(checkBox.IsChecked ?? false);
+            foreach (var child in panel.Children)
+            {
+                if (child is CheckBox checkBox)
+                    checkBox.IsChecked = !(checkBox.IsChecked ?? false);
+            }
         }
     }
 }

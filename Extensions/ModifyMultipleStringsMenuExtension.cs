@@ -15,7 +15,7 @@ namespace FsLocalizationPlugin.Extensions
 
         protected override void OnClicked()
         {
-            new Windows.ModifyMultipleStringsWindow(Application.Current.MainWindow).ShowDialog();
+            new Windows.ModifyMultipleStringsWindow(Application.Current.MainWindow).Show();
         }
     }
 }

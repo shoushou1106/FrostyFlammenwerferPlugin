@@ -21,8 +21,6 @@ namespace FsLocalizationPlugin.ViewModels
             Remove,
         }
 
-        private readonly bool closeAfterAction;
-
         private string filterValue = string.Empty;
         private string editText = string.Empty;
         private bool caseSensitive;
@@ -32,11 +30,8 @@ namespace FsLocalizationPlugin.ViewModels
         private int matchCount;
         private string patternError;
 
-        /// <param name="closeAfterAction">Close after Replace/Revert/Remove. False stays open for another pass.</param>
-        public ModifyMultipleStringsViewModel(FsLocalizationStringDatabase database, bool closeAfterAction = true) : base(database)
+        public ModifyMultipleStringsViewModel(FsLocalizationStringDatabase database) : base(database)
         {
-            this.closeAfterAction = closeAfterAction;
-
             ReplaceCommand = new RelayCommand(owner => Process((Window)owner, BulkAction.Replace), _ => CanProcess);
             RevertCommand = new RelayCommand(owner => Process((Window)owner, BulkAction.Revert), _ => CanProcess);
             RemoveCommand = new RelayCommand(owner => Process((Window)owner, BulkAction.Remove), _ => CanProcess);
@@ -327,8 +322,7 @@ namespace FsLocalizationPlugin.ViewModels
             }
 
             RecomputeMatchCount();
-            if (closeAfterAction)
-                CloseRequested?.Invoke(true);
+            CloseRequested?.Invoke(true);
         }
     }
 }

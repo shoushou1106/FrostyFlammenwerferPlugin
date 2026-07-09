@@ -1,14 +1,15 @@
 <local:FlammenwerferWindowBase x:Class="FsLocalizationPlugin.Windows.ModifyMultipleStringsWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:FsLocalizationPlugin.Windows"
-        xmlns:core="clr-namespace:Frosty.Core;assembly=FrostyCore"
-        xmlns:fdev="FrostyDeveloper"
-        mc:Ignorable="d"
-        UseLayoutRounding="True"
-        Title="Modify Multiple Strings - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
+                               xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:local="clr-namespace:FsLocalizationPlugin.Windows"
+                               xmlns:core="clr-namespace:Frosty.Core;assembly=FrostyCore"
+                               xmlns:fdev="FrostyDeveloper"
+                               mc:Ignorable="d"
+                               UseLayoutRounding="True"
+                               Title="Modify Multiple Strings - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
+                               FontFamily="Segoe UI Variable Text, Global User Interface"
         >
 
   <!-- View model: ViewModels/ModifyMultipleStringsViewModel.cs -->
@@ -128,7 +129,7 @@
         </Label>
 
         <WrapPanel Orientation="Vertical" Margin="15, 0, 0, 0">
-          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
+          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
             <WrapPanel.Style>
               <Style TargetType="WrapPanel">
                 <Style.Triggers>
@@ -138,18 +139,18 @@
                 </Style.Triggers>
               </Style>
             </WrapPanel.Style>
-            <Label Width="Auto" Cursor="Hand" MouseLeftButtonUp="ToggleAdjacentCheckBox">
-              <Label.Content>
-                <StackPanel Orientation="Horizontal">
-                  <TextBlock Foreground="{StaticResource FontColor}" Text="Case Sensitive: "/>
-                </StackPanel>
-              </Label.Content>
-            </Label>
             <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
                       IsChecked="{Binding CaseSensitive}"/>
+            <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
+              <Label.Content>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Foreground="{StaticResource FontColor}" Text="Case sensitive"/>
+                </StackPanel>
+              </Label.Content>
+            </Label>
           </WrapPanel>
 
-          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
+          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
             <WrapPanel.Style>
               <Style TargetType="WrapPanel">
                 <Style.Triggers>
@@ -159,41 +160,39 @@
                 </Style.Triggers>
               </Style>
             </WrapPanel.Style>
-            <Label Width="Auto" Cursor="Hand" MouseLeftButtonUp="ToggleAdjacentCheckBox">
+            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                      IsChecked="{Binding MatchWholeWord}"/>
+            <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
               <Label.Content>
                 <StackPanel Orientation="Horizontal">
-                  <TextBlock Foreground="{StaticResource FontColor}" Text="Match whole word: "/>
+                  <TextBlock Foreground="{StaticResource FontColor}" Text="Match whole word"/>
                 </StackPanel>
               </Label.Content>
             </Label>
-            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                      IsChecked="{Binding MatchWholeWord}"/>
           </WrapPanel>
 
-          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
-            <Label Width="Auto" Cursor="Hand" MouseLeftButtonUp="ToggleAdjacentCheckBox">
+          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
+            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                      IsChecked="{Binding UseRegex}"/>
+            <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
               <Label.Content>
                 <StackPanel Orientation="Horizontal">
                   <TextBlock Foreground="{StaticResource FontColor}" Text="Use regular expressions: "/>
                 </StackPanel>
               </Label.Content>
             </Label>
-            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                      IsChecked="{Binding UseRegex}">
-            </CheckBox>
           </WrapPanel>
 
-          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0">
-            <Label Width="Auto" Cursor="Hand" MouseLeftButtonUp="ToggleAdjacentCheckBox">
+          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
+            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                      IsChecked="{Binding ReplaceEntireString}"/>
+            <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
               <Label.Content>
                 <StackPanel Orientation="Horizontal">
-                  <TextBlock Foreground="{StaticResource FontColor}" Text="Replace entire string: "/>
+                  <TextBlock Foreground="{StaticResource FontColor}" Text="Replace entire string"/>
                 </StackPanel>
               </Label.Content>
             </Label>
-            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                      IsChecked="{Binding ReplaceEntireString}">
-            </CheckBox>
           </WrapPanel>
         </WrapPanel>
       </StackPanel>
@@ -205,8 +204,9 @@
           <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}">
             <Button.Content>
               <StackPanel Orientation="Horizontal">
-                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyControls;component/Images/Clear.png"
-                     RenderOptions.BitmapScalingMode="HighQuality"/>
+                <TextBlock Margin="0, 1, 5, 0" Text="&#xF3B1;"
+                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Exit"/>
               </StackPanel>
             </Button.Content>

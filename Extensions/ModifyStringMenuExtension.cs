@@ -15,8 +15,7 @@ namespace FsLocalizationPlugin.Extensions
 
         protected override void OnClicked()
         {
-            // Stay open for batch editing.
-            new Windows.ModifyStringWindow(Application.Current.MainWindow, closeAfterConfirm: false).ShowDialog();
+            new Windows.ModifyStringWindow(Application.Current.MainWindow).Show();
         }
     }
 }
