@@ -1,4 +1,3 @@
-using Frosty.Controls;
 using System.Windows;
 using System.Windows.Media;
 
@@ -10,13 +9,13 @@ namespace FsLocalizationPlugin.Extensions
 
         public override string SubLevelMenuName => "Flammenwerfer";
 
-        public override string MenuItemName => "Check Compatibility (WIP)";
+        public override string MenuItemName => "Check Compatibility";
 
-        public override ImageSource Icon => GetIcon("pack://application:,,,/FsLocalizationPlugin;component/Images/Tick_White.png");
+        public override ImageSource Icon => GetIcon("pack://application:,,,/FsLocalizationPlugin;component/Images/frame_bug_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png");
 
         protected override void OnClicked()
         {
-            FrostyMessageBox.Show("Not finished", "Flammenwerfer", MessageBoxButton.OK);
+            new Windows.CheckCompatibilityWindow(Application.Current.MainWindow).Show();
         }
     }
 }

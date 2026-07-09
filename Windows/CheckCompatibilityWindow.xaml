@@ -1,23 +1,256 @@
 <local:FlammenwerferWindowBase x:Class="FsLocalizationPlugin.Windows.CheckCompatibilityWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:FsLocalizationPlugin.Windows"
-        xmlns:core="clr-namespace:Frosty.Core;assembly=FrostyCore"
-        xmlns:ctrl="clr-namespace:Frosty.Controls;assembly=FrostyControls" 
-        xmlns:fdev="FrostyDeveloper"
-        mc:Ignorable="d"
-        UseLayoutRounding="True"
-        Title="Check Compatibility - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
+                               xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:local="clr-namespace:FsLocalizationPlugin.Windows"
+                               xmlns:vm="clr-namespace:FsLocalizationPlugin.ViewModels"
+                               xmlns:core="clr-namespace:Frosty.Core;assembly=FrostyCore"
+                               xmlns:ctrl="clr-namespace:Frosty.Controls;assembly=FrostyControls"
+                               xmlns:fdev="FrostyDeveloper"
+                               mc:Ignorable="d"
+                               UseLayoutRounding="True"
+                               Title="Check Compatibility - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
+                               FontFamily="Segoe UI Variable Text, Global User Interface"
         >
-  <!-- View model: ViewModels/ModifyStringViewModel.cs -->
+  <!-- View model: ViewModels/CheckCompatibilityViewModel.cs -->
 
   <Window.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/FrostyControls;component/Themes/Generic.xaml"/>
       </ResourceDictionary.MergedDictionaries>
+
+      <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+      <!-- State icon: swap spinner/pass/warning/error/na based on Tag (a CompatibilityTestState). -->
+      <Style x:Key="StateIcon" TargetType="ContentControl">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Width" Value="14"/>
+        <Setter Property="Margin" Value="0, 2, 5, 0"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Content" Value=""/>
+        <Style.Triggers>
+          <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Loading">
+            <Setter Property="ContentTemplate">
+              <Setter.Value>
+                <DataTemplate>
+                  <ctrl:FrostySpinner Width="14"/>
+                </DataTemplate>
+              </Setter.Value>
+            </Setter>
+          </DataTrigger>
+          <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Passed">
+            <Setter Property="ContentTemplate">
+              <Setter.Value>
+                <DataTemplate>
+                  <Image Width="14" Source="/FsLocalizationPlugin;component/Images/check_circle_32dp_75FB4C_FILL1_wght600_GRAD-25_opsz24.png"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
+                </DataTemplate>
+              </Setter.Value>
+            </Setter>
+          </DataTrigger>
+          <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Warning">
+            <Setter Property="ContentTemplate">
+              <Setter.Value>
+                <DataTemplate>
+                  <Image Width="14" Source="/FsLocalizationPlugin;component/Images/error_32dp_FFFF55_FILL1_wght600_GRAD-25_opsz24.png"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
+                </DataTemplate>
+              </Setter.Value>
+            </Setter>
+          </DataTrigger>
+          <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Error">
+            <Setter Property="ContentTemplate">
+              <Setter.Value>
+                <DataTemplate>
+                  <Image Width="14" Source="/FsLocalizationPlugin;component/Images/cancel_32dp_EA3323_FILL1_wght600_GRAD-25_opsz24.png"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
+                </DataTemplate>
+              </Setter.Value>
+            </Setter>
+          </DataTrigger>
+          <!-- N/A is used when user did not modify the selected language. -->
+          <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="NotApplicable">
+            <Setter Property="ContentTemplate">
+              <Setter.Value>
+                <DataTemplate>
+                  <Image Width="14" Source="/FsLocalizationPlugin;component/Images/block_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
+                </DataTemplate>
+              </Setter.Value>
+            </Setter>
+          </DataTrigger>
+          <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="NotRun">
+            <Setter Property="ContentTemplate">
+              <Setter.Value>
+                <DataTemplate>
+                  <Image Width="14" Source="/FsLocalizationPlugin;component/Images/block_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
+                </DataTemplate>
+              </Setter.Value>
+            </Setter>
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+
+      <!-- Progress bar behind a test/group row. DataContext must be a CompatibilityTest or CompatibilityTestGroup.-->
+      <Style x:Key="TestProgressBar" TargetType="ProgressBar" BasedOn="{StaticResource {x:Type ProgressBar}}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource WindowBackground}"/>
+        <Setter Property="Minimum" Value="0"/>
+        <Setter Property="Maximum" Value="100"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Value" Value="{Binding Progress, Mode=OneWay}"/>
+        <Setter Property="IsIndeterminate" Value="{Binding IsIndeterminate, Mode=OneWay}"/>
+        <Style.Triggers>
+          <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+            <DataTrigger.EnterActions>
+              <BeginStoryboard>
+                <Storyboard>
+                  <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" BeginTime="0:0:1" Duration="0:0:0.5"/>
+                </Storyboard>
+              </BeginStoryboard>
+            </DataTrigger.EnterActions>
+            <DataTrigger.ExitActions>
+              <BeginStoryboard>
+                <Storyboard>
+                  <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0"/>
+                </Storyboard>
+              </BeginStoryboard>
+            </DataTrigger.ExitActions>
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+
+      <!-- Keeps Frosty's themed button visuals, just disables while a refresh runs. -->
+      <Style x:Key="DisabledWhileRefreshing" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Style.Triggers>
+          <DataTrigger Binding="{Binding IsRefreshing}" Value="True">
+            <Setter Property="IsEnabled" Value="False"/>
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+
+      <!-- The main button re-labels itself Refresh <-> Cancel based on IsRefreshing. -->
+      <DataTemplate x:Key="RefreshButtonContent">
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Margin="0, 1, 5, 0" Text="&#xE72C;"
+                     FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                     RenderOptions.BitmapScalingMode="HighQuality"/>
+          <TextBlock Foreground="{StaticResource FontColor}" Text="Refresh"/>
+        </StackPanel>
+      </DataTemplate>
+      <DataTemplate x:Key="CancelButtonContent">
+        <StackPanel Orientation="Horizontal">
+          <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyControls;component/Images/Clear.png"
+                 RenderOptions.BitmapScalingMode="HighQuality"/>
+          <TextBlock Foreground="{StaticResource FontColor}" Text="Cancel"/>
+        </StackPanel>
+      </DataTemplate>
+
+      <!-- Frosty style Expander
+           Arrow matches Frosty's itemToggleButton (FrostyToolsuite\FrostyPlugin\Themes\Generic.xaml)
+           and FrostyModManager's inline Expander template (MainWindow.xaml).
+           This merges the two: theme brush + hover highlight from the property grid, header/font passthrough from ModManager. -->
+      <Style TargetType="Expander">
+        <Setter Property="Foreground" Value="{StaticResource FontColor}"/>
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="Expander">
+              <StackPanel>
+                <ToggleButton IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                              Content="{TemplateBinding Header}"
+                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                              Foreground="{TemplateBinding Foreground}"
+                              FontFamily="{TemplateBinding FontFamily}"
+                              FontSize="{TemplateBinding FontSize}"
+                              Focusable="False">
+                  <ToggleButton.Template>
+                    <ControlTemplate TargetType="ToggleButton">
+                      <Border x:Name="Bd" Background="Transparent" Padding="2">
+                        <Grid>
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                          </Grid.ColumnDefinitions>
+                          <Path x:Name="ExpandPath" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Fill="{DynamicResource ControlPressed}" Stroke="{DynamicResource ControlPressed}">
+                            <Path.Data>
+                              <PathGeometry Figures="M0,0 L0,6 L6,0 z"/>
+                            </Path.Data>
+                            <Path.RenderTransform>
+                              <RotateTransform Angle="135" CenterY="3" CenterX="3"/>
+                            </Path.RenderTransform>
+                          </Path>
+                          <ContentPresenter Grid.Column="1" VerticalAlignment="Center"/>
+                        </Grid>
+                      </Border>
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                          <Setter Property="RenderTransform" TargetName="ExpandPath">
+                            <Setter.Value>
+                              <RotateTransform Angle="180" CenterY="3" CenterX="3"/>
+                            </Setter.Value>
+                          </Setter>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                          <Setter TargetName="Bd" Property="Background" Value="{StaticResource SubItemHighlight}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                          <Setter Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </ToggleButton.Template>
+                </ToggleButton>
+                <ContentPresenter x:Name="ExpandSite" Visibility="Collapsed" Margin="18, 0, 0, 0"/>
+              </StackPanel>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsExpanded" Value="True">
+                  <Setter TargetName="ExpandSite" Property="Visibility" Value="Visible"/>
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+
+      <!-- Per language result group
+           Language header + scrollable and virtualized list of its items (hashes/characters). -->
+      <DataTemplate x:Key="ItemGroupTemplate">
+        <StackPanel Margin="0, 2, 0, 4">
+          <TextBlock Text="{Binding Language}" Foreground="{StaticResource FontColor}" FontWeight="Medium" Margin="2"/>
+          <ItemsControl ItemsSource="{Binding Items}"
+                        VirtualizingPanel.IsVirtualizing="True"
+                        VirtualizingPanel.VirtualizationMode="Recycling"
+                        VirtualizingPanel.ScrollUnit="Pixel">
+            <ItemsControl.Template>
+              <ControlTemplate TargetType="ItemsControl">
+                <Border BorderBrush="{StaticResource ControlBackground}" BorderThickness="1">
+                  <ScrollViewer MaxHeight="150" CanContentScroll="True" VerticalScrollBarVisibility="Auto" Focusable="False">
+                    <ItemsPresenter/>
+                  </ScrollViewer>
+                </Border>
+              </ControlTemplate>
+            </ItemsControl.Template>
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <VirtualizingStackPanel/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBox Text="{Binding Mode=OneWay}" IsReadOnly="True" BorderThickness="0.5"
+                         Background="Transparent" Padding="2.5"
+                         AutoWordSelection="False"
+                         VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled"/>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </DataTemplate>
     </ResourceDictionary>
   </Window.Resources>
 
@@ -29,352 +262,313 @@
 
     <Border Grid.Row="0" Background="{StaticResource ListBackground}"/>
 
-    <StackPanel x:Name="MainGrid" Grid.Row="0" Margin="5, 10, 5, 10">
-      <WrapPanel Orientation="Horizontal" Margin="3">
-        <Label Width="Auto">
-          <Label.Content>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;"
-                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Language: "/>
-            </StackPanel>
-          </Label.Content>
-        </Label>
-        <ComboBox x:Name="LanguageComboBox" MinWidth="140" Width="Auto" Margin="2"
+    <!-- SizeToContent grows the window to fit; once it hits MaxHeight the ScrollViewer scrolls. -->
+    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel x:Name="MainGrid" Margin="5, 10, 5, 10">
+        <WrapPanel Orientation="Horizontal" Margin="3">
+          <Label Width="Auto">
+            <Label.Content>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;"
+                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
+                <TextBlock Foreground="{StaticResource FontColor}" Text="Language: "/>
+              </StackPanel>
+            </Label.Content>
+          </Label>
+          <ComboBox x:Name="LanguageComboBox" MinWidth="140" Width="Auto" Margin="2"
                     ItemsSource="{Binding Languages}"
                     SelectedItem="{Binding SelectedLanguage}">
-        </ComboBox>
-        <!-- INFO: This should include option: "All Languages" -->
-      </WrapPanel>
+          </ComboBox>
+        </WrapPanel>
 
-      <!-- INFO: Show this placeholder when user cancel the refresh process and there is no data to display. -->
-      <Label Margin="3" Width="Auto" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Visibility="Collapsed">
-        <Label.Content>
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto"/>
-              <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Margin="0, 1, 5, 0" Text="&#xE946;" 
-                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
-            <TextBlock Grid.Column="1" Foreground="{StaticResource FontColor}" TextWrapping="Wrap" Text="Click Refresh to get started"/>
-          </Grid>
-        </Label.Content>
-      </Label>
-      
-      <WrapPanel Orientation="Horizontal" Margin="3">
-        <Label Width="Auto">
-          <Label.Content>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Margin="0, 1, 5, 0" Text="&#xEB68;&#xEC24;"
-                                 FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                 RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="What will happen next?"/>
-              <!-- INFO: Interesting greetings. Example:
-              No strings modified yet, what will happen next?
-              100 strings modified, a great start!
-              1000 strings modified, amazing!
-              10000 strings modified, so diligent!
-              <PLACEHOLDER> strings modified, you've modified all the strings, お疲れ様でした!
-              -->
-            </StackPanel>
-          </Label.Content>
-        </Label>
-      </WrapPanel>
-      <Separator Margin="3, 3, 3, 0"/>
-      <!-- INFO: Icon for every states. (Keep only this comment for future)
-      Loading
-      <ctrl:FrostySpinner Margin="0, 2, 5, 0" Width="14"/>
-      Passed
-      <Image Margin="0, 2, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/check_circle_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png"
-          RenderOptions.BitmapScalingMode="HighQuality"/>
-      Warning
-      <Image Margin="0, 2, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/error_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png"
-          RenderOptions.BitmapScalingMode="HighQuality"/>
-      Error
-      <Image Margin="0, 2, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/cancel_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png"
-          RenderOptions.BitmapScalingMode="HighQuality"/>
-      N/A
-      <Image Margin="0, 2, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/hide_source_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png"
-          RenderOptions.BitmapScalingMode="HighQuality"/>
-
-      The N/A is used when user did not modified the select language.
-      -->
-      <StackPanel Margin="3">
-        <Label Width="Auto">
-          <Label.Content>
-            <StackPanel Orientation="Horizontal">
-              <ctrl:FrostySpinner Margin="0, 2, 5, 0" Width="14"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Flammenwerfer Compatibility:" FontWeight="Medium"/>
-            </StackPanel>
-          </Label.Content>
-        </Label>
-        <!-- INFO: This test is for detecting characters bigger than 0xFFFF, for example emojis. Error if found. Pass if not found. -->
-        <Expander HorizontalContentAlignment="Stretch">
-          <Expander.Header>
-            <StackPanel Orientation="Horizontal">
-              <ctrl:FrostySpinner Margin="0, 2, 5, 0" Width="14"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Checking for unsupported characters"/>
-              
-              <!--<Image Margin="0, 2, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/cancel_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png"
-                        RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="2 unsupported characters"/>-->
-
-              <!--<Image Margin="0, 2, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/check_circle_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png"
-                        RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="No unsupported characters"/>-->
-            </StackPanel>
-          </Expander.Header>
-          <Expander.Content>
-            <StackPanel>
-              <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap" Text="These character(s) are bigger than 0xFFFF, not supported by Frostbite FsLocalization format."/>
-
-              <WrapPanel Width="Auto">
-                <!-- INFO: Something like ItemsRepeater for this, 1 textbox for each character. And also make it scroll-able when too much -->
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-  BorderThickness="1"
-  AutoWordSelection="False"
-  VerticalScrollBarVisibility="Disabled"
-  HorizontalScrollBarVisibility="Disabled"
-  IsReadOnly="True"
-  Text="测"
-/>
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-  BorderThickness="1"
-  AutoWordSelection="False"
-  VerticalScrollBarVisibility="Disabled"
-  HorizontalScrollBarVisibility="Disabled"
-  IsReadOnly="True"
-  Text="试"
-  />
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-  BorderThickness="1"
-  AutoWordSelection="False"
-  VerticalScrollBarVisibility="Disabled"
-  HorizontalScrollBarVisibility="Disabled"
-  IsReadOnly="True"
-  Text="👍"
-  />
-              </WrapPanel>
-            </StackPanel>
-          </Expander.Content>
-        </Expander>
-        <!-- INFO: This test is a Flammen.WriteAll test. Error if exception thrown. Pass if success. -->
-        <Expander HorizontalContentAlignment="Stretch">
-          <Expander.Header>
-            <StackPanel Orientation="Horizontal">
-              <ctrl:FrostySpinner Margin="0, 2, 5, 0" Width="14"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Running apply test"/>
-            </StackPanel>
-          </Expander.Header>
-          <Expander.Content>
-            <StackPanel>
-              <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap" Text="These character(s) are bigger than 0xFFFF, not supported by Frostbite FsLocalization format."/>
-
-              <WrapPanel Width="Auto">
-                <!-- INFO: Something like ItemsRepeater for this, 1 textbox for each character. And also make it scroll-able when too much -->
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-  BorderThickness="1"
-  AutoWordSelection="False"
-  VerticalScrollBarVisibility="Disabled"
-  HorizontalScrollBarVisibility="Disabled"
-  IsReadOnly="True"
-  Text="测"
-/>
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-  BorderThickness="1"
-  AutoWordSelection="False"
-  VerticalScrollBarVisibility="Disabled"
-  HorizontalScrollBarVisibility="Disabled"
-  IsReadOnly="True"
-  Text="试"
-  />
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-  BorderThickness="1"
-  AutoWordSelection="False"
-  VerticalScrollBarVisibility="Disabled"
-  HorizontalScrollBarVisibility="Disabled"
-  IsReadOnly="True"
-  Text="👍"
-  />
-              </WrapPanel>
-            </StackPanel>
-          </Expander.Content>
-        </Expander>
-      </StackPanel>
-      <Separator Margin="3, 3, 3, 0"/>
-      <StackPanel Margin="3">
-        <Label Width="Auto">
-          <Label.Content>
-            <StackPanel Orientation="Horizontal">
-              <ctrl:FrostySpinner Margin="0, 2, 5, 0" Width="14"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="FsLocalization Loader Plugin Compatibility:" FontWeight="Medium"/>
-            </StackPanel>
-          </Label.Content>
-        </Label>
-        <!-- INFO: This test is for detecting characters not in histogram, because FsLoc does not support edit histogram. Warning if found. Pass if not found. -->
-        <Expander HorizontalContentAlignment="Stretch">
-          <Expander.Header>
-            <StackPanel Orientation="Horizontal">
-              <ctrl:FrostySpinner Margin="0, 2, 5, 0" Width="14"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Checking for characters not existing in histogram"/>
-            </StackPanel>
-          </Expander.Header>
-          <Expander.Content>
-            <StackPanel>
-              <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap" Text="These character(s) does not exist in histogram. Your user need to install Flammenwerfer Plugin in order to display these characters."/>
-              <WrapPanel>
-                <!-- INFO: Something like ItemsRepeater for this, 1 textbox for each character. And also make it scroll-able when too much -->
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-   BorderThickness="1"
-   AutoWordSelection="False"
-   VerticalScrollBarVisibility="Disabled"
-   HorizontalScrollBarVisibility="Disabled"
-   IsReadOnly="True"
-   Text="测"
- />
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-   BorderThickness="1"
-   AutoWordSelection="False"
-   VerticalScrollBarVisibility="Disabled"
-   HorizontalScrollBarVisibility="Disabled"
-   IsReadOnly="True"
-   Text="试"
-   />
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-   BorderThickness="1"
-   AutoWordSelection="False"
-   VerticalScrollBarVisibility="Disabled"
-   HorizontalScrollBarVisibility="Disabled"
-   IsReadOnly="True"
-   Text="A"
-   />
-              </WrapPanel>
-            </StackPanel>
-          </Expander.Content>
-        </Expander>
-        <!-- INFO: This test is for detecting flammenwerfer extended features, only Remove String at this point. Warning if found. Pass if not found. -->
-        <Expander HorizontalContentAlignment="Stretch">
-          <Expander.Header>
-            <StackPanel Orientation="Horizontal">
-              <ctrl:FrostySpinner Margin="0, 2, 5, 0" Width="14"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Checking for extended feature"/>
-            </StackPanel>
-          </Expander.Header>
-          <Expander.Content>
-            <StackPanel>
-              <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap" Text="These string(s) are removed. Your user need to install Flammenwerfer Plugin v0.4.0 or later, otherwise these string(s) will not be removed and displaying original value."/>
-              <WrapPanel>
-                <!-- INFO: Something like ItemsRepeater for this, 1 textbox for each character. And also make it scroll-able when too much -->
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-  BorderThickness="1"
-  AutoWordSelection="False"
-  VerticalScrollBarVisibility="Disabled"
-  HorizontalScrollBarVisibility="Disabled"
-  IsReadOnly="True"
-  Text="00000000"
-/>
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-  BorderThickness="1"
-  AutoWordSelection="False"
-  VerticalScrollBarVisibility="Disabled"
-  HorizontalScrollBarVisibility="Disabled"
-  IsReadOnly="True"
-  Text="0000ABCD"
-  />
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-  BorderThickness="1"
-  AutoWordSelection="False"
-  VerticalScrollBarVisibility="Disabled"
-  HorizontalScrollBarVisibility="Disabled"
-  IsReadOnly="True"
-  Text="F1A88E22"
-  />
-              </WrapPanel>
-              <!-- INFO: For newer format version in future.
-              <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap" Text="These string(s) were made into barbecue. Your user need to install Flammenwerfer Plugin v0.5.0 or later, otherwise your user will be kicked out of the party."/>
-              <WrapPanel>
-                INFO: Something like ItemsRepeater for this, 1 textbox for each character. And also make it scroll-able when too much
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-  BorderThickness="1"
-  AutoWordSelection="False"
-  VerticalScrollBarVisibility="Disabled"
-  HorizontalScrollBarVisibility="Disabled"
-  IsReadOnly="True"
-  Text="00000000"
-/>
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-  BorderThickness="1"
-  AutoWordSelection="False"
-  VerticalScrollBarVisibility="Disabled"
-  HorizontalScrollBarVisibility="Disabled"
-  IsReadOnly="True"
-  Text="0000ABCD"
-  />
-                <TextBox Padding="2.5" Margin="2" Width="Auto"
-  BorderThickness="1"
-  AutoWordSelection="False"
-  VerticalScrollBarVisibility="Disabled"
-  HorizontalScrollBarVisibility="Disabled"
-  IsReadOnly="True"
-  Text="F1A88E22"
-  />
-              </WrapPanel> -->
-            </StackPanel>
-          </Expander.Content>
-        </Expander>
-        <Label Width="Auto" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+        <Label Margin="3" Width="Auto" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
           <Label.Content>
             <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
-              <TextBlock Grid.Column="0" Margin="0, 1, 5, 0" Text="&#xE946;" 
-                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Grid.Column="1" Foreground="{StaticResource FontColor}" TextWrapping="Wrap" Text="This is an example of guiding user to download Flammenwerfer Plugin to use in your mod description. Your user do not need it if your mod passed FsLocalization Loader Plugin Compatibility test."/>
+              <TextBlock Grid.Column="0" Margin="0, 1, 5, 0" Text="&#xEC24;"
+                                 FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                 RenderOptions.BitmapScalingMode="HighQuality"/>
+              <TextBlock Grid.Column="1" Foreground="{StaticResource FontColor}" Text="{Binding Greeting}" TextWrapping="WrapWithOverflow"/>
             </Grid>
           </Label.Content>
         </Label>
-        <TextBox Padding="2.5" Margin="5, 2, 5, 2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-         BorderThickness="1"
-         VerticalScrollBarVisibility="Auto"
-         HorizontalScrollBarVisibility="Auto"
-         TextWrapping="Wrap"
-         IsReadOnly="True">
-          [Warning] This mod contains features not supported by FsLocalizationPlugin. Strings in your game will not be displayed correctly. Please install Flammenwerfer Plugin from: https://github.com/shoushou1106/FrostyFlammenwerferPlugin
-        </TextBox>
+        
+        <Separator Margin="3, 3, 3, 0"/>
+
+        <!-- Shown until a refresh starts (and again after a cancelled one). -->
+        <Label Margin="3" Width="Auto" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Foreground="{StaticResource FontColor}">
+          <Label.Style>
+            <Style TargetType="Label">
+              <Setter Property="Visibility" Value="Visible"/>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding HasResults}" Value="True">
+                  <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Label.Style>
+          <Label.Content>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="0" Margin="0, 1, 5, 0" Text="&#xE946;"
+                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+              <TextBlock Grid.Column="1" TextWrapping="Wrap" Text="Click Refresh to get started"/>
+            </Grid>
+          </Label.Content>
+        </Label>
+        <Separator Margin="3, 0, 3, 0">
+          <Separator.Style>
+            <Style TargetType="Separator">
+              <Setter Property="Visibility" Value="Visible"/>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding HasResults}" Value="True">
+                  <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Separator.Style>
+        </Separator>
+
+        <!-- Test sections: hidden until a refresh starts. -->
+        <StackPanel Visibility="{Binding HasResults, Converter={StaticResource BoolToVis}}">
+          <StackPanel Margin="3">
+            <Grid>
+              <ProgressBar Style="{StaticResource TestProgressBar}" DataContext="{Binding FlammenwerferGroup}"/>
+              <Label Width="Auto">
+                <Label.Content>
+                  <StackPanel Orientation="Horizontal">
+                    <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding FlammenwerferGroup.State}"/>
+                    <TextBlock Foreground="{StaticResource FontColor}" Text="Flammenwerfer Compatibility:" FontWeight="SemiBold"/>
+                  </StackPanel>
+                </Label.Content>
+              </Label>
+            </Grid>
+            <!-- Test 1: characters bigger than 0xFFFF, for example emojis. Error if found. -->
+            <Grid>
+              <ProgressBar Style="{StaticResource TestProgressBar}" DataContext="{Binding UnsupportedCharsTest}"/>
+              <Expander HorizontalContentAlignment="Stretch" Background="Transparent">
+                <Expander.Header>
+                  <Label>
+                    <StackPanel Orientation="Horizontal">
+                      <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding UnsupportedCharsTest.State}"/>
+                      <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding UnsupportedCharsTest.Summary}"/>
+                    </StackPanel>
+                  </Label>
+                </Expander.Header>
+                <Expander.Content>
+                  <StackPanel>
+                    <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
+                           Visibility="{Binding UnsupportedCharsTest.HasItems, Converter={StaticResource BoolToVis}}"
+                           Text="These character(s) are bigger than 0xFFFF, not supported by Frostbite FsLocalization format."/>
+                    <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
+                           Visibility="{Binding UnsupportedCharsTest.HasItems, Converter={StaticResource BoolToVis}}"/>
+                    <ItemsControl ItemsSource="{Binding UnsupportedCharsTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
+                  </StackPanel>
+                </Expander.Content>
+              </Expander>
+            </Grid>
+            <!-- Test 2: Flammen.WriteAll dry run. Error if exception thrown. -->
+            <Grid>
+              <ProgressBar Style="{StaticResource TestProgressBar}" DataContext="{Binding ApplyTest}"/>
+              <Expander HorizontalContentAlignment="Stretch" Background="Transparent">
+                <Expander.Header>
+                  <Label>
+                    <StackPanel Orientation="Horizontal">
+                      <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding ApplyTest.State}"/>
+                      <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding ApplyTest.Summary}"/>
+                    </StackPanel>
+                  </Label>
+                </Expander.Header>
+                <Expander.Content>
+                  <StackPanel>
+                    <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
+                           Visibility="{Binding ApplyTest.HasItems, Converter={StaticResource BoolToVis}}"
+                           Text="These unhandled exception(s) occurred while applying mod. Your users will encounter the same issue during the Applying Handlers process when launching the game."/>
+                    <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
+                           Visibility="{Binding ApplyTest.HasItems, Converter={StaticResource BoolToVis}}"/>
+                    <ItemsControl ItemsSource="{Binding ApplyTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
+                  </StackPanel>
+                </Expander.Content>
+              </Expander>
+            </Grid>
+            <!-- Test 3: modified strings identical to their original value. Warning if found, fixable. -->
+            <Grid>
+              <ProgressBar Style="{StaticResource TestProgressBar}" DataContext="{Binding UnchangedTest}"/>
+              <Expander HorizontalContentAlignment="Stretch" Background="Transparent">
+                <Expander.Header>
+                  <Grid HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Label>
+                      <StackPanel Orientation="Horizontal">
+                        <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding UnchangedTest.State}"/>
+                        <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding UnchangedTest.Summary}"/>
+                      </StackPanel>
+                    </Label>
+                    <Button Grid.Column="1" Padding="6, 3, 6, 3" Margin="3"
+                        Style="{StaticResource DisabledWhileRefreshing}"
+                        Command="{Binding FixUnchangedCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                        Visibility="{Binding UnchangedTest.HasItems, Converter={StaticResource BoolToVis}}">
+                      <Button.Content>
+                        <StackPanel Orientation="Horizontal">
+                          <Image Margin="0, 1, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/handyman_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png"
+RenderOptions.BitmapScalingMode="HighQuality"/>
+                          <TextBlock Foreground="{StaticResource FontColor}" Text="Fix"/>
+                        </StackPanel>
+                      </Button.Content>
+                    </Button>
+                  </Grid>
+                </Expander.Header>
+                <Expander.Content>
+                  <StackPanel>
+                    <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
+                           Visibility="{Binding UnchangedTest.HasItems, Converter={StaticResource BoolToVis}}"
+                           Text="These string(s) are modified but identical to their original value. They bloat the mod and may overwrite other mods."/>
+                    <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
+                           Visibility="{Binding UnchangedTest.HasItems, Converter={StaticResource BoolToVis}}"/>
+                    <ItemsControl ItemsSource="{Binding UnchangedTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
+                  </StackPanel>
+                </Expander.Content>
+              </Expander>
+            </Grid>
+          </StackPanel>
+          <Separator Margin="3, 3, 3, 0"/>
+          <StackPanel Margin="3">
+            <Grid>
+              <ProgressBar Style="{StaticResource TestProgressBar}" DataContext="{Binding FsLocGroup}"/>
+              <Label Width="Auto">
+                <Label.Content>
+                  <StackPanel Orientation="Horizontal">
+                    <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding FsLocGroup.State}"/>
+                    <TextBlock Foreground="{StaticResource FontColor}" Text="FsLocalization Loader Plugin Compatibility:" FontWeight="SemiBold"/>
+                  </StackPanel>
+                </Label.Content>
+              </Label>
+            </Grid>
+            <!-- Test 4: characters not in histogram, because FsLoc does not support editing the histogram. Warning if found. -->
+            <Grid>
+              <ProgressBar Style="{StaticResource TestProgressBar}" DataContext="{Binding HistogramTest}"/>
+              <Expander HorizontalContentAlignment="Stretch" Background="Transparent">
+                <Expander.Header>
+                  <Label>
+                    <StackPanel Orientation="Horizontal">
+                      <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding HistogramTest.State}"/>
+                      <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding HistogramTest.Summary}"/>
+                    </StackPanel>
+                  </Label>
+                </Expander.Header>
+                <Expander.Content>
+                  <StackPanel>
+
+                    <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
+                           Visibility="{Binding HistogramTest.HasItems, Converter={StaticResource BoolToVis}}"
+                           Text="These character(s) does not exist in histogram. Your user need to install Flammenwerfer Plugin in order to display these characters."/>
+                    <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
+                           Visibility="{Binding HistogramTest.HasItems, Converter={StaticResource BoolToVis}}"/>
+                    <ItemsControl ItemsSource="{Binding HistogramTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
+                  </StackPanel>
+                </Expander.Content>
+              </Expander>
+            </Grid>
+            <!-- Test 5: Flammenwerfer extended features, only Remove String at this point. Warning if found. -->
+            <Grid>
+              <ProgressBar Style="{StaticResource TestProgressBar}" DataContext="{Binding ExtendedFeatureTest}"/>
+              <Expander HorizontalContentAlignment="Stretch" Background="Transparent">
+                <Expander.Header>
+                  <Label>
+                    <StackPanel Orientation="Horizontal">
+                      <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding ExtendedFeatureTest.State}"/>
+                      <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding ExtendedFeatureTest.Summary}"/>
+                    </StackPanel>
+                  </Label>
+                </Expander.Header>
+                <Expander.Content>
+                  <StackPanel>
+                    <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
+                           Visibility="{Binding ExtendedFeatureTest.HasItems, Converter={StaticResource BoolToVis}}"
+                           Text="These string(s) are removed. Your user need to install Flammenwerfer Plugin v0.4.0 or later, otherwise these string(s) will not be removed and displaying their original value."/>
+                    <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
+                           Visibility="{Binding ExtendedFeatureTest.HasItems, Converter={StaticResource BoolToVis}}"/>
+                    <ItemsControl ItemsSource="{Binding ExtendedFeatureTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
+                    <!-- For newer format versions in the future, add another explanation + list here. -->
+                  </StackPanel>
+                </Expander.Content>
+              </Expander>
+            </Grid>
+          </StackPanel>
+        </StackPanel>
+
+        <!-- Guide for mod desc. Always visible. -->
+        <Label Margin="3" Width="Auto" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+          <Label.Content>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="0" Margin="0, 1, 5, 0" Text="&#xE946;"
+                                     FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                     RenderOptions.BitmapScalingMode="HighQuality"/>
+              <TextBlock Grid.Column="1" Foreground="{StaticResource FontColor}" TextWrapping="Wrap" Text="This is an example of guiding user for download Flammenwerfer Plugin to use in your mod description. Your user do not need it if your mod passed FsLocalization Loader Plugin Compatibility test."/>
+            </Grid>
+          </Label.Content>
+        </Label>
+        <TextBox Padding="2.5" Margin="6, 0, 6, 0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                 BorderThickness="1"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto"
+                 TextWrapping="Wrap"
+                 IsReadOnly="True"
+                 Text="{x:Static vm:CheckCompatibilityViewModel.GuideText}"/>
       </StackPanel>
-    </StackPanel>
+    </ScrollViewer>
 
     <Grid Grid.Row="1" Height="38">
+      <!-- Bottom overall progress bar.
+           Override colors since it sits on WindowBackground. -->
+      <Grid Opacity="0.8">
+        <ProgressBar Style="{StaticResource TestProgressBar}" DataContext="{Binding Overall}"
+                     Foreground="{StaticResource ListBackground}"/>
+      </Grid>
       <Grid Margin="5">
         <DockPanel LastChildFill="False">
           <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}">
             <Button.Content>
               <StackPanel Orientation="Horizontal">
-                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyControls;component/Images/Clear.png"
-                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                <TextBlock Margin="0, 1, 5, 0" Text="&#xF3B1;"
+                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Exit"/>
               </StackPanel>
             </Button.Content>
           </Button>
 
-          <Button x:Name="RefreshButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto">
-            <Button.Content>
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0, 1, 5, 0" Text="&#xE72C;"
-                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                           RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Refresh"/>
-              </StackPanel>
-            </Button.Content>
+          <Button x:Name="RefreshButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto"
+                  Command="{Binding RefreshOrCancelCommand}" Content="{Binding}">
+            <Button.Style>
+              <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="ContentTemplate" Value="{StaticResource RefreshButtonContent}"/>
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding IsRefreshing}" Value="True">
+                    <Setter Property="ContentTemplate" Value="{StaticResource CancelButtonContent}"/>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Button.Style>
           </Button>
-          
-          <Button Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto">
+
+          <Button Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto" Command="{Binding CopyGuideCommand}">
             <Button.Content>
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyCore;component/Images/Copy.png"

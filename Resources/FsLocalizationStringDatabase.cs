@@ -359,6 +359,16 @@ namespace FsLocalizationPlugin
                 yield return key;
         }
 
+        /// <summary>Hashes marked for removal by the modified diff.</summary>
+        public IEnumerable<uint> EnumerateRemovedStrings()
+        {
+            if (loadedDatabase == null)
+                yield break;
+
+            foreach (uint key in loadedDatabase.GetStringsToRemove())
+                yield return key;
+        }
+
         public string GetString(uint id)
         {
             if (TryGetString(id, out string value))
@@ -391,6 +401,12 @@ namespace FsLocalizationPlugin
                 }
             }
 
+            return strings.TryGetValue(id, out value);
+        }
+
+        /// <summary>Gets a string's unmodified original value from the game chunks, ignoring the modified diff.</summary>
+        public bool TryGetOriginalString(uint id, out string value)
+        {
             return strings.TryGetValue(id, out value);
         }
 

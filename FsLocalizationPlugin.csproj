@@ -94,14 +94,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Resource Include="Images\tag_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
+    <Resource Include="Images\block_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png" />
+    <Resource Include="Images\cancel_32dp_EA3323_FILL1_wght600_GRAD-25_opsz24.png" />
+    <Resource Include="Images\check_circle_32dp_75FB4C_FILL1_wght600_GRAD-25_opsz24.png" />
     <Resource Include="Images\edit_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
+    <Resource Include="Images\error_32dp_FFFF55_FILL1_wght600_GRAD-25_opsz24.png" />
     <Resource Include="Images\find_replace_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
-    <Resource Include="Images\check_circle_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png" />
-    <Resource Include="Images\error_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png" />
-    <Resource Include="Images\cancel_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png" />
-    <Resource Include="Images\hide_source_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png" />
-    <Resource Include="Images\Tick_White.png" />
+    <Resource Include="Images\frame_bug_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
+    <Resource Include="Images\handyman_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
+    <Resource Include="Images\tag_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
   </ItemGroup>
 
   <ItemGroup>

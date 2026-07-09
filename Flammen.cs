@@ -360,6 +360,18 @@ namespace FsLocalizationPlugin
             return ReadStringsBinary(stringsBinaryChunk, histogramSection);
         }
 
+        /// <summary>Reads the histogram code-point table from a chunk. Used by the compatibility checks.</summary>
+        public static List<ushort> ReadHistogram(ChunkAssetEntry histogramChunk)
+        {
+            if (histogramChunk == null)
+                throw new ArgumentNullException(nameof(histogramChunk));
+
+            using (var stream = App.AssetManager.GetChunk(histogramChunk))
+            {
+                return ReadHistogram(stream);
+            }
+        }
+
         /// <summary>
         /// Reads the histogram section from a chunk.
         /// </summary>

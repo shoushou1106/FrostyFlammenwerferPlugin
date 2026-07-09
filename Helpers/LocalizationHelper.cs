@@ -131,15 +131,23 @@ namespace FsLocalizationPlugin.Helpers
             cachedProfileName = null;
         }
 
+        /// <summary>Percent of a multi-part background operation.</summary>
+        public static double ComputeProgress(double current, double total, double currentPart = 1, double totalParts = 1, double detail = 1, double totalDetails = 1)
+        {
+            if (total <= 0 || totalParts <= 0 || totalDetails <= 0)
+                return 0.0d;
+
+            // (((((p - 1) * t) + (c - 1)) * td + d) / (tp * t * td)) * 100%
+            return (((((currentPart - 1) * total) + (current - 1)) * totalDetails) + detail) / (totalDetails * total * totalParts) * 100.0d;
+        }
+
         /// <summary>Reports progress for a multi-part background operation via a FrostyTaskWindow's logger.</summary>
         public static void ReportProgress(ILogger logger, double current, double total, double currentPart = 1, double totalParts = 1, double detail = 1, double totalDetails = 1)
         {
             if (total <= 0)
                 return;
 
-            // (((((p - 1) * t) + (c - 1)) * td + d) / (tp * t * td)) * 100%
-            double percent = (((((currentPart - 1) * total) + (current - 1)) * totalDetails) + detail) / (totalDetails * total * totalParts) * 100.0d;
-            logger.Log("progress:" + percent);
+            logger.Log("progress:" + ComputeProgress(current, total, currentPart, totalParts, detail, totalDetails));
         }
     }
 }
