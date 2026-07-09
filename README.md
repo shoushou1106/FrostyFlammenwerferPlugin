@@ -26,7 +26,7 @@ Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by Gal
 - **Even without another plugin**: You can add/modify a string without another plugin from Frosty Editor's menu bar. Just in case you need it.
 - **Bulk find & replace:** Now featuring regular-expression matching.
 - **Export/import chunks to and from files:** You can hand off modified assets as static binary files. Like the original flammenwerfer does.
-- **Check compatibility:** Check is there any issues before release a mod.
+- **Check compatibility:** Check is there any issues before release a mod, get a compatibility report with `FsLocalizationPlugin`
 
 ### Extended Features
 
