@@ -1,10 +1,6 @@
 using Frosty.Core;
-using Frosty.Core.Controls;
 using FrostySdk.Attributes;
 using FsLocalizationPlugin.Helpers;
-using System;
-using System.Globalization;
-using System.IO;
 
 namespace FsLocalizationPlugin.Options
 {
