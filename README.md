@@ -26,6 +26,7 @@ Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by Gal
 - **Even without another plugin**: You can add/modify a string without another plugin from Frosty Editor's menu bar. Just in case you need it.
 - **Bulk find & replace:** Now featuring regular-expression matching.
 - **Export/import chunks to and from files:** You can hand off modified assets as static binary files. Like the original flammenwerfer does.
+- **Check compatibility:** Check is there any issues before release a mod.
 
 ### Extended Features
 
@@ -86,7 +87,7 @@ Use Quick Build via GitHub Actions, you can build your own Flammenwerfer Plugin 
 
 4. Click **[Run workflow](https://docs.github.com/actions/how-tos/manage-workflow-runs/manually-run-a-workflow)**, follow the instructions.<br/><img width="830" height="429" alt="Screenshot 2026-07-06 at 9 09 42 PM" src="https://github.com/user-attachments/assets/835c25e0-0a67-4e7f-b9c7-22c171eb2a14" />
 
-   - Example config to build Flammenwerfer v0.4.0 with HarGabt's fork: <TODO: Upload Screenshot/>
+   - Example config to build Flammenwerfer v0.4.0 with HarGabt's fork: <br/><img width="305" height="406" alt="image" src="https://github.com/user-attachments/assets/ec2b7ac4-c14b-4f5c-9d12-5f7680f08946" /><img width="226" height="247" alt="image" src="https://github.com/user-attachments/assets/7dd0a864-4463-427f-b120-aebd0b45ef89" />
 
 5. Wait for it to finish, and your files is avaliable in **Artifacts** section.<br/><img width="1472" height="734" alt="Screenshot 2026-07-06 at 9 18 47 PM" src="https://github.com/user-attachments/assets/8648111c-3ddd-4212-b9b6-7aa9903d90fc" />
 
