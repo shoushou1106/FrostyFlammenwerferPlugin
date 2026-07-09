@@ -31,6 +31,8 @@ QQ: `2420308592`
 
 - **块（Chunk）文件的导入导出：**：您可以将修改后的资源作为静态二进制文件导出。就像原版 flammenwerfer 一样。
 
+- **检查兼容性：** 在发行 Mod 前检查存在的问题，获取与 `FsLocalizationPlugin` 的兼容报告。
+
 ### 扩展功能
 
 - **字符串移除**：有总比没有好。移除一个字符串将使游戏显示原始 `ID_`。
@@ -100,7 +102,7 @@ QQ: `2420308592`
 
 4. 点击 **[Run workflow](https://docs.github.com/actions/how-tos/manage-workflow-runs/manually-run-a-workflow)**，并跟从指示<br/><img width="830" height="429" alt="Screenshot 2026-07-06 at 9 09 42 PM" src="https://github.com/user-attachments/assets/835c25e0-0a67-4e7f-b9c7-22c171eb2a14" />
 
-   - 配置为使用 HarGabt 的分支构建喷火器插件 v0.4.0 的示例：<TODO: 上传截图/>
+   - 配置为使用 HarGabt 的分支构建喷火器插件 v0.4.0 的示例：<br/><img width="305" height="406" alt="image" src="https://github.com/user-attachments/assets/ec2b7ac4-c14b-4f5c-9d12-5f7680f08946" /><img width="226" height="247" alt="image" src="https://github.com/user-attachments/assets/7dd0a864-4463-427f-b120-aebd0b45ef89" />
 
 5. 等待运行结束，您的文件会出现在 **Artifacts** 区域。<br/><img width="1472" height="734" alt="Screenshot 2026-07-06 at 9 18 47 PM" src="https://github.com/user-attachments/assets/8648111c-3ddd-4212-b9b6-7aa9903d90fc" />
 
