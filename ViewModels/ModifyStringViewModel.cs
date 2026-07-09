@@ -51,7 +51,7 @@ namespace FsLocalizationPlugin.ViewModels
 
         public bool IsRemoved => ParsedHash is uint hash && Database.IsStringRemoved(hash);
 
-        /// <summary>Whether there's a value to preview (baseline or modified, not removed).</summary>
+        /// <summary>Whether there's a value to preview (original or modified, not removed).</summary>
         public bool HasStringValue => ParsedHash is uint hash && Database.TryGetString(hash, out _);
 
         public string StringValue => ParsedHash is uint hash && Database.TryGetString(hash, out string value) ? value : string.Empty;
@@ -71,7 +71,7 @@ namespace FsLocalizationPlugin.ViewModels
             }
         }
 
-        /// <summary>Whether the current value is a modification, not the unmodified baseline.</summary>
+        /// <summary>Whether the current value is a modification, not the unmodified original.</summary>
         public bool IsModified => ParsedHash is uint hash && Database.isStringEdited(hash);
 
         /// <summary>Whether HashOrId looks like a string ID (e.g. <c>ID_FLAME</c>) rather than a raw hash.</summary>
