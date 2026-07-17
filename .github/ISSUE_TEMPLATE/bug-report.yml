@@ -45,7 +45,7 @@ body:
 - type: input
   id: env-flame-provider
   attributes:
-    label: Flammenwerfer - Provider
+    label: Flammenwerfer - Provider (Blank = Official)
     description: "Your Flammenwerfer Plugin provider, leave blank = official (shoushou1106)"
     placeholder: "Your repo (link to repo), your Action Quick Build (link to Action)"
   validations:
