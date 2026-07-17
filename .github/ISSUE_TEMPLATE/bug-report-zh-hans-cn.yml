@@ -38,12 +38,11 @@ body:
   id: env-frosty-app
   attributes:
     label: Frosty - App
-    description: "您的 Frosty 应用是哪个"
+    description: "您使用的 Frosty 应用"
     options:
-      - Editor（编辑器）
-      - Mod Manager（模组管理器）
-      - Both（两个都用了）
-      - Other（其他）
+      - label: Editor（编辑器）
+      - label: Mod Manager（模组管理器）
+      - label: Other（其他）
   validations:
     required: true
 - type: input
@@ -101,7 +100,7 @@ body:
   id: additional
   attributes:
     label: Additional context
-    description: "补充有关问题的其他信息"
+    description: "补充有关问题的其他信息（非必填）"
     placeholder: "这个问题是偶发性的，方便面里有时候有调料包，但有时候没有。我在遇到这个问题的时候还发现我居然没有火腿肠可以加到方便面里。"
   validations:
     required: false
