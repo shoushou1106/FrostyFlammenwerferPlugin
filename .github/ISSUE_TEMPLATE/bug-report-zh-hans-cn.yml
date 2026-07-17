@@ -48,7 +48,7 @@ body:
 - type: input
   id: env-flame-provider
   attributes:
-    label: Flammenwerfer - Provider
+    label: Flammenwerfer - Provider (Blank = Official)
     description: "您的喷火器插件提供方，留空默认为官方（shoushou1106）"
     placeholder: "您的 Repo (到 Repo 的链接), 您的 Action 快速生成 (到 Action 的链接)"
   validations:
