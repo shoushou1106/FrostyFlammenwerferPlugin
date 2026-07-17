@@ -1,9 +1,11 @@
-name: Bug 反馈
-about: 创建反馈以帮助我们进步（中文模板）
+name: "Bug 反馈"
+description: "创建反馈以帮助我们进步（中文模板）"
 title: "[哪里] 发生了什么"
-labels: bug
-assignees: shoushou1106
-projects: shoushou1106/3
+labels:
+- "bug"
+assignees: 
+- "shoushou1106"
+projects: "shoushou1106/3"
 body:
 - type: markdown
   attributes:
