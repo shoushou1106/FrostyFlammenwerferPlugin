@@ -72,10 +72,10 @@ body:
     label: Reproduction steps
     description: "Steps to reproduce the behavior"
     placeholder: |
-    1. Take the instant noodle out of the cabinet.
-    2. Open the instant noodle package.
-    3. See there's no seasoning packet.
-    ...
+      1. Take the instant noodle out of the cabinet.
+      2. Open the instant noodle package.
+      3. See there's no seasoning packet.
+      ...
   validations:
     required: false
 - type: textarea
