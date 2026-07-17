@@ -1,5 +1,5 @@
 ---
-name: 功能请求ZH
+name: 功能请求
 about: 为本项目出主意（中文模板）
 title: ''
 labels: enhancement
