@@ -1,0 +1,103 @@
+name: "Bug Report"
+description: "Create a report to help us improve"
+title: "[Where] Something happens"
+labels:
+- "bug"
+assignees: 
+- "shoushou1106"
+projects: "shoushou1106/3"
+body:
+- type: input
+  id: env-os
+  attributes:
+    label: OS & Version
+    description: "Your operating system and version"
+    placeholder: "Windows 11 Pro 25H2 (26200.8875), Linux Debian 13.6.0, macOS 27"
+  validations:
+    required: true
+- type: input
+  id: env-frosty-provider
+  attributes:
+    label: Frosty - Provider (Blank = Official)
+    description: "Your Frosty provider, leave blank = official (CadeEvs)"
+    placeholder: "HarGabt (HarGabt/FrostyToolsuite)"
+  validations:
+    required: false
+- type: input
+  id: env-frosty-version
+  attributes:
+    label: Frosty - Version
+    description: "Your Frosty version, a commit link is OK"
+    placeholder: "1.0.6.3, 1.0.7 (HarGabt's fork) v.26.01.10, Branch/Tag/SHA"
+  validations:
+    required: true
+- type: checkboxes
+  id: env-frosty-app
+  attributes:
+    label: Frosty - App
+    description: "Your Frosty app"
+    options:
+      - label: Editor
+      - label: Mod Manager
+      - label: Other
+  validations:
+    required: true
+- type: input
+  id: env-flame-provider
+  attributes:
+    label: Flammenwerfer - Provider
+    description: "Your Flammenwerfer Plugin provider, leave blank = official (shoushou1106)"
+    placeholder: "Your repo (link to repo), your Action Quick Build (link to Action)"
+  validations:
+    required: false
+- type: input
+  id: env-flame-version
+  attributes:
+    label: Flammenwerfer - Version
+    description: "Your Flammenwerfer Plugin version, a commit link is OK"
+    placeholder: "0.4.0, 0.3.1, Branch/SHA(link here)"
+  validations:
+    required: true
+- type: input
+  id: describe
+  attributes:
+    label: Describe the bug
+    description: "A clear and concise description of what the bug is"
+    placeholder: "Example: My instant noodle doesn't have a seasoning packet."
+  validations:
+    required: true
+- type: textarea
+  id: reproduce
+  attributes:
+    label: Reproduction steps
+    description: "Steps to reproduce the behavior"
+    placeholder: |
+    1. Take the instant noodle out of the cabinet.
+    2. Open the instant noodle package.
+    3. See there's no seasoning packet.
+    ...
+  validations:
+    required: false
+- type: textarea
+  id: expectation
+  attributes:
+    label: Expected behavior
+    description: "A clear and concise description of what you expected to happen"
+    placeholder: "There should be a seasoning packet in instant noodle."
+  validations:
+    required: true
+- type: upload
+  id: screenshots
+  attributes:
+    label: Upload files
+    description: "Add screenshots or log files to help explain your problem"
+  validations:
+    required: false
+- type: textarea
+  id: additional
+  attributes:
+    label: Additional context
+    description: "Add any other context about the problem here"
+    placeholder: "This problem is intermittent, sometimes it comes with a seasoning packet, and sometimes it didn't. When I encountered this problem, I also found out that I didn't have any spam to add to my instant noodle."
+  validations:
+    required: false
