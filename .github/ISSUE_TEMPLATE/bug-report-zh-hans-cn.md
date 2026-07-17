@@ -4,11 +4,11 @@ about: 创建反馈以帮助我们进步
 title: "[哪里] 发生了什么"
 labels: bug
 assignees: shoushou1106
-
+body:
+- type: markdown
+  attributes:
+    value: "这是一个中文模板，但中文模板只是方便您使用的，描述时请使用英语。如果英语不好，可以用中文写，然后同时附上中文原文+AI 英语翻译（请务必使用靠谱的 AI，例如 Gemini、DeepSeek 等多语言支持较好的模型）"
 ---
-
-> [!NOTE]
-> 这是一个中文模板，但中文模板只是方便您使用的，描述时请使用英语。如果英语不好，可以用中文写，然后同时附上中文原文+AI 英语翻译（请务必使用靠谱的 AI，例如 Gemini、DeepSeek 等多语言支持较好的模型）
 
 **Describe the bug / 描述 Bug**
 清晰、简洁的描述 Bug。
