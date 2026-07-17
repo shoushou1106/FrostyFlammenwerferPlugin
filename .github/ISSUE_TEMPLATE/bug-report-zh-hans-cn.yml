@@ -34,7 +34,7 @@ body:
     placeholder: "1.0.6.3, 1.0.7 (HarGabt's fork) v.26.01.10, Branch/Tag/SHA"
   validations:
     required: true
-- type: dropdown
+- type: checkboxes
   id: env-frosty-app
   attributes:
     label: Frosty - App
