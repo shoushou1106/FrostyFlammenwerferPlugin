@@ -55,7 +55,7 @@
         <Label Width="Auto">
           <Label.Content>
             <StackPanel Orientation="Horizontal">
-              <Image Margin="0, 2, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/tag_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png"
+              <Image Margin="0, 1, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/tag_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png"
                                 RenderOptions.BitmapScalingMode="HighQuality"/>
               <TextBlock Foreground="{StaticResource FontColor}" Text="Hash or ID: "/>
             </StackPanel>
@@ -166,7 +166,7 @@
           <Label>
             <Label.Content>
               <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0, 1, 5, 0" Text="&#xEC87;"
+                <TextBlock Margin="0, 1, 5, 0" Text="&#xE932;"
                            FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
                            RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="New Value: "/>

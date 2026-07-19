@@ -84,7 +84,7 @@
         <Label Grid.Row="0" Width="Auto">
           <Label.Content>
             <StackPanel Orientation="Horizontal">
-              <TextBlock Margin="0, 1, 5, 0" Text="&#xEC87;"
+              <TextBlock Margin="0, 1, 5, 0" Text="&#xE932;"
                          FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
                          RenderOptions.BitmapScalingMode="HighQuality"/>
               <TextBlock Foreground="{StaticResource FontColor}" Text="Replace: "/>
@@ -177,7 +177,7 @@
             <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
               <Label.Content>
                 <StackPanel Orientation="Horizontal">
-                  <TextBlock Foreground="{StaticResource FontColor}" Text="Use regular expressions: "/>
+                  <TextBlock Foreground="{StaticResource FontColor}" Text="Use regular expressions"/>
                 </StackPanel>
               </Label.Content>
             </Label>

@@ -224,8 +224,7 @@
           <TextBlock Text="{Binding Language}" Foreground="{StaticResource FontColor}" FontWeight="Medium" Margin="2"/>
           <ItemsControl ItemsSource="{Binding Items}"
                         VirtualizingPanel.IsVirtualizing="True"
-                        VirtualizingPanel.VirtualizationMode="Recycling"
-                        VirtualizingPanel.ScrollUnit="Pixel">
+                        VirtualizingPanel.VirtualizationMode="Recycling">
             <ItemsControl.Template>
               <ControlTemplate TargetType="ItemsControl">
                 <Border BorderBrush="{StaticResource ControlBackground}" BorderThickness="1">
@@ -572,7 +571,7 @@ RenderOptions.BitmapScalingMode="HighQuality"/>
             <Button.Content>
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyCore;component/Images/Copy.png"
-       RenderOptions.BitmapScalingMode="HighQuality"/>
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Copy Guide"/>
               </StackPanel>
             </Button.Content>
