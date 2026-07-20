@@ -4,24 +4,34 @@ using System;
 
 namespace FsLocalizationPlugin.ViewModels
 {
-    /// <summary>Backs the Modify String window: add, modify, revert, or remove one string by hash or string ID.</summary>
+    /// <summary>
+    /// Backs the Modify String Window: add / modify, revert, or remove a string.
+    /// Typing ID: Fills the hash
+    /// Typing Hash: Looks up the ID in the ID database
+    /// Generate Hash: Picks an unused random hash for a new string.
+    /// </summary>
     public sealed class ModifyStringViewModel : LanguageAwareViewModelBase
     {
         private static readonly string[] StateDependentProperties =
         {
             nameof(IsValid), nameof(IsRemoved), nameof(HasStringValue), nameof(StringValue),
-            nameof(StatusMessage), nameof(IsModified), nameof(ShowIdToHash), nameof(IdToHash),
+            nameof(StatusMessage), nameof(IsModified),
             nameof(CanModify), nameof(CanRevert), nameof(CanRemove),
         };
 
-        private string hashOrId = string.Empty;
+        private static readonly Random Rng = new Random();
+
+        private string hashText = string.Empty;
+        private string idText = string.Empty;
         private string editText = string.Empty;
+        private bool syncingFields;
 
         public ModifyStringViewModel(FsLocalizationStringDatabase database) : base(database)
         {
             ModifyCommand = new RelayCommand(_ => Modify(), _ => CanModify);
             RevertCommand = new RelayCommand(_ => Revert(), _ => CanRevert);
             RemoveCommand = new RelayCommand(_ => Remove(), _ => CanRemove);
+            GenerateHashCommand = new RelayCommand(_ => GenerateHash());
             CopyAboveCommand = new RelayCommand(_ => EditText = StringValue);
             CancelCommand = new RelayCommand(_ => CloseRequested?.Invoke(false));
         }
@@ -29,13 +39,44 @@ namespace FsLocalizationPlugin.ViewModels
         /// <summary>Raised to close the window, with the DialogResult.</summary>
         public event Action<bool?> CloseRequested;
 
-        public string HashOrId
+        /// <summary>The 8-digit hex hash. Editing it looks up the ID in the ID database.</summary>
+        public string HashText
         {
-            get => hashOrId;
+            get => hashText;
             set
             {
-                if (SetProperty(ref hashOrId, value ?? string.Empty))
-                    OnPropertiesChanged(StateDependentProperties);
+                if (!SetProperty(ref hashText, value ?? string.Empty))
+                    return;
+
+                if (!syncingFields)
+                {
+                    syncingFields = true;
+                    if (LocalizationHelper.TryParseHexHash(hashText, out uint hash) && Database.TryGetStringId(hash, out string knownId))
+                        IdText = knownId;
+                    else
+                        IdText = string.Empty;
+                    syncingFields = false;
+                }
+                OnPropertiesChanged(StateDependentProperties);
+            }
+        }
+
+        /// <summary>The string ID text. Editing it fills the hash field.</summary>
+        public string IdText
+        {
+            get => idText;
+            set
+            {
+                if (!SetProperty(ref idText, value ?? string.Empty))
+                    return;
+
+                if (!syncingFields)
+                {
+                    syncingFields = true;
+                    HashText = idText.Length > 0 ? LocalizationHelper.HashStringId(idText).ToString("X8") : string.Empty;
+                    syncingFields = false;
+                }
+                OnPropertiesChanged(StateDependentProperties);
             }
         }
 
@@ -45,7 +86,10 @@ namespace FsLocalizationPlugin.ViewModels
             set => SetProperty(ref editText, value ?? string.Empty);
         }
 
-        private uint? ParsedHash => LocalizationHelper.TryParseHashOrId(HashOrId, out uint hash) ? hash : (uint?)null;
+        private uint? ParsedHash => LocalizationHelper.TryParseHexHash(HashText, out uint hash) ? hash : (uint?)null;
+
+        /// <summary>Whether the typed ID belongs to the typed hash (it always does when the ID filled the hash).</summary>
+        private bool IdMatchesHash => IdText.Length > 0 && ParsedHash is uint hash && LocalizationHelper.HashStringId(IdText) == hash;
 
         public bool IsValid => ParsedHash.HasValue;
 
@@ -62,7 +106,7 @@ namespace FsLocalizationPlugin.ViewModels
             get
             {
                 if (!IsValid)
-                    return "Invalid Hash or String ID";
+                    return "Invalid Hash";
                 if (IsRemoved)
                     return "String is Removed";
                 if (!HasStringValue)
@@ -74,11 +118,6 @@ namespace FsLocalizationPlugin.ViewModels
         /// <summary>Whether the current value is a modification, not the unmodified original.</summary>
         public bool IsModified => ParsedHash is uint hash && Database.isStringEdited(hash);
 
-        /// <summary>Whether HashOrId looks like a string ID (e.g. <c>ID_FLAME</c>) rather than a raw hash.</summary>
-        public bool ShowIdToHash => HashOrId.StartsWith("ID");
-
-        public string IdToHash => LocalizationHelper.HashStringId(HashOrId).ToString("X8");
-
         public bool CanModify => IsValid;
         public bool CanRevert => IsValid && (IsRemoved || IsModified);
         public bool CanRemove => IsValid && HasStringValue;
@@ -86,6 +125,7 @@ namespace FsLocalizationPlugin.ViewModels
         public RelayCommand ModifyCommand { get; }
         public RelayCommand RevertCommand { get; }
         public RelayCommand RemoveCommand { get; }
+        public RelayCommand GenerateHashCommand { get; }
         public RelayCommand CopyAboveCommand { get; }
         public RelayCommand CancelCommand { get; }
 
@@ -94,18 +134,43 @@ namespace FsLocalizationPlugin.ViewModels
             OnPropertiesChanged(StateDependentProperties);
         }
 
+        /// <summary>Picks a random hash not in use.</summary>
+        private void GenerateHash()
+        {
+            byte[] buffer = new byte[4];
+            uint hash;
+            do
+            {
+                Rng.NextBytes(buffer);
+                hash = BitConverter.ToUInt32(buffer, 0);
+            }
+            while (hash == 0 || hash == 0xFFFFFFFF
+                || Database.TryGetString(hash, out string _)
+                || Database.IsStringRemoved(hash)
+                || Database.TryGetStringId(hash, out string _));
+
+            syncingFields = true;
+            HashText = hash.ToString("X8");
+            IdText = string.Empty;
+            syncingFields = false;
+            OnPropertiesChanged(StateDependentProperties);
+        }
+
         private void Modify()
         {
             if (!(ParsedHash is uint hash))
                 return;
 
-            // EditText may contain literal braces (e.g. "{PlayerName}") - pass as an arg, not the format template.
             if (HasStringValue)
                 App.Logger.Log("Flame forged! String {0} modified, value: {1}", hash.ToString("X8"), EditText);
             else
                 App.Logger.Log("Flame forged! String {0} added, value: {1}", hash.ToString("X8"), EditText);
 
-            Database.SetString(hash, EditText);
+            // The string overload records the ID text into the ID database.
+            if (IdMatchesHash)
+                Database.SetString(IdText, EditText);
+            else
+                Database.SetString(hash, EditText);
             OnPropertiesChanged(StateDependentProperties);
             CloseRequested?.Invoke(true);
         }
@@ -131,6 +196,5 @@ namespace FsLocalizationPlugin.ViewModels
             OnPropertiesChanged(StateDependentProperties);
             CloseRequested?.Invoke(true);
         }
-
     }
 }
