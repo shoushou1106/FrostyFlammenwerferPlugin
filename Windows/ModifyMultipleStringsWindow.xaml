@@ -9,8 +9,7 @@
                                mc:Ignorable="d"
                                UseLayoutRounding="True"
                                Title="Modify Multiple Strings - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
-                               FontFamily="Segoe UI Variable Text, Global User Interface"
-        >
+                               FontFamily="Segoe UI Variable Text, Global User Interface">
 
   <!-- View model: ViewModels/ModifyMultipleStringsViewModel.cs -->
 
@@ -48,20 +47,20 @@
           <Label.Content>
             <StackPanel Orientation="Horizontal">
               <TextBlock Margin="0, 1, 5, 0" Text="&#xE721;"
-                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
               <TextBlock Foreground="{StaticResource FontColor}" Text="Find: "/>
             </StackPanel>
           </Label.Content>
         </Label>
 
         <TextBox x:Name="FilterTextBox" Grid.Row="1" Padding="2.5" Margin="5, 2, 5, 2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-               BorderThickness="1"
-               Text="{Binding FilterValue, UpdateSourceTrigger=PropertyChanged}"
-               VerticalScrollBarVisibility="Auto"
-               HorizontalScrollBarVisibility="Auto"
-               TextWrapping="Wrap"
-               AcceptsReturn="True" AcceptsTab="True"/>
+                 BorderThickness="1"
+                 Text="{Binding FilterValue, UpdateSourceTrigger=PropertyChanged}"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True" AcceptsTab="True"/>
         <TextBlock Grid.Row="2" Margin="5, 2, 5, 0" Text="{Binding MatchSummary}" TextWrapping="WrapWithOverflow">
           <TextBlock.Style>
             <Style TargetType="{x:Type TextBlock}">
@@ -92,12 +91,12 @@
           </Label.Content>
         </Label>
         <TextBox x:Name="EditTextBox" Grid.Row="1" Padding="2.5" Margin="5, 2, 5, 2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-               BorderThickness="1"
-               Text="{Binding EditText, UpdateSourceTrigger=PropertyChanged}"
-               VerticalScrollBarVisibility="Auto"
-               HorizontalScrollBarVisibility="Auto"
-               TextWrapping="Wrap"
-               AcceptsReturn="True" AcceptsTab="True"/>
+                 BorderThickness="1"
+                 Text="{Binding EditText, UpdateSourceTrigger=PropertyChanged}"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True" AcceptsTab="True"/>
       </Grid>
 
       <WrapPanel Grid.Row="2" Orientation="Horizontal" Margin="3">
@@ -105,8 +104,8 @@
           <Label.Content>
             <StackPanel Orientation="Horizontal">
               <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;"
-                                     FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                     RenderOptions.BitmapScalingMode="HighQuality"/>
+                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
               <TextBlock Foreground="{StaticResource FontColor}" Text="Language: "/>
             </StackPanel>
           </Label.Content>
@@ -122,7 +121,7 @@
           <Label.Content>
             <StackPanel Orientation="Horizontal">
               <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyCore;component/Images/Settings.png"
-           RenderOptions.BitmapScalingMode="HighQuality"/>
+                     RenderOptions.BitmapScalingMode="HighQuality"/>
               <TextBlock Foreground="{StaticResource FontColor}" Text="Options: "/>
             </StackPanel>
           </Label.Content>
@@ -198,57 +197,54 @@
       </StackPanel>
     </Grid>
 
-    <Grid Grid.Row="1" Height="38">
-      <Grid Margin="5">
-        <DockPanel LastChildFill="False">
-          <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}">
-            <Button.Content>
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0, 1, 5, 0" Text="&#xF3B1;"
-                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                           RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Exit"/>
-              </StackPanel>
-            </Button.Content>
-          </Button>
+    <Grid Grid.Row="1" Margin="5">
+      <DockPanel LastChildFill="False">
+        <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}">
+          <Button.Content>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Margin="0, 1, 5, 0" Text="&#xF3B1;"
+                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
+              <TextBlock Foreground="{StaticResource FontColor}" Text="Exit"/>
+            </StackPanel>
+          </Button.Content>
+        </Button>
 
-          <Button x:Name="ReplaceButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto"
-                  Command="{Binding ReplaceCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
-            <Button.Content>
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0, 1, 5, 0" Text="&#xE70F;"
-           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-           RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Replace"/>
-              </StackPanel>
-            </Button.Content>
-          </Button>
-
-          <Button x:Name="RevertButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto"
+        <WrapPanel DockPanel.Dock="Right">
+          <Button x:Name="RevertButton" Padding="6, 3, 6, 3" Margin="3" Width="Auto"
                   Command="{Binding RevertCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
             <Button.Content>
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Revert.png"
-                     RenderOptions.BitmapScalingMode="HighQuality"/>
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Revert"/>
               </StackPanel>
             </Button.Content>
           </Button>
-
-          <Button x:Name="RemoveButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto"
+          <Button x:Name="RemoveButton" Padding="6, 3, 6, 3" Margin="3" Width="Auto"
                   Command="{Binding RemoveCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
             <Button.Content>
               <StackPanel Orientation="Horizontal">
                 <TextBlock Margin="0, 1, 5, 0" Text="&#xE75C;"
-FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-RenderOptions.BitmapScalingMode="HighQuality"/>
+                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Remove"/>
               </StackPanel>
             </Button.Content>
           </Button>
-
-        </DockPanel>
-      </Grid>
+          <Button x:Name="ReplaceButton" Padding="6, 3, 6, 3" Margin="3" Width="Auto"
+                  Command="{Binding ReplaceCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
+            <Button.Content>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="0, 1, 5, 0" Text="&#xE70F;"
+                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                <TextBlock Foreground="{StaticResource FontColor}" Text="Replace"/>
+              </StackPanel>
+            </Button.Content>
+          </Button>
+        </WrapPanel>
+      </DockPanel>
     </Grid>
   </Grid>
 </local:FlammenwerferWindowBase>

@@ -11,8 +11,7 @@
                                mc:Ignorable="d"
                                UseLayoutRounding="True"
                                Title="Check Compatibility - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
-                               FontFamily="Segoe UI Variable Text, Global User Interface"
-        >
+                               FontFamily="Segoe UI Variable Text, Global User Interface">
   <!-- View model: ViewModels/CheckCompatibilityViewModel.cs -->
 
   <Window.Resources>
@@ -269,8 +268,8 @@
             <Label.Content>
               <StackPanel Orientation="Horizontal">
                 <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;"
-                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                         RenderOptions.BitmapScalingMode="HighQuality"/>
+                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Language: "/>
               </StackPanel>
             </Label.Content>
@@ -289,13 +288,13 @@
                 <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
               <TextBlock Grid.Column="0" Margin="0, 1, 5, 0" Text="&#xEC24;"
-                                 FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                 RenderOptions.BitmapScalingMode="HighQuality"/>
+                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
               <TextBlock Grid.Column="1" Foreground="{StaticResource FontColor}" Text="{Binding Greeting}" TextWrapping="WrapWithOverflow"/>
             </Grid>
           </Label.Content>
         </Label>
-        
+
         <Separator Margin="3, 3, 3, 0"/>
 
         <!-- Shown until a refresh starts (and again after a cancelled one). -->
@@ -317,8 +316,8 @@
                 <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
               <TextBlock Grid.Column="0" Margin="0, 1, 5, 0" Text="&#xE946;"
-                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
               <TextBlock Grid.Column="1" TextWrapping="Wrap" Text="Click Refresh to get started"/>
             </Grid>
           </Label.Content>
@@ -365,10 +364,10 @@
                 <Expander.Content>
                   <StackPanel>
                     <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
-                           Visibility="{Binding UnsupportedCharsTest.HasItems, Converter={StaticResource BoolToVis}}"
-                           Text="These character(s) are bigger than 0xFFFF, not supported by Frostbite FsLocalization format."/>
+                               Visibility="{Binding UnsupportedCharsTest.HasItems, Converter={StaticResource BoolToVis}}"
+                               Text="These character(s) are bigger than 0xFFFF, not supported by Frostbite FsLocalization format."/>
                     <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
-                           Visibility="{Binding UnsupportedCharsTest.HasItems, Converter={StaticResource BoolToVis}}"/>
+                               Visibility="{Binding UnsupportedCharsTest.HasItems, Converter={StaticResource BoolToVis}}"/>
                     <ItemsControl ItemsSource="{Binding UnsupportedCharsTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
                   </StackPanel>
                 </Expander.Content>
@@ -389,10 +388,10 @@
                 <Expander.Content>
                   <StackPanel>
                     <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
-                           Visibility="{Binding ApplyTest.HasItems, Converter={StaticResource BoolToVis}}"
-                           Text="These unhandled exception(s) occurred while applying mod. Your users will encounter the same issue during the Applying Handlers process when launching the game."/>
+                               Visibility="{Binding ApplyTest.HasItems, Converter={StaticResource BoolToVis}}"
+                               Text="These unhandled exception(s) occurred while applying mod. Your users will encounter the same issue during the Applying Handlers process when launching the game."/>
                     <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
-                           Visibility="{Binding ApplyTest.HasItems, Converter={StaticResource BoolToVis}}"/>
+                               Visibility="{Binding ApplyTest.HasItems, Converter={StaticResource BoolToVis}}"/>
                     <ItemsControl ItemsSource="{Binding ApplyTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
                   </StackPanel>
                 </Expander.Content>
@@ -415,14 +414,14 @@
                       </StackPanel>
                     </Label>
                     <Button Grid.Column="1" Padding="6, 3, 6, 3" Margin="3"
-                        Style="{StaticResource DisabledWhileRefreshing}"
-                        Command="{Binding FixUnchangedCommand}"
-                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
-                        Visibility="{Binding UnchangedTest.HasItems, Converter={StaticResource BoolToVis}}">
+                            Style="{StaticResource DisabledWhileRefreshing}"
+                            Command="{Binding FixUnchangedCommand}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                            Visibility="{Binding UnchangedTest.HasItems, Converter={StaticResource BoolToVis}}">
                       <Button.Content>
                         <StackPanel Orientation="Horizontal">
                           <Image Margin="0, 1, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/handyman_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png"
-RenderOptions.BitmapScalingMode="HighQuality"/>
+                                 RenderOptions.BitmapScalingMode="HighQuality"/>
                           <TextBlock Foreground="{StaticResource FontColor}" Text="Fix"/>
                         </StackPanel>
                       </Button.Content>
@@ -432,10 +431,10 @@ RenderOptions.BitmapScalingMode="HighQuality"/>
                 <Expander.Content>
                   <StackPanel>
                     <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
-                           Visibility="{Binding UnchangedTest.HasItems, Converter={StaticResource BoolToVis}}"
-                           Text="These string(s) are modified but identical to their original value. They bloat the mod and may overwrite other mods."/>
+                               Visibility="{Binding UnchangedTest.HasItems, Converter={StaticResource BoolToVis}}"
+                               Text="These string(s) are modified but identical to their original value. They bloat the mod and may overwrite other mods."/>
                     <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
-                           Visibility="{Binding UnchangedTest.HasItems, Converter={StaticResource BoolToVis}}"/>
+                               Visibility="{Binding UnchangedTest.HasItems, Converter={StaticResource BoolToVis}}"/>
                     <ItemsControl ItemsSource="{Binding UnchangedTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
                   </StackPanel>
                 </Expander.Content>
@@ -471,10 +470,10 @@ RenderOptions.BitmapScalingMode="HighQuality"/>
                   <StackPanel>
 
                     <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
-                           Visibility="{Binding HistogramTest.HasItems, Converter={StaticResource BoolToVis}}"
-                           Text="These character(s) does not exist in histogram. Your user need to install Flammenwerfer Plugin in order to display these characters."/>
+                               Visibility="{Binding HistogramTest.HasItems, Converter={StaticResource BoolToVis}}"
+                               Text="These character(s) does not exist in histogram. Your user need to install Flammenwerfer Plugin in order to display these characters."/>
                     <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
-                           Visibility="{Binding HistogramTest.HasItems, Converter={StaticResource BoolToVis}}"/>
+                               Visibility="{Binding HistogramTest.HasItems, Converter={StaticResource BoolToVis}}"/>
                     <ItemsControl ItemsSource="{Binding HistogramTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
                   </StackPanel>
                 </Expander.Content>
@@ -495,10 +494,10 @@ RenderOptions.BitmapScalingMode="HighQuality"/>
                 <Expander.Content>
                   <StackPanel>
                     <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
-                           Visibility="{Binding ExtendedFeatureTest.HasItems, Converter={StaticResource BoolToVis}}"
-                           Text="These string(s) are removed. Your user need to install Flammenwerfer Plugin v0.4.0 or later, otherwise these string(s) will not be removed and displaying their original value."/>
+                               Visibility="{Binding ExtendedFeatureTest.HasItems, Converter={StaticResource BoolToVis}}"
+                               Text="These string(s) are removed. Your user need to install Flammenwerfer Plugin v0.4.0 or later, otherwise these string(s) will not be removed and displaying their original value."/>
                     <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
-                           Visibility="{Binding ExtendedFeatureTest.HasItems, Converter={StaticResource BoolToVis}}"/>
+                               Visibility="{Binding ExtendedFeatureTest.HasItems, Converter={StaticResource BoolToVis}}"/>
                     <ItemsControl ItemsSource="{Binding ExtendedFeatureTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
                     <!-- For newer format versions in the future, add another explanation + list here. -->
                   </StackPanel>
@@ -517,8 +516,8 @@ RenderOptions.BitmapScalingMode="HighQuality"/>
                 <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
               <TextBlock Grid.Column="0" Margin="0, 1, 5, 0" Text="&#xE946;"
-                                     FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                     RenderOptions.BitmapScalingMode="HighQuality"/>
+                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
               <TextBlock Grid.Column="1" Foreground="{StaticResource FontColor}" TextWrapping="Wrap" Text="This is an example of guiding user for download Flammenwerfer Plugin to use in your mod description. Your user do not need it if your mod passed FsLocalization Loader Plugin Compatibility test."/>
             </Grid>
           </Label.Content>

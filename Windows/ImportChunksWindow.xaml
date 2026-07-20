@@ -12,8 +12,7 @@
                                AllowDrop="True"
                                DragEnter="Window_DragEnter"
                                DragLeave="Window_DragLeave"
-                               FontFamily="Segoe UI Variable Text, Global User Interface"
-        >
+                               FontFamily="Segoe UI Variable Text, Global User Interface">
   <!-- View model: ViewModels/ImportChunksViewModel.cs -->
 
   <Window.Resources>
@@ -38,7 +37,7 @@
             <Label.Content>
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Database.png"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Binary Strings: "/>
               </StackPanel>
             </Label.Content>
@@ -47,7 +46,7 @@
             <Button.Content>
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Browse"/>
               </StackPanel>
             </Button.Content>
@@ -68,14 +67,13 @@
             </Label.Content>
           </Label>
           <TextBox Padding="2.5" Margin="2" Width="Auto"
-        BorderThickness="1"
-        Text="{Binding BinaryFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-        AcceptsTab="False"
-        AcceptsReturn="False"
-        AutoWordSelection="False"
-        VerticalScrollBarVisibility="Disabled"
-        HorizontalScrollBarVisibility="Disabled"
-        >
+                   BorderThickness="1"
+                   Text="{Binding BinaryFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   AcceptsTab="False"
+                   AcceptsReturn="False"
+                   AutoWordSelection="False"
+                   VerticalScrollBarVisibility="Disabled"
+                   HorizontalScrollBarVisibility="Disabled">
           </TextBox>
         </WrapPanel>
 
@@ -84,7 +82,7 @@
             <Label.Content>
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Grid.png"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Histogram: "/>
               </StackPanel>
             </Label.Content>
@@ -93,7 +91,7 @@
             <Button.Content>
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Browse"/>
               </StackPanel>
             </Button.Content>
@@ -114,14 +112,13 @@
             </Label.Content>
           </Label>
           <TextBox Padding="2.5" Margin="2" Width="Auto"
-                    BorderThickness="1"
-                    Text="{Binding HistogramFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    AcceptsTab="False"
-                    AcceptsReturn="False"
-                    AutoWordSelection="False"
-                    VerticalScrollBarVisibility="Disabled"
-                    HorizontalScrollBarVisibility="Disabled"
-                    >
+                   BorderThickness="1"
+                   Text="{Binding HistogramFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   AcceptsTab="False"
+                   AcceptsReturn="False"
+                   AutoWordSelection="False"
+                   VerticalScrollBarVisibility="Disabled"
+                   HorizontalScrollBarVisibility="Disabled">
           </TextBox>
         </WrapPanel>
 
@@ -130,8 +127,8 @@
             <Label.Content>
               <StackPanel Orientation="Horizontal">
                 <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;"
-                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Language: "/>
               </StackPanel>
             </Label.Content>
@@ -156,7 +153,7 @@
           <WrapPanel Orientation="Vertical" Margin="15, 0, 0, 0">
             <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
               <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                  IsChecked="{Binding NoImportEmptyOrNull}"/>
+                        IsChecked="{Binding NoImportEmptyOrNull}"/>
               <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
                 <Label.Content>
                   <StackPanel Orientation="Horizontal">
@@ -168,7 +165,7 @@
 
             <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
               <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                  IsChecked="{Binding DeleteExistingStrings}"/>
+                        IsChecked="{Binding DeleteExistingStrings}"/>
               <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
                 <Label.Content>
                   <StackPanel Orientation="Horizontal">
@@ -189,7 +186,7 @@
                 </Style>
               </WrapPanel.Style>
               <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                  IsChecked="{Binding NoOverwriteSameStrings}"/>
+                        IsChecked="{Binding NoOverwriteSameStrings}"/>
               <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
                 <Label.Content>
                   <StackPanel Orientation="Horizontal">
@@ -202,50 +199,36 @@
         </StackPanel>
       </StackPanel>
     </ScrollViewer>
-    <Grid x:Name="NormalFooterGrid" Grid.Row="1" Height="38">
-      <Grid Margin="5">
-        <DockPanel LastChildFill="False">
-          <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}">
-            <Button.Content>
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0, 1, 5, 0" Text="&#xF3B1;"
-                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                           RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Cancel"/>
-              </StackPanel>
-            </Button.Content>
-          </Button>
+    <Grid x:Name="NormalFooterGrid" Grid.Row="1" Margin="5">
+      <DockPanel LastChildFill="False">
+        <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}">
+          <Button.Content>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Margin="0, 1, 5, 0" Text="&#xF3B1;"
+                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
+              <TextBlock Foreground="{StaticResource FontColor}" Text="Cancel"/>
+            </StackPanel>
+          </Button.Content>
+        </Button>
 
-          <Button x:Name="ConfirmButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto"
-                            Command="{Binding ImportCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
-            <Button.Content>
-              <StackPanel Orientation="Horizontal">
-                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Import.png"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Import"/>
-              </StackPanel>
-            </Button.Content>
-          </Button>
-
-          <Button x:Name="StartOverButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto" Command="{Binding StartOverCommand}">
-            <Button.Content>
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0, 1, 5, 0" Text="&#xe72c;"
-                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Start Over"/>
-              </StackPanel>
-            </Button.Content>
-          </Button>
-
-        </DockPanel>
-      </Grid>
+        <Button x:Name="ConfirmButton" DockPanel.Dock="Right" Padding="6, 3, 6, 3" Margin="3" Width="Auto"
+                Command="{Binding ImportCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
+          <Button.Content>
+            <StackPanel Orientation="Horizontal">
+              <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Import.png"
+                     RenderOptions.BitmapScalingMode="HighQuality"/>
+              <TextBlock Foreground="{StaticResource FontColor}" Text="Import"/>
+            </StackPanel>
+          </Button.Content>
+        </Button>
+      </DockPanel>
     </Grid>
 
     <Grid x:Name="DragOverlayGrid" Grid.Row="0" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="1"/>
+        <ColumnDefinition Width="Auto"/>
         <ColumnDefinition Width="*"/>
       </Grid.ColumnDefinitions>
       <Grid.RowDefinitions>
@@ -261,7 +244,7 @@
         <TextBlock Grid.Row="1" Text="Drop here for" Foreground="{StaticResource FontColor}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         <TextBlock Grid.Row="2" Text="Binary Strings" Foreground="{StaticResource FontColor}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
       </Grid>
-      <Border Grid.Column="1" Background="{StaticResource ControlBackground}"/>
+      <Border Grid.Column="1" Width="1" Background="{StaticResource ControlBackground}"/>
       <Grid x:Name="HistogramDropZone" Grid.Column="2" AllowDrop="True" Drop="HistogramDropZone_Drop" Background="{StaticResource ListBackground}">
         <Grid.RowDefinitions>
           <RowDefinition Height="*"/>
@@ -274,27 +257,19 @@
       </Grid>
     </Grid>
 
-    <Grid x:Name="DragFooterGrid" Grid.Row="1" Height="38" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*"/>
-      </Grid.ColumnDefinitions>
-      <Grid.RowDefinitions>
-        <RowDefinition Height="*"/>
-      </Grid.RowDefinitions>
-      <Grid Margin="5">
-        <DockPanel LastChildFill="False">
-          <Button x:Name="BackFromDragButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Click="BackFromDragButton_Click">
-            <Button.Content>
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0,1,5,0" Text="&#xE72B;"
-                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Back"/>
-              </StackPanel>
-            </Button.Content>
-          </Button>
-        </DockPanel>
-      </Grid>
+    <Grid x:Name="DragFooterGrid" Grid.Row="1" Margin="5" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+      <DockPanel LastChildFill="False">
+        <Button x:Name="BackFromDragButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Click="BackFromDragButton_Click">
+          <Button.Content>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Margin="0,1,5,0" Text="&#xE72B;"
+                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
+              <TextBlock Foreground="{StaticResource FontColor}" Text="Back"/>
+            </StackPanel>
+          </Button.Content>
+        </Button>
+      </DockPanel>
     </Grid>
 
   </Grid>

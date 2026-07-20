@@ -9,8 +9,7 @@
                                mc:Ignorable="d"
                                UseLayoutRounding="True"
                                Title="Export Chunks to Files - Flammenwerfer" SizeToContent="Height" MaxHeight="850" Width="400"
-                               FontFamily="Segoe UI Variable Text, Global User Interface"
-        >
+                               FontFamily="Segoe UI Variable Text, Global User Interface">
   <!-- View model: ViewModels/ExportChunksViewModel.cs (+ ViewModels/LanguageExportOptions.cs) -->
 
   <Window.Resources>
@@ -46,9 +45,9 @@
             <ColumnDefinition Width="*"/>
           </Grid.ColumnDefinitions>
           <TextBlock Grid.Column="0" Margin="0, 1, 5, 0" Text="&#xE783;"
-                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                       RenderOptions.BitmapScalingMode="HighQuality"
-                       Foreground="Red"/>
+                     FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                     RenderOptions.BitmapScalingMode="HighQuality"
+                     Foreground="Red"/>
           <TextBlock Grid.Column="1" Foreground="Red" TextWrapping="WrapWithOverflow" Text="No modified language found. This window is designed to export modified strings. Please close this window."/>
         </Grid>
       </Label.Content>
@@ -70,16 +69,16 @@
             <Label.Content>
               <StackPanel Orientation="Horizontal">
                 <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;"
-                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Language: "/>
               </StackPanel>
             </Label.Content>
           </Label>
           <ComboBox x:Name="LanguageComboBox" MinWidth="140" Width="Auto" Margin="2"
-                          ItemsSource="{Binding LanguageOptions}"
-                          SelectedItem="{Binding SelectedLanguageOption}"
-                          DisplayMemberPath="Language">
+                    ItemsSource="{Binding LanguageOptions}"
+                    SelectedItem="{Binding SelectedLanguageOption}"
+                    DisplayMemberPath="Language">
           </ComboBox>
         </WrapPanel>
 
@@ -88,7 +87,7 @@
             <Label.Content>
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Database.png"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="Binary Strings: "/>
               </StackPanel>
             </Label.Content>
@@ -100,20 +99,20 @@
                 <Label.Content>
                   <StackPanel Orientation="Horizontal">
                     <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Export.png"
-                                        RenderOptions.BitmapScalingMode="HighQuality"/>
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Foreground="{StaticResource FontColor}" Text="Export: "/>
                   </StackPanel>
                 </Label.Content>
               </Label>
               <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                  IsChecked="{Binding SelectedLanguageOption.ExportBinary, Mode=TwoWay}"/>
+                        IsChecked="{Binding SelectedLanguageOption.ExportBinary, Mode=TwoWay}"/>
             </WrapPanel>
             <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" IsEnabled="{Binding SelectedLanguageOption.ExportBinary}">
               <Label Width="Auto">
                 <Label.Content>
                   <StackPanel Orientation="Horizontal">
                     <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyCore;component/Images/Assets/BlankFileType.png"
-                                        RenderOptions.BitmapScalingMode="HighQuality"/>
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Foreground="{StaticResource FontColor}" Text="Path: "/>
                   </StackPanel>
                 </Label.Content>
@@ -122,20 +121,19 @@
                 <Button.Content>
                   <StackPanel Orientation="Horizontal">
                     <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
-                                        RenderOptions.BitmapScalingMode="HighQuality"/>
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Foreground="{StaticResource FontColor}" Text="Browse"/>
                   </StackPanel>
                 </Button.Content>
               </Button>
               <TextBox Padding="2.5" Margin="2" Width="Auto"
-                            BorderThickness="1"
-                            Text="{Binding SelectedLanguageOption.BinaryPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                            AcceptsTab="False"
-                            AcceptsReturn="False"
-                            AutoWordSelection="False"
-                            VerticalScrollBarVisibility="Disabled"
-                            HorizontalScrollBarVisibility="Disabled"
-                            >
+                       BorderThickness="1"
+                       Text="{Binding SelectedLanguageOption.BinaryPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       AcceptsTab="False"
+                       AcceptsReturn="False"
+                       AutoWordSelection="False"
+                       VerticalScrollBarVisibility="Disabled"
+                       HorizontalScrollBarVisibility="Disabled">
               </TextBox>
             </WrapPanel>
           </WrapPanel>
@@ -159,20 +157,20 @@
                 <Label.Content>
                   <StackPanel Orientation="Horizontal">
                     <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Export.png"
-                            RenderOptions.BitmapScalingMode="HighQuality"/>
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Foreground="{StaticResource FontColor}" Text="Export: "/>
                   </StackPanel>
                 </Label.Content>
               </Label>
               <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                  IsChecked="{Binding SelectedLanguageOption.ExportHistogram, Mode=TwoWay}"/>
+                        IsChecked="{Binding SelectedLanguageOption.ExportHistogram, Mode=TwoWay}"/>
             </WrapPanel>
             <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" IsEnabled="{Binding SelectedLanguageOption.ExportHistogram}">
               <Label Width="Auto">
                 <Label.Content>
                   <StackPanel Orientation="Horizontal">
                     <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyCore;component/Images/Assets/BlankFileType.png"
-                            RenderOptions.BitmapScalingMode="HighQuality"/>
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Foreground="{StaticResource FontColor}" Text="Path: "/>
                   </StackPanel>
                 </Label.Content>
@@ -181,20 +179,19 @@
                 <Button.Content>
                   <StackPanel Orientation="Horizontal">
                     <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
-                            RenderOptions.BitmapScalingMode="HighQuality"/>
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Foreground="{StaticResource FontColor}" Text="Browse"/>
                   </StackPanel>
                 </Button.Content>
               </Button>
               <TextBox Padding="2.5" Margin="2" Width="Auto"
-                BorderThickness="1"
-                Text="{Binding SelectedLanguageOption.HistogramPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                AcceptsTab="False"
-                AcceptsReturn="False"
-                AutoWordSelection="False"
-                VerticalScrollBarVisibility="Disabled"
-                HorizontalScrollBarVisibility="Disabled"
-                >
+                       BorderThickness="1"
+                       Text="{Binding SelectedLanguageOption.HistogramPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       AcceptsTab="False"
+                       AcceptsReturn="False"
+                       AutoWordSelection="False"
+                       VerticalScrollBarVisibility="Disabled"
+                       HorizontalScrollBarVisibility="Disabled">
               </TextBox>
             </WrapPanel>
           </WrapPanel>
@@ -216,32 +213,30 @@
               </StackPanel>
             </Button.Content>
           </Button>
-
-          <Button x:Name="ConfirmButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto"
-                            Command="{Binding ExportCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
-            <Button.Content>
-              <StackPanel Orientation="Horizontal">
-                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Export.png"
-                                   RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Export"/>
-              </StackPanel>
-            </Button.Content>
-          </Button>
-
-          <Button x:Name="StartOverButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto" Command="{Binding StartOverCommand}">
-            <Button.Content>
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0, 1, 5, 0" Text="&#xe72c;"
-                                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Start Over"/>
-              </StackPanel>
-            </Button.Content>
-          </Button>
-
+          <WrapPanel DockPanel.Dock="Right">
+            <Button x:Name="StartOverButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Right" Width="Auto" Command="{Binding StartOverCommand}">
+              <Button.Content>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Margin="0, 1, 5, 0" Text="&#xe72c;"
+                             FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                             RenderOptions.BitmapScalingMode="HighQuality"/>
+                  <TextBlock Foreground="{StaticResource FontColor}" Text="Start Over"/>
+                </StackPanel>
+              </Button.Content>
+            </Button>
+            <Button x:Name="ConfirmButton" Padding="6, 3, 6, 3" Margin="3" Width="Auto"
+                    Command="{Binding ExportCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
+              <Button.Content>
+                <StackPanel Orientation="Horizontal">
+                  <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Export.png"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
+                  <TextBlock Foreground="{StaticResource FontColor}" Text="Export"/>
+                </StackPanel>
+              </Button.Content>
+            </Button>
+          </WrapPanel>
         </DockPanel>
       </Grid>
     </Grid>
-
   </Grid>
 </local:FlammenwerferWindowBase>

@@ -24,7 +24,6 @@ namespace FsLocalizationPlugin.ViewModels
         public ImportChunksViewModel(FsLocalizationStringDatabase database) : base(database)
         {
             BrowseCommand = new RelayCommand(kind => Browse((string)kind));
-            StartOverCommand = new RelayCommand(_ => StartOver());
             ImportCommand = new RelayCommand(owner => Import((Window)owner), _ => CanImport);
             CancelCommand = new RelayCommand(_ => CloseRequested?.Invoke(false));
         }
@@ -90,12 +89,6 @@ namespace FsLocalizationPlugin.ViewModels
                 BinaryFilePath = dialog.FileName;
             else if (kind == "Histogram")
                 HistogramFilePath = dialog.FileName;
-        }
-
-        private void StartOver()
-        {
-            BinaryFilePath = string.Empty;
-            HistogramFilePath = string.Empty;
         }
 
         private void Import(Window owner)
