@@ -221,6 +221,10 @@ namespace FsLocalizationPlugin.ViewModels
                     cancelled = true;
                     App.Logger.Log("Crystallization interrupted! Export to chunk files canceled");
                 }
+                catch (Exception ex)
+                {
+                    FrostyExceptionBox.Show(ex, "Export Chunks to Files - Flammenwerfer");
+                }
                 finally
                 {
                     // Restore the original language whether this finished, cancelled, or threw.

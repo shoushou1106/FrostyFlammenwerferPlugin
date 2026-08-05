@@ -202,6 +202,11 @@ namespace FsLocalizationPlugin.ViewModels
                 {
                     cancelled = true;
                 }
+                catch (Exception ex)
+                {
+                    FrostyExceptionBox.Show(ex, "Import Chunks from Files - Flammenwerfer");
+                    cancelled = true;
+                }
             }, showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
 
             if (cancelled)
