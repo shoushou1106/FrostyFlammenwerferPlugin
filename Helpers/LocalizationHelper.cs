@@ -36,34 +36,42 @@ namespace FsLocalizationPlugin.Helpers
             return result;
         }
 
-        /// <summary>Resolves a string ID (<c>ID_FLAME</c>), bare 8-digit hex hash, or 0x-prefixed hex hash into its 32-bit hash.</summary>
-        public static bool TryParseHashOrId(string hashOrId, out uint hash)
+        /// <summary>Parse a string hex hash as uint</summary>
+        /// <param name="input">Input hex, can be 8 hex digits or 0x plus 8 hex digits</param>
+        public static bool TryParseHexHash(string input, out uint hash)
         {
             hash = 0;
-            if (hashOrId == null)
+            if (input == null)
                 return false;
 
-            try
+            string hex = input;
+            if (input.Length == 10 && (input.StartsWith("0x") || input.StartsWith("0X")))
+                hex = input.Substring(2);
+            else if (input.Length != 8)
+                return false;
+
+            return uint.TryParse(hex, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out hash);
+        }
+
+        /// <summary>Auto detects and resolves a hex hash (see <see cref="TryParseHexHash"/>) or any other text as a string ID into its uint hash.</summary>
+        public static bool TryParseHashOrId(string hashOrId, out uint hash)
+        {
+            return TryParseHashOrId(hashOrId, out hash, out bool _);
+        }
+
+        /// <summary>Auto detects and resolves a hex hash (see <see cref="TryParseHexHash"/>) or any other text as a string ID into its uint hash. Reports whether the input was treated as ID text or a raw hash.</summary>
+        public static bool TryParseHashOrId(string hashOrId, out uint hash, out bool isStringId)
+        {
+            isStringId = false;
+
+            if (TryParseHexHash(hashOrId, out hash))
+                return true;
+
+            if (!string.IsNullOrEmpty(hashOrId))
             {
-                if (hashOrId.StartsWith("ID"))
-                {
-                    hash = HashStringId(hashOrId);
-                    return true;
-                }
-                if (hashOrId.Length == 8)
-                {
-                    hash = Convert.ToUInt32(hashOrId, 16);
-                    return true;
-                }
-                if (hashOrId.Length == 10 && (hashOrId.StartsWith("0x") || hashOrId.StartsWith("0X")))
-                {
-                    hash = Convert.ToUInt32(hashOrId.Remove(0, 2), 16);
-                    return true;
-                }
-            }
-            catch
-            {
-                // Malformed or out-of-range hex - unparsable.
+                hash = HashStringId(hashOrId);
+                isStringId = true;
+                return true;
             }
             return false;
         }

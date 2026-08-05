@@ -4,7 +4,7 @@
     <Platforms>x64</Platforms>
     <TargetFrameworks>net48</TargetFrameworks>
     <LangVersion>7.3</LangVersion>
-    <!-- AssemblyName is set to FsLocalizationPlugin on purpose, renamed after build. -->
+    <!-- AssemblyName is set to FsLocalizationPlugin on purpose, renamed after build -->
     <AssemblyName>FsLocalizationPlugin</AssemblyName>
     <AssemblyTitle>FlammenwerferPlugin</AssemblyTitle>
     <Product>Frosty Flammenwerfer Plugin</Product>
@@ -102,6 +102,8 @@
     <Resource Include="Images\find_replace_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
     <Resource Include="Images\frame_bug_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
     <Resource Include="Images\handyman_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
+    <Resource Include="Images\label_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
+    <Resource Include="Images\shuffle_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
     <Resource Include="Images\tag_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
   </ItemGroup>
 

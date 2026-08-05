@@ -62,7 +62,7 @@
           </Label.Content>
         </Label>
         <!-- Consolas font, each character 8 width, 8 * 8 = 64 -->
-        <TextBox Padding="2.5" Margin="2" Width="Auto" MinWidth="64"
+        <TextBox Padding="2.5" Margin="2" Width="Auto" MinWidth="65"
                  BorderThickness="1"
                  Text="{Binding HashText, UpdateSourceTrigger=PropertyChanged}"
                  AcceptsTab="False"
