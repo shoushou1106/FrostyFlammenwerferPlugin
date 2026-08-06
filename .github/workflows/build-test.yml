@@ -141,8 +141,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: FlammenwerferPlugin - ${{ matrix.versionLabel }} - ${{ github.run_number }}
-          path: |
-            FrostyFlammenwerferPlugin\bin\DeveloperDebug\${{ matrix.suffix }}\FsLocalizationPlugin.dll
-            FrostyFlammenwerferPlugin\bin\DeveloperDebug\${{ matrix.suffix }}\FsLocalizationPlugin.pdb
+          path: FrostyFlammenwerferPlugin\bin\DeveloperDebug\${{ matrix.suffix }}\FsLocalizationPlugin.dll
           retention-days: 90
           if-no-files-found: error

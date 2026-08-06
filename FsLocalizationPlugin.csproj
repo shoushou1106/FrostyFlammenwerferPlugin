@@ -3,28 +3,39 @@
     <Configurations>Debug - 1.0.6.2 or Earlier;Debug - 1.0.6.3 or Later;Debug - 1.0.7;Release - 1.0.6.2 or Earlier;Release - 1.0.6.3 or Later;Release - 1.0.7</Configurations>
     <Platforms>x64</Platforms>
     <TargetFrameworks>net48</TargetFrameworks>
-    <LangVersion>7.3</LangVersion>
     <!-- AssemblyName is set to FsLocalizationPlugin on purpose, renamed after build -->
     <AssemblyName>FsLocalizationPlugin</AssemblyName>
     <AssemblyTitle>FlammenwerferPlugin</AssemblyTitle>
+    <PackageId>FrostyFlammenwerferPlugin</PackageId>
+    <PackageId>FrostyFlammenwerferPlugin</PackageId>
     <Product>Frosty Flammenwerfer Plugin</Product>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Title>Frosty Flammenwerfer Plugin</Title>
     <UseWPF>true</UseWPF>
     <OutputType>Library</OutputType>
-    <Title>Frosty Flammenwerfer Plugin</Title>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    <EnableNETAnalyzers>True</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Version>0.4.0</Version>
     <FileVersion>0.4.0</FileVersion>
+    <AssemblyVersion>0.4.0</AssemblyVersion>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>shoushou1106</Authors>
+    <RepositoryUrl>https://github.com/shoushou1106/FrostyFlammenwerferPlugin/</RepositoryUrl>
     <PackageProjectUrl>https://github.com/shoushou1106/FrostyFlammenwerferPlugin/</PackageProjectUrl>
     <Copyright>GPL-3.0</Copyright>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/shoushou1106/FrostyFlammenwerferPlugin/</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <IsPublishable>False</IsPublishable>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - 1.0.7|x64' ">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - 1.0.7|x64'">
     <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
+    <EmbedAllSources>true</EmbedAllSources>
+    <XamlDebuggingInformation>True</XamlDebuggingInformation>
     <OutputPath>bin\DeveloperDebug\1.0.7\</OutputPath>
     <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_107</DefineConstants>
     <IsDebug>true</IsDebug>
@@ -32,6 +43,9 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - 1.0.6.3 or Later|x64'">
     <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
+    <EmbedAllSources>true</EmbedAllSources>
+    <XamlDebuggingInformation>True</XamlDebuggingInformation>
     <OutputPath>bin\DeveloperDebug\1.0.6.3orLater\</OutputPath>
     <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_1063_LATER</DefineConstants>
     <IsDebug>true</IsDebug>
@@ -39,6 +53,9 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - 1.0.6.2 or Earlier|x64'">
     <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
+    <EmbedAllSources>true</EmbedAllSources>
+    <XamlDebuggingInformation>True</XamlDebuggingInformation>
     <OutputPath>bin\DeveloperDebug\1.0.6.2orEarlier\</OutputPath>
     <DefineConstants>DEBUG;TRACE;FROSTY_DEVELOPER;FROSTY_1062_EARLIER</DefineConstants>
     <IsDebug>true</IsDebug>
@@ -47,6 +64,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.7|x64'">
     <OutputPath>bin\ReleaseFinal\1.0.7\</OutputPath>
     <DefineConstants>TRACE;FROSTY_107</DefineConstants>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <IsDebug>false</IsDebug>
   </PropertyGroup>
@@ -54,6 +72,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.6.3 or Later|x64'">
     <OutputPath>bin\ReleaseFinal\1.0.6.3orLater\</OutputPath>
     <DefineConstants>TRACE;FROSTY_1063_LATER</DefineConstants>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <IsDebug>false</IsDebug>
   </PropertyGroup>
@@ -61,38 +80,42 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - 1.0.6.2 or Earlier|x64'">
     <OutputPath>bin\ReleaseFinal\1.0.6.2orEarlier\</OutputPath>
     <DefineConstants>TRACE;FROSTY_1062_EARLIER</DefineConstants>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <IsDebug>false</IsDebug>
   </PropertyGroup>
 
-  <!-- Integrated Workflow detection -->
+  <!-- Integrated Workflow Detection -->
   <PropertyGroup>
     <IsIntegratedWorkflow>false</IsIntegratedWorkflow>
     <IsIntegratedWorkflow Condition="Exists('..\..\Plugins\') And Exists('..\..\FrostyPlugin\FrostyCore.csproj')">true</IsIntegratedWorkflow>
-  </PropertyGroup>
-
-  <!-- Integrated Workflow only -->
-  <Target Name="CopyPluginDebug" AfterTargets="PostBuildEvent" Condition="$(IsIntegratedWorkflow) And $(IsDebug)">
-    <!-- Not renaming for debug -->
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SolutionDir)\bin\Developer\Debug\Plugins\" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SolutionDir)..\FrostyModManager\bin\Developer\Debug\Plugins\" SkipUnchangedFiles="true" />
-    <!-- Copy PDB -->
-    <Copy SourceFiles="$(OutputPath)\FsLocalizationPlugin.pdb" DestinationFolder="$(SolutionDir)\bin\Developer\Debug\Plugins\" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(OutputPath)\FsLocalizationPlugin.pdb" DestinationFolder="$(SolutionDir)..\FrostyModManager\bin\Developer\Debug\Plugins\" SkipUnchangedFiles="true" />
-  </Target>
-  <Target Name="CopyPluginRelease" AfterTargets="PostBuildEvent" Condition="$(IsIntegratedWorkflow) And !$(IsDebug)">
-    <!-- Rename for end-user experience -->
-    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(SolutionDir)\bin\Release\Final\Plugins\FlammenwerferPlugin.dll" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(SolutionDir)..\FrostyModManager\bin\Release\Final\Plugins\FlammenwerferPlugin.dll" SkipUnchangedFiles="true" />
-  </Target>
-
-  <PropertyGroup>
     <!-- Separate Workflow fallback -->
     <FrostyProjPath>..\FrostyToolsuite</FrostyProjPath>
     <!-- Integrated Workflow -->
     <FrostyProjPath Condition="$(IsIntegratedWorkflow)">..\..</FrostyProjPath>
   </PropertyGroup>
-
+ 
+  <Target Name="CopyPluginIntegratedDebug" AfterTargets="PostBuildEvent" Condition="$(IsIntegratedWorkflow) And $(IsDebug)">
+    <!-- Not renaming for debug -->
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(FrostyProjPath)\FrostyEditor\bin\Developer\Debug\Plugins\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(FrostyProjPath)\FrostyModManager\FrostyModManager\bin\Developer\Debug\Plugins\" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="CopyPluginIntegratedRelease" AfterTargets="PostBuildEvent" Condition="$(IsIntegratedWorkflow) And !$(IsDebug)">
+    <!-- Rename for end-user experience -->
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(FrostyProjPath)\FrostyEditor\bin\Release\Final\Plugins\FlammenwerferPlugin.dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(FrostyProjPath)\FrostyModManager\bin\Release\Final\Plugins\FlammenwerferPlugin.dll" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="CopyPluginSeparateDebug" AfterTargets="PostBuildEvent" Condition="!$(IsIntegratedWorkflow) And $(IsDebug)">
+    <!-- Not renaming for debug -->
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(FrostyProjPath)\FrostyEditor\bin\Developer\Debug\Plugins\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(FrostyProjPath)\FrostyModManager\bin\Developer\Debug\Plugins\" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="CopyPluginSeparateRelease" AfterTargets="PostBuildEvent" Condition="!$(IsIntegratedWorkflow) And !$(IsDebug)">
+    <!-- Rename for end-user experience -->
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(FrostyProjPath)\FrostyEditor\bin\Release\Final\Plugins\FlammenwerferPlugin.dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(FrostyProjPath)\FrostyModManager\bin\Release\Final\Plugins\FlammenwerferPlugin.dll" SkipUnchangedFiles="true" />
+  </Target>
+  
   <ItemGroup>
     <Resource Include="Images\block_32dp_FFFFFF_FILL1_wght600_GRAD-25_opsz24.png" />
     <Resource Include="Images\cancel_32dp_EA3323_FILL1_wght600_GRAD-25_opsz24.png" />

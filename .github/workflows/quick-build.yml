@@ -169,20 +169,16 @@ jobs:
           $outputPath = "${{ steps.params.outputs.output-path }}"
           $config = "${{ steps.params.outputs.config }}"
           $dll = Join-Path $outputPath "FsLocalizationPlugin.dll"
-          $pdb = Join-Path $outputPath "FsLocalizationPlugin.pdb"
           if (-not (Test-Path $dll)) { throw "Expected build output not found: $dll" }
 
           if ($config.StartsWith("Release")) {
             # Mirrors the Integrated Workflow's rename, which doesn't fire in this sibling-folder layout.
-            # No pdb for Release - matches what a real shipped build looks like.
             $renamedDll = Join-Path $outputPath "FlammenwerferPlugin.dll"
             Copy-Item $dll $renamedDll -Force
             "dll-path=$renamedDll" >> $env:GITHUB_OUTPUT
-            "pdb-path=" >> $env:GITHUB_OUTPUT
           } else {
-            # Debug build - keep the real assembly name, ship the pdb for debugging.
+            # Debug build - keep the real assembly name.
             "dll-path=$dll" >> $env:GITHUB_OUTPUT
-            "pdb-path=$pdb" >> $env:GITHUB_OUTPUT
           }
 
       - name: Upload DLL
@@ -190,14 +186,5 @@ jobs:
         with:
           name: FlammenwerferPlugin - ${{ steps.params.outputs.config }} - ${{ github.run_number }}
           path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.dll-path }}
-          retention-days: 90
-          if-no-files-found: error
-
-      - name: Upload PDB (Debug only)
-        if: steps.package.outputs.pdb-path != ''
-        uses: actions/upload-artifact@v7
-        with:
-          name: FlammenwerferPlugin - ${{ steps.params.outputs.config }} - ${{ github.run_number }} (pdb)
-          path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.pdb-path }}
           retention-days: 90
           if-no-files-found: error

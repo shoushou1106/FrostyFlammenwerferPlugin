@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Frosty Editor (Separate)": {
+      "commandName": "Executable",
+      "executablePath": ".\\FrostyEditor.exe",
+      "workingDirectory": "..\\FrostyToolsuite\\FrostyEditor\\bin\\Developer\\Debug\\"
+    },
+    "Frosty Mod Manager (Separate)": {
+      "commandName": "Executable",
+      "executablePath": ".\\FrostyModManager.exe",
+      "workingDirectory": "..\\FrostyToolsuite\\FrostyModManager\\bin\\Developer\\Debug\\"
+    }
+  }
+}

@@ -206,7 +206,7 @@ jobs:
           if (-not (Test-Path $dll)) { throw "Expected build output not found: $dll" }
 
           # The dll itself always keeps this exact name, inside the zip and on disk.
-          # Only the zip (and, for Debug, the standalone pdb) get the version/Frosty-target naming.
+          # Only the zip gets the version/Frosty-target naming.
           $renamedDll = Join-Path $outputPath "FlammenwerferPlugin.dll"
           Copy-Item $dll $renamedDll -Force
 
@@ -216,34 +216,11 @@ jobs:
           Compress-Archive -Path $renamedDll -DestinationPath $zipName -Force
           "zip-name=$zipName" >> $env:GITHUB_OUTPUT
 
-          if ("${{ inputs.build_type }}" -eq "Debug") {
-            # Debug build - ship the pdb too, unzipped. Release never ships a pdb.
-            $pdb = Join-Path $outputPath "FsLocalizationPlugin.pdb"
-            if (Test-Path $pdb) {
-              $pdbName = "$baseName.pdb"
-              Copy-Item $pdb $pdbName -Force
-              "pdb-name=$pdbName" >> $env:GITHUB_OUTPUT
-            } else {
-              "pdb-name=" >> $env:GITHUB_OUTPUT
-            }
-          } else {
-            "pdb-name=" >> $env:GITHUB_OUTPUT
-          }
-
       - name: Upload DLL
         uses: actions/upload-artifact@v7
         with:
           name: release-asset-${{ matrix.suffix }}
           path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.zip-name }}
-          retention-days: 90
-          if-no-files-found: error
-
-      - name: Upload PDB (Debug only)
-        if: steps.package.outputs.pdb-name != ''
-        uses: actions/upload-artifact@v7
-        with:
-          name: release-asset-${{ matrix.suffix }}-pdb
-          path: FrostyFlammenwerferPlugin/${{ steps.package.outputs.pdb-name }}
           retention-days: 90
           if-no-files-found: error
 
