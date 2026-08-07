@@ -1,5 +1,6 @@
 using Frosty.Core;
 using FsLocalizationPlugin.Helpers;
+using FsLocalizationPlugin.Resources;
 using System;
 
 namespace FsLocalizationPlugin.ViewModels
@@ -51,7 +52,7 @@ namespace FsLocalizationPlugin.ViewModels
                 if (!syncingFields)
                 {
                     syncingFields = true;
-                    if (LocalizationHelper.TryParseHexHash(hashText, out uint hash) && Database.TryGetStringId(hash, out string knownId))
+                    if (LocalizationHelper.TryParseHexHash(hashText, out uint hash) && IdIndex.TryGet(hash, out string knownId))
                         IdText = knownId;
                     else
                         IdText = string.Empty;
@@ -147,7 +148,7 @@ namespace FsLocalizationPlugin.ViewModels
             while (hash == 0 || hash == 0xFFFFFFFF
                 || Database.TryGetString(hash, out string _)
                 || Database.IsStringRemoved(hash)
-                || Database.TryGetStringId(hash, out string _));
+                || IdIndex.TryGet(hash, out string _));
 
             syncingFields = true;
             HashText = hash.ToString("X8");

@@ -126,8 +126,18 @@
     <Resource Include="Images\frame_bug_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
     <Resource Include="Images\handyman_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
     <Resource Include="Images\label_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
+    <Resource Include="Images\quick_reference_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz40.png" />
+    <Resource Include="Images\quick_reference_all_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz40.png" />
     <Resource Include="Images\shuffle_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
     <Resource Include="Images\tag_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Same reference as FrostyCore, use Editor as hint path, Mod Manager won't crash -->
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(FrostyProjPath)\FrostyEditor\ThirdParty\Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

@@ -4,9 +4,11 @@ using FrostySdk.IO;
 using FrostySdk.Managers;
 using FrostySdk.Resources;
 using FsLocalizationPlugin.Helpers;
+using FsLocalizationPlugin.Resources;
 using FsLocalizationPlugin.Windows;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Windows;
 
 #if FROSTY_107
@@ -14,8 +16,7 @@ using FrostySdk.Managers.Entries;
 #endif
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
-// Not using correct namespace due to FsLocalization backwards compatibility
-//namespace FsLocalizationPlugin.Resources
+// Flat namespace on purpose to stay compatible with original FsLocalizationPlugin.
 namespace FsLocalizationPlugin
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 {
@@ -23,19 +24,35 @@ namespace FsLocalizationPlugin
     /// The diff Flammenwerfer records for a localized-text asset: strings added, and removed.
     /// </summary>
     /// <remarks>
-    /// Read/write three format layers in order - this is why Flammenwerfer stays two-way
-    /// compatible with the original FsLocalizationPlugin:
-    /// 1. Legacy format: magic is the count, one byte per char. Never change.
-    /// 2. Current format: magic 0xABCD0001, two bytes per char. Never change.
-    /// 3. Flammenwerfer's own trailing extension (magic 0xF1A88E22, "FLAMMENN")
-    ///    The original plugin never writes or reads this, it just runs out of bytes.
-    /// Layer 3 is ours and safe to extend (it has its own format-version field) as long as
-    /// the read stays wrapped in try/catch.
+    /// <para>Read/write three format layers in order,
+    /// stays two-way compatible with the original FsLocalizationPlugin:</para>
+    /// <list type="number">
+    /// <item>
+    /// <term>Legacy format</term>
+    /// <description>Magic is the count, <strong>one</strong> byte per char. (Never change)</description>
+    /// </item>
+    /// <item>
+    /// <term>Current format</term>
+    /// <description>Magic <c>0xABCD0001</c>, <strong>two</strong> bytes per char. (Never change)</description>
+    /// </item>
+    /// <item>
+    /// <term>Flammenwerfer extended</term>
+    /// <description>Magic <c>0xF1A88E22</c> ("FLAMMENN").
+    /// The original plugin never writes or reads this, it will run out of bytes.
+    /// This is ours and safe to extend, having it's own format version field.</description>
+    /// </item>
+    /// </list>
+    /// <para>この世界は好都合に未完成</para>
+    /// <para>だから知りたいんだ</para>
     /// </remarks>
     public class ModifiedFsLocalizationAsset : ModifiedResource
     {
+        // Cumulative extension sections, only read/write every section this build knows about,
+        // newer sections are ignored safely.
+        // v1: stringsToRemove.
+        // v2: UTF-8 overwrites for chars above 0xFFFF.
         private const uint FlammenwerferExtensionMagic = 0xF1A88E22; // "FLAMMENN"
-        private const uint FlammenwerferExtensionFormatVersion = 1;
+        private const uint FlammenwerferExtensionFormatVersion = 2;
 
         public Dictionary<uint, string> strings = new Dictionary<uint, string>();
 
@@ -64,7 +81,6 @@ namespace FsLocalizationPlugin
 
             // New FsLocalizationPlugin format
             int stringsCount = reader.ReadInt();
-            strings.Clear();
             for (int i = 0; i < stringsCount; i++)
             {
                 uint hash = reader.ReadUInt();
@@ -81,19 +97,28 @@ namespace FsLocalizationPlugin
                 {
                     uint formatVersion = reader.ReadUInt();
                     DebugLogHelper.Log("ModifiedResource.ReadInternal", "Flammenwerfer Extended Format Detected, Version {0}", formatVersion);
-                    if (formatVersion == FlammenwerferExtensionFormatVersion)
+
+                    // Cumulative, read every section this build knows about, newer sections are ignored safely.
+                    if (formatVersion >= 1)
                     {
-                        // FormatVersion: 1
-                        // String removal support
+                        // Section 1: String removal support
                         int stringsToRemoveCount = reader.ReadInt();
-                        stringsToRemove.Clear();
                         for (int i = 0; i < stringsToRemoveCount; i++)
                         {
                             uint hash = reader.ReadUInt();
                             RemoveString(hash);
                         }
                     }
-                    // Else: newer, unrecognized format version - nothing more to read safely.
+                    if (formatVersion >= 2)
+                    {
+                        // Section 2: True UTF-8 values for strings escaped in the FsLoc block
+                        int overwriteCount = reader.ReadInt();
+                        for (int i = 0; i < overwriteCount; i++)
+                        {
+                            uint hash = reader.ReadUInt();
+                            strings[hash] = ReadUtf8(reader);
+                        }
+                    }
                 }
                 else
                 {
@@ -102,37 +127,105 @@ namespace FsLocalizationPlugin
             }
             catch
             {
-                stringsToRemove.Clear();
             }
         }
 
         public override void SaveInternal(NativeWriter writer)
         {
+            // Chars above 0xFFFF cannot survive the FsLoc block
+            // Write them escaped there and carry the true UTF-8 value in section 2.
+            Dictionary<uint, string> overwrites = new Dictionary<uint, string>();
+
             // New FsLocalizationPlugin format
             writer.Write(0xABCD0001);
             writer.Write(strings.Count);
 
             foreach (KeyValuePair<uint, string> kvp in strings)
             {
-                writer.Write(kvp.Key);
                 string s = kvp.Value;
-                foreach (char c in s)
+                if (ContainsNonBmp(s))
                 {
-                    writer.Write((ushort)c);
+                    overwrites[kvp.Key] = s;
+                    s = EscapeNonBmp(s);
                 }
+
+                writer.Write(kvp.Key);
+                foreach (char c in s)
+                    writer.Write((ushort)c);
                 writer.Write((ushort)0);
             }
 
-            // Flammenwerfer extension.
-            // Vanilla-saved files will run out of bytes here.
+            // Flammenwerfer extension start here
+            // Vanilla-saved files will run out of bytes
+            if (stringsToRemove.Count == 0
+                && overwrites.Count == 0)
+            {
+                // Nothing to write here, skipping
+                // IMPORTANT: Update the condition when a new section added.
+                return;
+            }
             writer.Write(FlammenwerferExtensionMagic);
             writer.Write(FlammenwerferExtensionFormatVersion);
 
             // FormatVersion: 1
-            // String removal support
+            // Section 1: String removal
             writer.Write(stringsToRemove.Count);
             foreach (uint value in stringsToRemove)
                 writer.Write(value);
+
+            // FormatVersion: 2
+            // Section 2: True UTF-8 values for the escaped strings above
+            writer.Write(overwrites.Count);
+            foreach (KeyValuePair<uint, string> kvp in overwrites)
+            {
+                writer.Write(kvp.Key);
+                WriteUtf8(writer, kvp.Value);
+            }
+        }
+
+        private static void WriteUtf8(NativeWriter writer, string value)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(value ?? string.Empty);
+            writer.Write(bytes.Length);
+            writer.Write(bytes);
+        }
+
+        private static string ReadUtf8(NativeReader reader)
+        {
+            int length = reader.ReadInt();
+            return length > 0 ? Encoding.UTF8.GetString(reader.ReadBytes(length)) : string.Empty;
+        }
+
+        /// <summary>
+        /// Check if a string contains char above 0xFFFF
+        /// </summary>
+        private static bool ContainsNonBmp(string value)
+        {
+            foreach (char c in value)
+            {
+                if (char.IsSurrogate(c))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>Replaces each char above 0xFFFF with a readable [U+XXXXX] marker.</summary>
+        private static string EscapeNonBmp(string value)
+        {
+            StringBuilder sb = new StringBuilder(value.Length + 16);
+            for (int i = 0; i < value.Length; i++)
+            {
+                if (char.IsHighSurrogate(value[i]) && i + 1 < value.Length && char.IsLowSurrogate(value[i + 1]))
+                {
+                    sb.Append("[U+").Append(char.ConvertToUtf32(value[i], value[i + 1]).ToString()).Append("]");
+                    i++;
+                }
+                else if (!char.IsSurrogate(value[i]))
+                {
+                    sb.Append(value[i]);
+                }
+            }
+            return sb.ToString();
         }
 
         /// <summary>
@@ -242,6 +335,11 @@ namespace FsLocalizationPlugin
     /// <summary>Flammenwerfer's ILocalizedStringDatabase. How the editor (and other plugins) read/edit localized text.</summary>
     public class FsLocalizationStringDatabase : ILocalizedStringDatabase
     {
+        /// <summary>
+        /// Handshake anchor for other plugins, see <see cref="FlammenwerferApi"/>.
+        /// </summary>
+        public static int FlammenwerferApiVersion => FlammenwerferApi.Version;
+
         private Dictionary<uint, string> strings = new Dictionary<uint, string>();
         private FsLocalizationAsset loadedDatabase = null;
         private EbxAssetEntry subscribedTextEntry = null;
@@ -416,6 +514,14 @@ namespace FsLocalizationPlugin
             return loadedDatabase != null && loadedDatabase.GetStringsToRemove().Contains(id);
         }
 
+        /// <summary>Whether a string carries an edit from this project.</summary>
+        public bool isStringEdited(uint id)
+        {
+            return loadedDatabase != null && loadedDatabase.GetStrings().ContainsKey(id);
+        }
+
+        #region -- Writing --
+// IdIndex is told what happened; it decides which ID store that belongs in.
         /// <summary>Adds a new string under a string ID (e.g. <c>ID_FLAME</c>) and returns its hash.</summary>
         public uint AddString(string id, string value)
         {
@@ -424,13 +530,8 @@ namespace FsLocalizationPlugin
             loadedDatabase.AddString(hash, value);
             App.AssetManager.ModifyEbx(App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid).Name, loadedDatabase);
 
+            IdIndex.Record(id, hash);
             return hash;
-        }
-
-        public void RevertString(uint id)
-        {
-            loadedDatabase.RevertString(id);
-            App.AssetManager.ModifyEbx(App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid).Name, loadedDatabase);
         }
 
         public void SetString(uint id, string value)
@@ -441,9 +542,52 @@ namespace FsLocalizationPlugin
 
         public void SetString(string id, string value)
         {
-            SetString(LocalizationHelper.HashStringId(id), value);
+            uint hash = LocalizationHelper.HashStringId(id);
+            SetString(hash, value);
+            IdIndex.Record(id, hash);
         }
 
+        /// <summary>
+        /// Marks a string for removal. Not supported by the original FsLocalizationPlugin.
+        /// A string the project added is reverted instead: the game never had it, so a removal
+        /// marker would only tell the mod to delete something that is not there.
+        /// </summary>
+        public void RemoveString(uint id)
+        {
+            if (!strings.ContainsKey(id))
+            {
+                RevertString(id);
+                return;
+            }
+
+            loadedDatabase.RemoveString(id);
+            App.AssetManager.ModifyEbx(App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid).Name, loadedDatabase);
+
+            IdIndex.Forget(id);
+        }
+
+        /// <summary>Drops this project's edit, putting the game's own value back.</summary>
+        public void RevertString(uint id)
+        {
+            loadedDatabase.RevertString(id);
+
+            EbxAssetEntry entry = App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid);
+            if (loadedDatabase.GetStrings().Count == 0 && loadedDatabase.GetStringsToRemove().Count == 0)
+            {
+                // Nothing left in the diff: revert the asset instead of leaving it marked modified.
+                App.AssetManager.RevertAsset(entry, dataOnly: false, suppressOnModify: false);
+            }
+            else
+            {
+                App.AssetManager.ModifyEbx(entry.Name, loadedDatabase);
+            }
+
+            IdIndex.Forget(id);
+        }
+
+        #endregion
+
+        #region -- Windows, opened from the Tools menu --
         public void AddStringWindow()
         {
             new ModifyStringWindow(Application.Current.MainWindow).ShowDialog();
@@ -454,16 +598,6 @@ namespace FsLocalizationPlugin
             new ModifyMultipleStringsWindow(Application.Current.MainWindow).ShowDialog();
         }
 
-        public bool isStringEdited(uint id)
-        {
-            return loadedDatabase != null && loadedDatabase.GetStrings().ContainsKey(id);
-        }
-
-        /// <summary>Marks a string for removal. Not supported by the original FsLocalizationPlugin.</summary>
-        public void RemoveString(uint id)
-        {
-            loadedDatabase.RemoveString(id);
-            App.AssetManager.ModifyEbx(App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid).Name, loadedDatabase);
-        }
+        #endregion
     }
 }

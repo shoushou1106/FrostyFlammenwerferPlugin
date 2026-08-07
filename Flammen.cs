@@ -15,24 +15,21 @@ using FrostySdk.Managers.Entries;
 namespace FsLocalizationPlugin
 {
     /// <summary>
-    /// Reads and writes the histogram chunk and strings-binary chunk that back a game's
-    /// localized text.
+    /// Reads and writes FsLocalization format histogram chunk and string binary chunk. Adopted from original <see href="https://github.com/BF1CHS/flammenwerfer"/>
     /// </summary>
     /// <remarks>
-    /// Histogram chunk (magic <c>0x00039001</c>): magic, fileSize, dataOffSize, then a flat
-    /// table of ushort code points (first 128 = ASCII identity, rest grown by
-    /// <see cref="AddCharsToHistogram"/>).
-    /// <para/>
-    /// Strings binary chunk (magic <c>0x00039000</c>): magic, fileSize, listSize, dataOffset
-    /// (fixed at <see cref="StringDefaultDataOffset"/>), stringsOffset, a null-terminated
-    /// section name, padding to dataOffset, then listSize (hash, offset) pairs, then the
-    /// histogram-encoded null-terminated string data.
+    /// <para>この世界は好都合に未完成</para>
+    /// <para>僕は知りたいんだ</para>
     /// </remarks>
     public class Flammen
     {
         private const uint StringMagic = 0x00039000;
         private const uint StringDefaultDataOffset = 0x8C;
         private const uint StringHashPairSize = 8;
+        // Strings binary chunk (magic 0x00039000): magic, fileSize, listSize, dataOffset,
+        // stringsOffset, a null-terminated section name, padding to dataOffset,
+        // then listSize (hash, offset) pairs,
+        // then the histogram-encoded null-terminated string data.
 
         private const uint HistogramMagic = 0x00039001;
         private const int HistogramAsciiThreshold = 0x80;
@@ -40,6 +37,9 @@ namespace FsLocalizationPlugin
         private const int HistogramInitialSectionSize = 0x80;
         private const int HistogramShiftNumStartIndex = 0x40;
         private const int HistogramShiftEndIndex = 0x1FE;
+        // Histogram chunk (magic 0x00039001): magic, fileSize, dataOffSize,
+        // then a flat table of ushort code points
+        // (first 128 = ASCII identity, rest grown by AddCharsToHistogram).
 
         /// <summary>Decodes a histogram-encoded binary string into Unicode.</summary>
         /// <param name="binString">The raw, histogram-encoded bytes (as a string of chars 0-255).</param>

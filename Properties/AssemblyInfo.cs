@@ -63,10 +63,12 @@ using System.Windows;
 [assembly: RegisterMenuExtension(typeof(ImportChunksMenuExtension), PluginManagerType.Editor)]
 [assembly: RegisterMenuExtension(typeof(ExportChunksMenuExtension), PluginManagerType.Editor)]
 [assembly: RegisterMenuExtension(typeof(CheckCompatibilityMenuExtension), PluginManagerType.Editor)]
+[assembly: RegisterMenuExtension(typeof(IdDatabaseMenuExtension), PluginManagerType.Editor)]
 #else
 [assembly: RegisterMenuExtension(typeof(ModifyStringMenuExtension))]
 [assembly: RegisterMenuExtension(typeof(ModifyMultipleStringsMenuExtension))]
 [assembly: RegisterMenuExtension(typeof(ImportChunksMenuExtension))]
 [assembly: RegisterMenuExtension(typeof(ExportChunksMenuExtension))]
 [assembly: RegisterMenuExtension(typeof(CheckCompatibilityMenuExtension))]
+[assembly: RegisterMenuExtension(typeof(IdDatabaseMenuExtension))]
 #endif

@@ -17,8 +17,7 @@ using FrostySdk.Managers.Entries;
 #endif
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
-// Not using correct namespace due to FsLocalization backwards compatibility
-//namespace FsLocalizationPlugin.Handlers
+// Flat namespace on purpose to stay compatible with original FsLocalizationPlugin.
 namespace FsLocalizationPlugin
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 {
