@@ -116,28 +116,27 @@ namespace FsLocalizationPlugin.ViewModels
 
         private void Export(Window owner)
         {
-            CancellationTokenSource cancelToken = new CancellationTokenSource();
             Dictionary<string, LanguageExportOptions> languageLookup = LanguageOptions.ToDictionary(l => l.Language);
             bool cancelled = false;
 
-            FrostyTaskWindow.Show(owner, "Exporting to Chunk Files", "Loading", task =>
+            void RunTask(FrostyTaskWindow task, CancellationToken token)
             {
                 string origLanguage = Config.Get("Language", "English", ConfigScope.Game);
                 try
                 {
                     int totalParts = LanguageOptions.Count;
                     int currentPart = 0;
-                    cancelToken.Token.ThrowIfCancellationRequested();
+                    token.ThrowIfCancellationRequested();
 
                     foreach (EbxAssetEntry entry in App.AssetManager.EnumerateEbx("LocalizationAsset"))
                     {
-                        cancelToken.Token.ThrowIfCancellationRequested();
+                        token.ThrowIfCancellationRequested();
 
                         dynamic localizationAsset = App.AssetManager.GetEbx(entry).RootObject;
 
                         foreach (PointerRef pointer in localizationAsset.LocalizedTexts)
                         {
-                            cancelToken.Token.ThrowIfCancellationRequested();
+                            token.ThrowIfCancellationRequested();
 
                             EbxAssetEntry textEntry = App.AssetManager.GetEbxEntry(pointer.External.FileGuid);
                             if (textEntry == null)
@@ -153,7 +152,7 @@ namespace FsLocalizationPlugin.ViewModels
 
                             task.TaskLogger.Log("[{0}/{1}] Exporting {2}", ++currentPart, totalParts, lang);
                             LocalizationHelper.ReportProgress(task.TaskLogger, 0, 4, currentPart, totalParts);
-                            cancelToken.Token.ThrowIfCancellationRequested();
+                            token.ThrowIfCancellationRequested();
                             Thread.Sleep(1);
 
                             Config.Add("Language", lang, ConfigScope.Game);
@@ -164,7 +163,7 @@ namespace FsLocalizationPlugin.ViewModels
                                 modifiedData[id] = Database.GetString(id);
 
                             LocalizationHelper.ReportProgress(task.TaskLogger, 1, 4, currentPart, totalParts);
-                            cancelToken.Token.ThrowIfCancellationRequested();
+                            token.ThrowIfCancellationRequested();
 
                             ChunkAssetEntry histogramEntry = App.AssetManager.GetChunkEntry(localizedText.HistogramChunk);
                             ChunkAssetEntry stringChunkEntry = App.AssetManager.GetChunkEntry(localizedText.BinaryChunk);
@@ -174,7 +173,7 @@ namespace FsLocalizationPlugin.ViewModels
                                 out byte[] newStringData);
 
                             LocalizationHelper.ReportProgress(task.TaskLogger, 2, 4, currentPart, totalParts);
-                            cancelToken.Token.ThrowIfCancellationRequested();
+                            token.ThrowIfCancellationRequested();
 
                             if (langOption.ExportBinary)
                             {
@@ -192,7 +191,7 @@ namespace FsLocalizationPlugin.ViewModels
                             }
 
                             LocalizationHelper.ReportProgress(task.TaskLogger, 3, 4, currentPart, totalParts);
-                            cancelToken.Token.ThrowIfCancellationRequested();
+                            token.ThrowIfCancellationRequested();
 
                             if (langOption.ExportHistogram)
                             {
@@ -210,7 +209,7 @@ namespace FsLocalizationPlugin.ViewModels
                             }
 
                             LocalizationHelper.ReportProgress(task.TaskLogger, 4, 4, currentPart, totalParts);
-                            cancelToken.Token.ThrowIfCancellationRequested();
+                            token.ThrowIfCancellationRequested();
                         }
                     }
 
@@ -232,7 +231,13 @@ namespace FsLocalizationPlugin.ViewModels
                     Config.Save();
                     Database.Initialize();
                 }
-            }, showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
+            }
+
+            using (CancellationTokenSource cancelToken = new CancellationTokenSource())
+            {
+                FrostyTaskWindow.Show(owner, "Exporting to Chunk Files", "Loading", task => RunTask(task, cancelToken.Token),
+                    showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
+            }
 
             // Show() blocks until the callback returns, so cancelled is safe to read here.
             CloseRequested?.Invoke(!cancelled);

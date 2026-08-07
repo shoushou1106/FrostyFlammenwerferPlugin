@@ -185,7 +185,6 @@ namespace FsLocalizationPlugin.ViewModels
             int processed = 0;
             int affected = 0;
             bool cancelled = false;
-            CancellationTokenSource cancelToken = new CancellationTokenSource();
 
             string taskTitle;
             switch (action)
@@ -200,13 +199,13 @@ namespace FsLocalizationPlugin.ViewModels
             List<uint> priorUnmodifiedIds = new List<uint>();
             List<uint> priorRemovedIds = new List<uint>();
 
-            FrostyTaskWindow.Show(owner, taskTitle, "", task =>
+            void RunTask(FrostyTaskWindow task, CancellationToken token)
             {
                 try
                 {
                     foreach (uint id in targetStrings)
                     {
-                        cancelToken.Token.ThrowIfCancellationRequested();
+                        token.ThrowIfCancellationRequested();
 
                         string value = Database.GetString(id);
                         task.TaskLogger.Log("{0}", value);
@@ -242,7 +241,13 @@ namespace FsLocalizationPlugin.ViewModels
                 {
                     cancelled = true;
                 }
-            }, showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
+            }
+
+            using (CancellationTokenSource cancelToken = new CancellationTokenSource())
+            {
+                FrostyTaskWindow.Show(owner, taskTitle, "", task => RunTask(task, cancelToken.Token),
+                    showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
+            }
 
             if (cancelled)
             {

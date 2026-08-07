@@ -2,6 +2,7 @@ using Frosty.Core;
 using FsLocalizationPlugin.Helpers;
 using FsLocalizationPlugin.Resources;
 using System;
+using System.Globalization;
 
 namespace FsLocalizationPlugin.ViewModels
 {
@@ -74,7 +75,7 @@ namespace FsLocalizationPlugin.ViewModels
                 if (!syncingFields)
                 {
                     syncingFields = true;
-                    HashText = idText.Length > 0 ? LocalizationHelper.HashStringId(idText).ToString("X8") : string.Empty;
+                    HashText = idText.Length > 0 ? LocalizationHelper.HashStringId(idText).ToString("X8", CultureInfo.InvariantCulture) : string.Empty;
                     syncingFields = false;
                 }
                 OnPropertiesChanged(StateDependentProperties);
@@ -151,7 +152,7 @@ namespace FsLocalizationPlugin.ViewModels
                 || IdIndex.TryGet(hash, out string _));
 
             syncingFields = true;
-            HashText = hash.ToString("X8");
+            HashText = hash.ToString("X8", CultureInfo.InvariantCulture);
             IdText = string.Empty;
             syncingFields = false;
             OnPropertiesChanged(StateDependentProperties);
@@ -163,9 +164,9 @@ namespace FsLocalizationPlugin.ViewModels
                 return;
 
             if (HasStringValue)
-                App.Logger.Log("Flame forged! String {0} modified, value: {1}", hash.ToString("X8"), EditText);
+                App.Logger.Log("Flame forged! String {0} modified, value: {1}", hash.ToString("X8", CultureInfo.InvariantCulture), EditText);
             else
-                App.Logger.Log("Flame forged! String {0} added, value: {1}", hash.ToString("X8"), EditText);
+                App.Logger.Log("Flame forged! String {0} added, value: {1}", hash.ToString("X8", CultureInfo.InvariantCulture), EditText);
 
             // The string overload records the ID text into the ID database.
             if (IdMatchesHash)
@@ -182,7 +183,7 @@ namespace FsLocalizationPlugin.ViewModels
                 return;
 
             Database.RevertString(hash);
-            App.Logger.Log("Flame extinguished! String {0} reverted", hash.ToString("X8"));
+            App.Logger.Log("Flame extinguished! String {0} reverted", hash.ToString("X8", CultureInfo.InvariantCulture));
             OnPropertiesChanged(StateDependentProperties);
             CloseRequested?.Invoke(true);
         }
@@ -193,7 +194,7 @@ namespace FsLocalizationPlugin.ViewModels
                 return;
 
             Database.RemoveString(hash);
-            App.Logger.Log("Flame scorched! String {0} removed", hash.ToString("X8"));
+            App.Logger.Log("Flame scorched! String {0} removed", hash.ToString("X8", CultureInfo.InvariantCulture));
             OnPropertiesChanged(StateDependentProperties);
             CloseRequested?.Invoke(true);
         }

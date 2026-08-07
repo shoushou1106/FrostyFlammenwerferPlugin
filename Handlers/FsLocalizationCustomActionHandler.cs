@@ -9,6 +9,7 @@ using FrostySdk.Resources;
 using FsLocalizationPlugin.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -35,7 +36,7 @@ namespace FsLocalizationPlugin
     {
         public HandlerUsage Usage => HandlerUsage.Merge;
 
-        private class FsLocalizationResource : EditorModResource
+        private sealed class FsLocalizationResource : EditorModResource
         {
             public override ModResourceType Type => ModResourceType.Ebx;
             public FsLocalizationResource(EbxAssetEntry entry, FrostyModWriter.Manifest manifest)
@@ -76,7 +77,7 @@ namespace FsLocalizationPlugin
             string AssetName = name;
             foreach (uint stringId in newFs.EnumerateStrings())
             {
-                string resourceName = stringId.ToString("x8");
+                string resourceName = stringId.ToString("x8", CultureInfo.InvariantCulture);
                 string resourceType = "ebx";
                 string action = "Add";
 
@@ -178,7 +179,7 @@ namespace FsLocalizationPlugin
                 sb.Append("Type=");
                 sb.AppendLine(ex.GetType().ToString());
                 sb.Append("HResult=");
-                sb.AppendLine("0x" + ex.HResult.ToString("X"));
+                sb.AppendLine("0x" + ex.HResult.ToString("X", CultureInfo.InvariantCulture));
                 sb.Append("Message=");
                 sb.AppendLine(ex.Message);
                 sb.Append("Source=");

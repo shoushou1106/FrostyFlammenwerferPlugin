@@ -21,7 +21,7 @@ namespace FsLocalizationPlugin
     /// <para>この世界は好都合に未完成</para>
     /// <para>僕は知りたいんだ</para>
     /// </remarks>
-    public class Flammen
+    public static class Flammen
     {
         private const uint StringMagic = 0x00039000;
         private const uint StringDefaultDataOffset = 0x8C;
@@ -230,7 +230,7 @@ namespace FsLocalizationPlugin
             // Find characters not already in section
             List<char> newChars = charSet.Except(section).ToList();
 
-            if (!newChars.Any())
+            if (newChars.Count == 0)
                 return; // No new characters to add
 
             // Find the shift numbers start index
@@ -527,11 +527,13 @@ namespace FsLocalizationPlugin
                 stringList[data.Key] = data.Value;
             }
             DebugLogHelper.Log("Flammen.WriteAll", "Modified {0} strings", modifiedData.Count);
+            int removed = 0;
             foreach (uint id in stringToRemove)
             {
                 stringList.Remove(id);
+                removed++;
             }
-            DebugLogHelper.Log("Flammen.WriteAll", "Removed {0} strings", stringToRemove.Count());
+            DebugLogHelper.Log("Flammen.WriteAll", "Removed {0} strings", removed);
 
             // Add new characters to histogram
             AddCharsToHistogram(stringList.Values, ref histogramDataOffSize, ref histogramSection);

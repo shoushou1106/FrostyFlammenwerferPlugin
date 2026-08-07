@@ -45,7 +45,7 @@ namespace FsLocalizationPlugin.Helpers
                 return false;
 
             string hex = input;
-            if (input.Length == 10 && (input.StartsWith("0x") || input.StartsWith("0X")))
+            if (input.Length == 10 && (input.StartsWith("0x", StringComparison.Ordinal) || input.StartsWith("0X", StringComparison.Ordinal)))
                 hex = input.Substring(2);
             else if (input.Length != 8)
                 return false;
@@ -111,7 +111,7 @@ namespace FsLocalizationPlugin.Helpers
                 }
             }
 
-            if (!modifiedOnly && !languages.Any())
+            if (!modifiedOnly && languages.Count == 0)
                 languages.Add("English");
 
             List<string> result = languages.OrderBy(l => l, StringComparer.OrdinalIgnoreCase).ToList();

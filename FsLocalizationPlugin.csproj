@@ -12,10 +12,10 @@
     <Title>Frosty Flammenwerfer Plugin</Title>
     <UseWPF>true</UseWPF>
     <OutputType>Library</OutputType>
-    <AnalysisLevel>latest-all</AnalysisLevel>
-    <EnableNETAnalyzers>True</EnableNETAnalyzers>
-    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <EnableNETAnalyzers>True</EnableNETAnalyzers>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <Version>0.4.0</Version>
     <FileVersion>0.4.0</FileVersion>
     <AssemblyVersion>0.4.0</AssemblyVersion>

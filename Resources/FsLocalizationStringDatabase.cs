@@ -8,6 +8,7 @@ using FsLocalizationPlugin.Resources;
 using FsLocalizationPlugin.Windows;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Windows;
 
@@ -217,7 +218,8 @@ namespace FsLocalizationPlugin
             {
                 if (char.IsHighSurrogate(value[i]) && i + 1 < value.Length && char.IsLowSurrogate(value[i + 1]))
                 {
-                    sb.Append("[U+").Append(char.ConvertToUtf32(value[i], value[i + 1]).ToString()).Append("]");
+                    int codePoint = char.ConvertToUtf32(value[i], value[i + 1]);
+                    sb.Append("[U+").Append(codePoint.ToString(CultureInfo.InvariantCulture)).Append(']');
                     i++;
                 }
                 else if (!char.IsSurrogate(value[i]))
@@ -341,8 +343,8 @@ namespace FsLocalizationPlugin
         public static int FlammenwerferApiVersion => FlammenwerferApi.Version;
 
         private Dictionary<uint, string> strings = new Dictionary<uint, string>();
-        private FsLocalizationAsset loadedDatabase = null;
-        private EbxAssetEntry subscribedTextEntry = null;
+        private FsLocalizationAsset loadedDatabase;
+        private EbxAssetEntry subscribedTextEntry;
 
         /// <summary>
         /// Initializes the localization database by loading strings for the configured language.

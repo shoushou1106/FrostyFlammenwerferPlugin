@@ -10,3 +10,52 @@ indent_size = 4
 
 [*.{xaml,csproj,sln,xml,config,json}]
 indent_size = 2
+
+# Analyzer rules that do not fit a Frosty plugin.
+[*.cs]
+
+# The assembly is only "externally visible" in the sense that Frosty loads it by reflection.
+# Null-guarding every entry point would add noise with no caller to protect.
+dotnet_diagnostic.CA1062.severity = none
+
+# Catching Exception is deliberate. A plugin that throws takes the host down with it.
+# See the Modify handler, the scan, and every file read.
+dotnet_diagnostic.CA1031.severity = none
+
+# List<T> is what WPF binds to and what Newtonsoft populates. Collection<T> buys nothing here.
+dotnet_diagnostic.CA1002.severity = none
+dotnet_diagnostic.CA2227.severity = none
+
+# The Action events are the plugin's own close and refresh signals, not a public API.
+dotnet_diagnostic.CA1003.severity = none
+
+# Nested public types (IdRow, ScanResult) read better where they are used.
+dotnet_diagnostic.CA1034.severity = none
+
+# WPF continuations have to come back to the UI thread, so ConfigureAwait(false) would be a bug.
+dotnet_diagnostic.CA2007.severity = none
+
+# Random picks an unused string hash. Nothing here is a security decision.
+dotnet_diagnostic.CA5394.severity = none
+
+# WPF addresses its resources with pack URI strings.
+dotnet_diagnostic.CA1054.severity = none
+
+# Misfires on Frosty SDK calls whose return it assumes can never be null.
+dotnet_diagnostic.CA1508.severity = none
+
+# A bindable property has to be an instance member, so this one stays an IDE hint.
+dotnet_diagnostic.CA1822.severity = suggestion
+
+# Frosty drives teardown through its own Closed() callback, not through a using block,
+# so an owner of a disposable field is not itself disposed by anyone.
+dotnet_diagnostic.CA1001.severity = none
+
+# The two files that keep vanilla FsLocalizationPlugin's shape.
+[Resources/FsLocalizationStringDatabase.cs]
+dotnet_diagnostic.CA1051.severity = none
+dotnet_diagnostic.CA1024.severity = none
+
+[Handlers/FsLocalizationCustomActionHandler.cs]
+dotnet_diagnostic.CA1304.severity = none
+dotnet_diagnostic.CA1311.severity = none

@@ -6,6 +6,7 @@ using FrostySdk.Managers;
 using FsLocalizationPlugin.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -535,7 +536,7 @@ namespace FsLocalizationPlugin.ViewModels
                             string.Equals(original, Database.GetString(id), StringComparison.Ordinal))
                         {
                             langUnchangedIds.Add(id);
-                            langUnchangedHashes.Add(id.ToString("X8"));
+                            langUnchangedHashes.Add(id.ToString("X8", CultureInfo.InvariantCulture));
                         }
 
                         double pct = LocalizationHelper.ComputeProgress(i + 1, modIds.Count, li + 1, targetLanguages.Count);
@@ -615,7 +616,7 @@ namespace FsLocalizationPlugin.ViewModels
                     for (int i = 0; i < removedIds.Count; i++)
                     {
                         token.ThrowIfCancellationRequested();
-                        langRemoved.Add(removedIds[i].ToString("X8"));
+                        langRemoved.Add(removedIds[i].ToString("X8", CultureInfo.InvariantCulture));
 
                         double pct = LocalizationHelper.ComputeProgress(i + 1, removedIds.Count, li + 1, targetLanguages.Count);
                         ExtendedFeatureTest.SetProgress(pct);

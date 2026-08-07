@@ -109,7 +109,6 @@ namespace FsLocalizationPlugin.ViewModels
                 return;
             }
 
-            CancellationTokenSource cancelToken = new CancellationTokenSource();
             int deletedCount = 0;
             int importedCount = 0;
             bool cancelled = false;
@@ -133,20 +132,20 @@ namespace FsLocalizationPlugin.ViewModels
                     priorUnmodifiedIds.Add(id);
             }
 
-            FrostyTaskWindow.Show(owner, "Import Chunks from Files", "Loading", task =>
+            void RunTask(FrostyTaskWindow task, CancellationToken token)
             {
                 try
                 {
                     int totalParts = DeleteExistingStrings ? 3 : 2;
                     int currentPart = 0;
-                    cancelToken.Token.ThrowIfCancellationRequested();
+                    token.ThrowIfCancellationRequested();
 
                     if (DeleteExistingStrings)
                     {
                         currentPart++;
                         task.TaskLogger.Log("[{0}/{1}] Removing all existing strings", currentPart, totalParts);
                         LocalizationHelper.ReportProgress(task.TaskLogger, 0, 1, currentPart, totalParts);
-                        cancelToken.Token.ThrowIfCancellationRequested();
+                        token.ThrowIfCancellationRequested();
                         Thread.Sleep(1);
 
                         // Snapshot first. Removing while iterating this directly throws "collection was modified".
@@ -157,7 +156,7 @@ namespace FsLocalizationPlugin.ViewModels
                             RecordPriorState(id);
                             Database.RemoveString(id);
                             deletedCount++;
-                            cancelToken.Token.ThrowIfCancellationRequested();
+                            token.ThrowIfCancellationRequested();
                             LocalizationHelper.ReportProgress(task.TaskLogger, deletedCount, totalDelete, currentPart, totalParts);
                         }
                     }
@@ -165,7 +164,7 @@ namespace FsLocalizationPlugin.ViewModels
                     currentPart++;
                     task.TaskLogger.Log("[{0}/{1}] Reading Chunks", currentPart, totalParts);
                     LocalizationHelper.ReportProgress(task.TaskLogger, 0, 1, currentPart, totalParts);
-                    cancelToken.Token.ThrowIfCancellationRequested();
+                    token.ThrowIfCancellationRequested();
                     Thread.Sleep(1);
 
                     Dictionary<uint, string> dictionary;
@@ -178,7 +177,7 @@ namespace FsLocalizationPlugin.ViewModels
                     currentPart++;
                     task.TaskLogger.Log("[{0}/{1}] Importing Strings", currentPart, totalParts);
                     LocalizationHelper.ReportProgress(task.TaskLogger, 0, 1, currentPart, totalParts);
-                    cancelToken.Token.ThrowIfCancellationRequested();
+                    token.ThrowIfCancellationRequested();
                     Thread.Sleep(1);
 
                     int totalCount = dictionary.Count;
@@ -186,7 +185,7 @@ namespace FsLocalizationPlugin.ViewModels
                     foreach (KeyValuePair<uint, string> kvp in dictionary)
                     {
                         LocalizationHelper.ReportProgress(task.TaskLogger, ++current, totalCount, currentPart, totalParts);
-                        cancelToken.Token.ThrowIfCancellationRequested();
+                        token.ThrowIfCancellationRequested();
 
                         if (NoImportEmptyOrNull && string.IsNullOrEmpty(kvp.Value))
                             continue;
@@ -207,7 +206,13 @@ namespace FsLocalizationPlugin.ViewModels
                     FrostyExceptionBox.Show(ex, "Import Chunks from Files - Flammenwerfer");
                     cancelled = true;
                 }
-            }, showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
+            }
+
+            using (CancellationTokenSource cancelToken = new CancellationTokenSource())
+            {
+                FrostyTaskWindow.Show(owner, "Import Chunks from Files", "Loading", task => RunTask(task, cancelToken.Token),
+                    showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
+            }
 
             if (cancelled)
             {

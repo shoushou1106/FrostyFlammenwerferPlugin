@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
@@ -50,17 +51,17 @@ namespace FsLocalizationPlugin.Helpers
         //private const int MaxRecursionDepth = 16; // Guards against stack overflow on deeply nested structs.
         private const int TotalParts = 3; // EBX scan, SWF scan, Pattern expansion
 
-        public class ScanResult
+        public sealed class ScanResult
         {
-            public int AssetsScanned;
-            public int SwfScanned;
-            public int IdsFound;
-            public int RefsFound;
-            public bool Cancelled;
+            public int AssetsScanned { get; set; }
+            public int SwfScanned { get; set; }
+            public int IdsFound { get; set; }
+            public int RefsFound { get; set; }
+            public bool Cancelled { get; set; }
         }
 
         /// <summary>The properties of one ebx type worth inspecting. Null when the type has none.</summary>
-        private class TypeProps
+        private sealed class TypeProps
         {
             public List<PropertyInfo> CStrings;
             public List<PropertyInfo> CStringLists;
@@ -70,7 +71,7 @@ namespace FsLocalizationPlugin.Helpers
         }
 
         /// <summary>Shared scan state</summary>
-        private class Context
+        private sealed class Context
         {
             public HashSet<uint> ValidHashes;
             public IdDatabase Db;
@@ -165,7 +166,7 @@ namespace FsLocalizationPlugin.Helpers
 
             stopwatch.Stop();
             App.Logger.Log("Scanned {0} asset(s) and {1} swf(s) in {2}s: {3} new ID(s), {4} reference(s), cancelled: {5}",
-                ctx.Result.AssetsScanned, ctx.Result.SwfScanned, stopwatch.Elapsed.TotalSeconds.ToString("F1"), ctx.Result.IdsFound, ctx.NewRefs.Count, ctx.Result.Cancelled);
+                ctx.Result.AssetsScanned, ctx.Result.SwfScanned, stopwatch.Elapsed.TotalSeconds.ToString("F1", CultureInfo.InvariantCulture), ctx.Result.IdsFound, ctx.NewRefs.Count, ctx.Result.Cancelled);
 
             return ctx.Result;
         }
@@ -552,12 +553,12 @@ namespace FsLocalizationPlugin.Helpers
                     }
                     for (int n = 0; n < MaxNumber; n++)
                     {
-                        Consider(ctx, numericBase + n, null);
+                        Consider(ctx, numericBase + n.ToString(CultureInfo.InvariantCulture), null);
                         if (n < 10)
-                            Consider(ctx, numericBase + n.ToString("D1"), null); // TIP_1
+                            Consider(ctx, numericBase + n.ToString("D1", CultureInfo.InvariantCulture), null); // TIP_1
                         if (n < 100)
-                            Consider(ctx, numericBase + n.ToString("D2"), null); // TIP_01
-                        Consider(ctx, numericBase + n.ToString("D3"), null);     // TIP_001
+                            Consider(ctx, numericBase + n.ToString("D2", CultureInfo.InvariantCulture), null); // TIP_01
+                        Consider(ctx, numericBase + n.ToString("D3", CultureInfo.InvariantCulture), null);     // TIP_001
                     }
                 }
 
