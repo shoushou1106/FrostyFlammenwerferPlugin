@@ -36,13 +36,14 @@
         <RowDefinition Height="*"/>
       </Grid.RowDefinitions>
       <WrapPanel Grid.Row="0" Orientation="Horizontal" Margin="3">
-        <Label Width="Auto">
+        <!-- Target + AccessText: Alt+L focuses the box, and a screen reader reads the label with it. -->
+        <Label Width="Auto" Target="{Binding ElementName=LanguageComboBox}">
           <Label.Content>
             <StackPanel Orientation="Horizontal">
               <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;"
                          FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
                          RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Language: "/>
+              <AccessText Foreground="{StaticResource FontColor}" Text="_Language: "/>
             </StackPanel>
           </Label.Content>
         </Label>
@@ -52,17 +53,17 @@
         </ComboBox>
       </WrapPanel>
       <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="3">
-        <Label Width="Auto">
+        <Label Width="Auto" Target="{Binding ElementName=HashTextBox}">
           <Label.Content>
             <StackPanel Orientation="Horizontal">
               <Image Margin="0, 1, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/tag_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png"
                      RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Hash: "/>
+              <AccessText Foreground="{StaticResource FontColor}" Text="_Hash: "/>
             </StackPanel>
           </Label.Content>
         </Label>
         <!-- Consolas font, each character 8 width, 8 * 8 = 64 -->
-        <TextBox Padding="2.5" Margin="2" Width="Auto" MinWidth="65"
+        <TextBox x:Name="HashTextBox" Padding="2.5" Margin="2" Width="Auto" MinWidth="65"
                  BorderThickness="1"
                  Text="{Binding HashText, UpdateSourceTrigger=PropertyChanged}"
                  AcceptsTab="False"
@@ -78,23 +79,23 @@
             <StackPanel Orientation="Horizontal">
               <Image Margin="0, 1, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/shuffle_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png"
                      RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Generate Hash"/>
+              <AccessText Foreground="{StaticResource FontColor}" Text="_Generate Hash"/>
             </StackPanel>
           </Button.Content>
         </Button>
       </WrapPanel>
 
       <WrapPanel Grid.Row="2" Orientation="Horizontal" Margin="3">
-        <Label Width="Auto">
+        <Label Width="Auto" Target="{Binding ElementName=IdTextBox}">
           <Label.Content>
             <StackPanel Orientation="Horizontal">
               <Image Margin="0, 1, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/label_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png"
                      RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="ID: "/>
+              <AccessText Foreground="{StaticResource FontColor}" Text="_ID: "/>
             </StackPanel>
           </Label.Content>
         </Label>
-        <TextBox Padding="2.5" Margin="2" Width="Auto" MinWidth="100" Height="Auto" MaxHeight="100"
+        <TextBox x:Name="IdTextBox" Padding="2.5" Margin="2" Width="Auto" MinWidth="100" Height="Auto" MaxHeight="100"
                  BorderThickness="1"
                  Text="{Binding IdText, UpdateSourceTrigger=PropertyChanged}"
                  AcceptsTab="False"
@@ -178,13 +179,13 @@
           <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <WrapPanel Grid.Row="0" Width="Auto">
-          <Label>
+          <Label Target="{Binding ElementName=EditTextBox}">
             <Label.Content>
               <StackPanel Orientation="Horizontal">
                 <TextBlock Margin="0, 1, 5, 0" Text="&#xE932;"
                            FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
                            RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="New Value: "/>
+                <AccessText Foreground="{StaticResource FontColor}" Text="_New Value: "/>
               </StackPanel>
             </Label.Content>
           </Label>
@@ -193,7 +194,7 @@
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyCore;component/Images/Copy.png"
                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Copy from Above"/>
+                <AccessText Foreground="{StaticResource FontColor}" Text="_Copy from Above"/>
               </StackPanel>
             </Button.Content>
           </Button>
@@ -210,13 +211,15 @@
 
     <Grid Grid.Row="1">
       <DockPanel Margin="5" LastChildFill="False">
-        <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}">
+        <!-- IsCancel: Escape closes the window from anywhere in it. -->
+        <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}"
+                IsCancel="True">
           <Button.Content>
             <StackPanel Orientation="Horizontal">
               <TextBlock Margin="0, 1, 5, 0" Text="&#xF3B1;"
                          FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
                          RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Exit"/>
+              <AccessText Foreground="{StaticResource FontColor}" Text="E_xit"/>
             </StackPanel>
           </Button.Content>
         </Button>
@@ -227,7 +230,7 @@
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Revert.png"
                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Revert"/>
+                <AccessText Foreground="{StaticResource FontColor}" Text="_Revert"/>
               </StackPanel>
             </Button.Content>
           </Button>
@@ -237,17 +240,20 @@
                 <TextBlock Margin="0, 1, 5, 0" Text="&#xE75C;"
                            FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
                            RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Remove"/>
+                <AccessText Foreground="{StaticResource FontColor}" Text="Re_move"/>
               </StackPanel>
             </Button.Content>
           </Button>
-          <Button x:Name="ModifyButton" Padding="6, 3, 6, 3" Margin="3"  Width="Auto" Command="{Binding ModifyCommand}">
+          <!-- IsDefault: Enter commits. The New Value box takes Enter itself (AcceptsReturn), so
+               typing a multi-line string still works. -->
+          <Button x:Name="ModifyButton" Padding="6, 3, 6, 3" Margin="3"  Width="Auto" Command="{Binding ModifyCommand}"
+                  IsDefault="True">
             <Button.Content>
               <StackPanel Orientation="Horizontal">
                 <TextBlock Margin="0, 1, 5, 0" Text="&#xE70F;"
                            FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
                            RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Add / Modify"/>
+                <AccessText Foreground="{StaticResource FontColor}" Text="Add / _Modify"/>
               </StackPanel>
             </Button.Content>
           </Button>
