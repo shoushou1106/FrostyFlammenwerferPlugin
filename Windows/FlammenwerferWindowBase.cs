@@ -56,22 +56,5 @@ namespace FsLocalizationPlugin.Windows
                 DialogResult = false;
             Close();
         }
-
-        /// <summary>Toggles the CheckBox right after sender in the same panel. Wire to a Label's MouseLeftButtonUp so clicking its text also toggles the box.</summary>
-        protected void ToggleAdjacentCheckBox(object sender, MouseButtonEventArgs e)
-        {
-            if (!(sender is FrameworkElement label) || !(label.Parent is Panel panel))
-                return;
-
-            int index = panel.Children.IndexOf(label);
-            if (index < 0)
-                return;
-
-            foreach (var child in panel.Children)
-            {
-                if (child is CheckBox checkBox)
-                    checkBox.IsChecked = !(checkBox.IsChecked ?? false);
-            }
-        }
     }
 }

@@ -36,7 +36,6 @@
         <RowDefinition Height="*"/>
       </Grid.RowDefinitions>
       <WrapPanel Grid.Row="0" Orientation="Horizontal" Margin="3">
-        <!-- Target + AccessText: Alt+L focuses the box, and a screen reader reads the label with it. -->
         <Label Width="Auto" Target="{Binding ElementName=LanguageComboBox}">
           <Label.Content>
             <StackPanel Orientation="Horizontal">
@@ -211,7 +210,6 @@
 
     <Grid Grid.Row="1">
       <DockPanel Margin="5" LastChildFill="False">
-        <!-- IsCancel: Escape closes the window from anywhere in it. -->
         <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}"
                 IsCancel="True">
           <Button.Content>
@@ -240,12 +238,10 @@
                 <TextBlock Margin="0, 1, 5, 0" Text="&#xE75C;"
                            FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
                            RenderOptions.BitmapScalingMode="HighQuality"/>
-                <AccessText Foreground="{StaticResource FontColor}" Text="Re_move"/>
+                <AccessText Foreground="{StaticResource FontColor}" Text="Remo_ve"/>
               </StackPanel>
             </Button.Content>
           </Button>
-          <!-- IsDefault: Enter commits. The New Value box takes Enter itself (AcceptsReturn), so
-               typing a multi-line string still works. -->
           <Button x:Name="ModifyButton" Padding="6, 3, 6, 3" Margin="3"  Width="Auto" Command="{Binding ModifyCommand}"
                   IsDefault="True">
             <Button.Content>

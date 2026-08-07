@@ -33,16 +33,14 @@
     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
       <StackPanel x:Name="MainStackPanel" Margin="5, 10, 5, 10">
         <WrapPanel Orientation="Horizontal" Margin="3">
-          <Label Width="Auto">
-            <Label.Content>
-              <StackPanel Orientation="Horizontal">
-                <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Database.png"
-                       RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Binary Strings: "/>
-              </StackPanel>
-            </Label.Content>
+          <Label Target="{Binding ElementName=BinaryBrowseButton}">
+            <StackPanel Orientation="Horizontal">
+              <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Database.png"
+                     RenderOptions.BitmapScalingMode="HighQuality"/>
+              <AccessText Foreground="{StaticResource FontColor}" Text="Binary _Strings: "/>
+            </StackPanel>
           </Label>
-          <Button Padding="6, 3, 6, 3" Margin="0, 2, 0, 2" Width="Auto" Command="{Binding BrowseCommand}" CommandParameter="Binary">
+          <Button x:Name="BinaryBrowseButton" Padding="6, 3, 6, 3" Margin="0, 2, 0, 2" Command="{Binding BrowseCommand}" CommandParameter="Binary">
             <Button.Content>
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
@@ -51,7 +49,7 @@
               </StackPanel>
             </Button.Content>
           </Button>
-          <Label x:Name="BinaryDragTips" Width="Auto">
+          <Label x:Name="BinaryDragTips">
             <Label.Style>
               <Style TargetType="{x:Type Label}">
                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -62,9 +60,7 @@
                 </Style.Triggers>
               </Style>
             </Label.Style>
-            <Label.Content>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="or drag file here"/>
-            </Label.Content>
+            <TextBlock Foreground="{StaticResource FontColor}" Text="or drag file here"/>
           </Label>
           <TextBox Padding="2.5" Margin="2" Width="Auto"
                    BorderThickness="1"
@@ -78,16 +74,14 @@
         </WrapPanel>
 
         <WrapPanel Orientation="Horizontal" Margin="3">
-          <Label Width="Auto">
-            <Label.Content>
-              <StackPanel Orientation="Horizontal">
-                <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Grid.png"
+          <Label Target="{Binding ElementName=HistogramBrowseButton}">
+            <StackPanel Orientation="Horizontal">
+              <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Grid.png"
                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Histogram: "/>
-              </StackPanel>
-            </Label.Content>
+              <AccessText Foreground="{StaticResource FontColor}" Text="_Histogram: "/>
+            </StackPanel>
           </Label>
-          <Button Padding="6, 3, 6, 3" Margin="0, 2, 0, 2" Width="Auto" Command="{Binding BrowseCommand}" CommandParameter="Histogram">
+          <Button x:Name="HistogramBrowseButton" Padding="6, 3, 6, 3" Margin="0, 2, 0, 2" Width="Auto" Command="{Binding BrowseCommand}" CommandParameter="Histogram">
             <Button.Content>
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
@@ -96,7 +90,7 @@
               </StackPanel>
             </Button.Content>
           </Button>
-          <Label x:Name="HistogramDragTips" Width="Auto">
+          <Label x:Name="HistogramDragTips">
             <Label.Style>
               <Style TargetType="{x:Type Label}">
                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -123,13 +117,13 @@
         </WrapPanel>
 
         <WrapPanel Orientation="Horizontal" Margin="3">
-          <Label Width="Auto">
+          <Label Target="{Binding ElementName=LanguageComboBox}">
             <Label.Content>
               <StackPanel Orientation="Horizontal">
                 <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;"
                            FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
                            RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Language: "/>
+                <AccessText Foreground="{StaticResource FontColor}" Text="_Language: "/>
               </StackPanel>
             </Label.Content>
           </Label>
@@ -151,74 +145,64 @@
           </Label>
 
           <WrapPanel Orientation="Vertical" Margin="15, 0, 0, 0">
-            <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
-              <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        IsChecked="{Binding NoImportEmptyOrNull}"/>
-              <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
-                <Label.Content>
-                  <StackPanel Orientation="Horizontal">
-                    <TextBlock Foreground="{StaticResource FontColor}" Text="Do not import empty or null strings"/>
-                  </StackPanel>
-                </Label.Content>
+            <CheckBox Margin="3, 0, 3, 0" VerticalContentAlignment="Center"
+                      IsChecked="{Binding NoImportEmptyOrNull}" Cursor="Hand">
+              <Label>
+                <StackPanel Orientation="Horizontal">
+                  <AccessText Foreground="{StaticResource FontColor}" Text="Do not import empty or _null strings"/>
+                </StackPanel>
               </Label>
-            </WrapPanel>
+            </CheckBox>
 
-            <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
-              <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        IsChecked="{Binding DeleteExistingStrings}"/>
-              <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
-                <Label.Content>
-                  <StackPanel Orientation="Horizontal">
-                    <TextBlock Foreground="{StaticResource FontColor}" Text="Remove all existing strings"/>
-                  </StackPanel>
-                </Label.Content>
+            <CheckBox Margin="3, 0, 3, 0" VerticalContentAlignment="Center"
+                      IsChecked="{Binding DeleteExistingStrings}" Cursor="Hand">
+              <Label>
+                <StackPanel Orientation="Horizontal">
+                  <AccessText Foreground="{StaticResource FontColor}" Text="Remove all _existing strings"/>
+                </StackPanel>
               </Label>
-            </WrapPanel>
+            </CheckBox>
 
-            <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
-              <WrapPanel.Style>
-                <Style TargetType="WrapPanel">
+            <CheckBox Margin="3, 0, 3, 0" VerticalContentAlignment="Center"
+                      IsChecked="{Binding NoOverwriteSameStrings}" Cursor="Hand">
+              <CheckBox.Style>
+                <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
+                  <Setter Property="IsEnabled" Value="True"/>
                   <Style.Triggers>
                     <DataTrigger Binding="{Binding DeleteExistingStrings}" Value="True">
                       <Setter Property="IsEnabled" Value="False"/>
                     </DataTrigger>
                   </Style.Triggers>
                 </Style>
-              </WrapPanel.Style>
-              <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        IsChecked="{Binding NoOverwriteSameStrings}"/>
-              <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
-                <Label.Content>
-                  <StackPanel Orientation="Horizontal">
-                    <TextBlock Foreground="{StaticResource FontColor}" Text="Do not overwrite same existing strings"/>
-                  </StackPanel>
-                </Label.Content>
+              </CheckBox.Style>
+              <Label>
+                <StackPanel Orientation="Horizontal">
+                  <AccessText Foreground="{StaticResource FontColor}" Text="Do not _overwrite same existing strings"/>
+                </StackPanel>
               </Label>
-            </WrapPanel>
+            </CheckBox>
           </WrapPanel>
         </StackPanel>
       </StackPanel>
     </ScrollViewer>
     <Grid x:Name="NormalFooterGrid" Grid.Row="1" Margin="5">
       <DockPanel LastChildFill="False">
-        <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}">
-          <Button.Content>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Margin="0, 1, 5, 0" Text="&#xF3B1;"
-                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                         RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Cancel"/>
-            </StackPanel>
-          </Button.Content>
+        <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}" IsCancel="True">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Margin="0, 1, 5, 0" Text="&#xF3B1;"
+                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+            <AccessText Foreground="{StaticResource FontColor}" Text="_Cancel"/>
+          </StackPanel>
         </Button>
 
-        <Button x:Name="ConfirmButton" DockPanel.Dock="Right" Padding="6, 3, 6, 3" Margin="3" Width="Auto"
+        <Button x:Name="ConfirmButton" DockPanel.Dock="Right" Padding="6, 3, 6, 3" Margin="3" Width="Auto" IsDefault="True"
                 Command="{Binding ImportCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
           <Button.Content>
             <StackPanel Orientation="Horizontal">
               <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Import.png"
                      RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Import"/>
+              <AccessText Foreground="{StaticResource FontColor}" Text="_Import"/>
             </StackPanel>
           </Button.Content>
         </Button>

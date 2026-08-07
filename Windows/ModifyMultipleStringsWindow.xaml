@@ -43,15 +43,13 @@
           <RowDefinition Height="*"/>
           <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Width="Auto">
-          <Label.Content>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Margin="0, 1, 5, 0" Text="&#xE721;"
-                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                         RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Find: "/>
-            </StackPanel>
-          </Label.Content>
+        <Label Grid.Row="0" Target="{Binding ElementName=FilterTextBox}">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Margin="0, 1, 5, 0" Text="&#xE721;"
+                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+            <AccessText Foreground="{StaticResource FontColor}" Text="_Find: "/>
+          </StackPanel>
         </Label>
 
         <TextBox x:Name="FilterTextBox" Grid.Row="1" Padding="2.5" Margin="5, 2, 5, 2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
@@ -80,15 +78,13 @@
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Width="Auto">
-          <Label.Content>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Margin="0, 1, 5, 0" Text="&#xE932;"
-                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                         RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Replace: "/>
-            </StackPanel>
-          </Label.Content>
+        <Label Grid.Row="0" Target="{Binding ElementName=EditTextBox}">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Margin="0, 1, 5, 0" Text="&#xE932;"
+                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+            <AccessText Foreground="{StaticResource FontColor}" Text="Rep_lace: "/>
+          </StackPanel>
         </Label>
         <TextBox x:Name="EditTextBox" Grid.Row="1" Padding="2.5" Margin="5, 2, 5, 2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                  BorderThickness="1"
@@ -100,15 +96,13 @@
       </Grid>
 
       <WrapPanel Grid.Row="2" Orientation="Horizontal" Margin="3">
-        <Label Width="Auto">
-          <Label.Content>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;"
-                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                         RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Language: "/>
-            </StackPanel>
-          </Label.Content>
+        <Label Target="{Binding ElementName=LanguageComboBox}">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Margin="0, 1, 5, 0" Text="&#xF2B7;"
+                       FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+            <AccessText Foreground="{StaticResource FontColor}" Text="_Language: "/>
+          </StackPanel>
         </Label>
         <ComboBox x:Name="LanguageComboBox" MinWidth="140" Width="Auto" Margin="2"
                   ItemsSource="{Binding Languages}"
@@ -118,94 +112,85 @@
 
       <StackPanel Grid.Row="3" Margin="3" Orientation="Vertical">
         <Label Width="Auto">
-          <Label.Content>
-            <StackPanel Orientation="Horizontal">
-              <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyCore;component/Images/Settings.png"
-                     RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Options: "/>
-            </StackPanel>
-          </Label.Content>
+          <StackPanel Orientation="Horizontal">
+            <Image Margin="0, 2, 5, 0" Width="14" Source="/FrostyCore;component/Images/Settings.png"
+                   RenderOptions.BitmapScalingMode="HighQuality"/>
+            <TextBlock Foreground="{StaticResource FontColor}" Text="Options: "/>
+          </StackPanel>
         </Label>
 
         <WrapPanel Orientation="Vertical" Margin="15, 0, 0, 0">
-          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
-            <WrapPanel.Style>
-              <Style TargetType="WrapPanel">
+
+          <CheckBox Margin="3, 0, 3, 0" VerticalContentAlignment="Center"
+                    IsChecked="{Binding CaseSensitive}" Cursor="Hand">
+            <CheckBox.Style>
+              <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
+                <Setter Property="IsEnabled" Value="True"/>
                 <Style.Triggers>
                   <DataTrigger Binding="{Binding UseRegex}" Value="True">
                     <Setter Property="IsEnabled" Value="False"/>
                   </DataTrigger>
                 </Style.Triggers>
               </Style>
-            </WrapPanel.Style>
-            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                      IsChecked="{Binding CaseSensitive}"/>
-            <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
+            </CheckBox.Style>
+            <Label>
               <Label.Content>
                 <StackPanel Orientation="Horizontal">
-                  <TextBlock Foreground="{StaticResource FontColor}" Text="Case sensitive"/>
+                  <AccessText Foreground="{StaticResource FontColor}" Text="_Case sensitive"/>
                 </StackPanel>
               </Label.Content>
             </Label>
-          </WrapPanel>
+          </CheckBox>
 
-          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
-            <WrapPanel.Style>
-              <Style TargetType="WrapPanel">
+          <CheckBox Margin="3, 0, 3, 0" VerticalContentAlignment="Center"
+                    IsChecked="{Binding MatchWholeWord}" Cursor="Hand">
+            <CheckBox.Style>
+              <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
+                <Setter Property="IsEnabled" Value="True"/>
                 <Style.Triggers>
                   <DataTrigger Binding="{Binding UseRegex}" Value="True">
                     <Setter Property="IsEnabled" Value="False"/>
                   </DataTrigger>
                 </Style.Triggers>
               </Style>
-            </WrapPanel.Style>
-            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                      IsChecked="{Binding MatchWholeWord}"/>
-            <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
-              <Label.Content>
-                <StackPanel Orientation="Horizontal">
-                  <TextBlock Foreground="{StaticResource FontColor}" Text="Match whole word"/>
-                </StackPanel>
-              </Label.Content>
+            </CheckBox.Style>
+            <Label>
+              <StackPanel Orientation="Horizontal">
+                <AccessText Foreground="{StaticResource FontColor}" Text="Match _whole word"/>
+              </StackPanel>
             </Label>
-          </WrapPanel>
+          </CheckBox>
 
-          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
-            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                      IsChecked="{Binding UseRegex}"/>
-            <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
-              <Label.Content>
-                <StackPanel Orientation="Horizontal">
-                  <TextBlock Foreground="{StaticResource FontColor}" Text="Use regular expressions"/>
-                </StackPanel>
-              </Label.Content>
+          <CheckBox Margin="3, 0, 3, 0" VerticalContentAlignment="Center"
+                    IsChecked="{Binding UseRegex}" Cursor="Hand">
+            <Label>
+              <StackPanel Orientation="Horizontal">
+                <AccessText Foreground="{StaticResource FontColor}" Text="_Use regular expressions"/>
+              </StackPanel>
             </Label>
-          </WrapPanel>
+          </CheckBox>
 
-          <WrapPanel Orientation="Horizontal" Margin="3, 0, 3, 0" Cursor="Hand">
-            <CheckBox Margin="0, 2, 0, 2" HorizontalAlignment="Center" VerticalAlignment="Center"
-                      IsChecked="{Binding ReplaceEntireString}"/>
-            <Label Width="Auto" MouseLeftButtonUp="ToggleAdjacentCheckBox">
-              <Label.Content>
-                <StackPanel Orientation="Horizontal">
-                  <TextBlock Foreground="{StaticResource FontColor}" Text="Replace entire string"/>
-                </StackPanel>
-              </Label.Content>
+          <CheckBox Margin="3, 0, 3, 0" VerticalContentAlignment="Center"
+                    IsChecked="{Binding ReplaceEntireString}" Cursor="Hand">
+            <Label>
+              <StackPanel Orientation="Horizontal">
+                <AccessText Foreground="{StaticResource FontColor}" Text="Replace _entire string"/>
+              </StackPanel>
             </Label>
-          </WrapPanel>
+          </CheckBox>
         </WrapPanel>
       </StackPanel>
     </Grid>
 
     <Grid Grid.Row="1" Margin="5">
       <DockPanel LastChildFill="False">
-        <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}">
+        <Button x:Name="CancelButton" Padding="6, 3, 6, 3" Margin="3" DockPanel.Dock="Left" Width="Auto" Command="{Binding CancelCommand}" IsCancel="True">
           <Button.Content>
             <StackPanel Orientation="Horizontal">
               <TextBlock Margin="0, 1, 5, 0" Text="&#xF3B1;"
                          FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
                          RenderOptions.BitmapScalingMode="HighQuality"/>
-              <TextBlock Foreground="{StaticResource FontColor}" Text="Exit"/>
+              <AccessText Foreground="{StaticResource FontColor}" Text="E_xit"/>
             </StackPanel>
           </Button.Content>
         </Button>
@@ -213,35 +198,29 @@
         <WrapPanel DockPanel.Dock="Right">
           <Button x:Name="RevertButton" Padding="6, 3, 6, 3" Margin="3" Width="Auto"
                   Command="{Binding RevertCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
-            <Button.Content>
-              <StackPanel Orientation="Horizontal">
-                <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Revert.png"
-                       RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Revert"/>
-              </StackPanel>
-            </Button.Content>
+            <StackPanel Orientation="Horizontal">
+              <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Revert.png"
+                     RenderOptions.BitmapScalingMode="HighQuality"/>
+              <AccessText Foreground="{StaticResource FontColor}" Text="_Revert"/>
+            </StackPanel>
           </Button>
           <Button x:Name="RemoveButton" Padding="6, 3, 6, 3" Margin="3" Width="Auto"
                   Command="{Binding RemoveCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
-            <Button.Content>
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0, 1, 5, 0" Text="&#xE75C;"
-                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                           RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Remove"/>
-              </StackPanel>
-            </Button.Content>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Margin="0, 1, 5, 0" Text="&#xE75C;"
+                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
+              <AccessText Foreground="{StaticResource FontColor}" Text="Remo_ve"/>
+            </StackPanel>
           </Button>
-          <Button x:Name="ReplaceButton" Padding="6, 3, 6, 3" Margin="3" Width="Auto"
+          <Button x:Name="ReplaceButton" Padding="6, 3, 6, 3" Margin="3" Width="Auto" IsDefault="True"
                   Command="{Binding ReplaceCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
-            <Button.Content>
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="0, 1, 5, 0" Text="&#xE70F;"
-                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                           RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Replace"/>
-              </StackPanel>
-            </Button.Content>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Margin="0, 1, 5, 0" Text="&#xE70F;"
+                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                         RenderOptions.BitmapScalingMode="HighQuality"/>
+              <AccessText Foreground="{StaticResource FontColor}" Text="Re_place"/>
+            </StackPanel>
           </Button>
         </WrapPanel>
       </DockPanel>
