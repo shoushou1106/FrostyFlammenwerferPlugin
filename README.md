@@ -44,11 +44,12 @@ Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by Gal
    - **Cached ID Database:** A database living in your Frosty's `Caches` folder. It caches IDs for all strings included in a game, and provides a reference section to track which files reference a string ID.
       - **Search game files:** A enhanced scanning feature derived from Localized String Editor's "Export String Usage List". It resolves ~15% more string IDs by trying more property names, parse inside Swf files, guessing EBX filename as ID, and expanding known patterns. (e.g. In PvZGW2, vanilla resolves 12,585 of 23,426 hashes; Flammenwerfer unveils 15,615.)
       - **Manual observation:** Remove all strings, and the game will fallback display strings as their IDs. You can then manually add these IDs into the database.
-> [!TIP]
-> You can remove all strings using **Modify Multiple Strings Window**. Check `Use regular expressions`, type in `.*`, and click Remove.
       - **Accelerated computing:** Use GPU to guess string IDs. *(Planned for a future update)*
    - **Project ID Database:** Another database living in your project. It saves all your added IDs as a separate EBX directly in your project file (Located in `Flammenwerfer/ProjectIdDatabase`). You will never lose it even the project is touched by `FsLocalizationPlugin` later. All perfect for solo or team collaboration. You can manually record references for each ID, and disable this entirely in `Tools > Options > Flammenwerfer Options`. *(A comment feature is planned)*
    - **Sharing:** Both databases share the same human-readable JSON format and utilize a unified Import button. The Cached Database itself is a JSON, and the Project Database can export into JSON. You can easily share, merge, and use Git (or other version control) to track changes. Other creators can import and use your carefully crafted Cached Database, or you can sync Project Database with your collaborators.
+
+> [!TIP]
+> You can remove all strings using **Modify Multiple Strings Window**. Check `Use regular expressions`, type in `.*`, and click Remove.
 
 ## Compatibility
 
