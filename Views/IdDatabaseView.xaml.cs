@@ -1,7 +1,6 @@
 using Frosty.Core;
 using FrostySdk.Managers;
 using FsLocalizationPlugin.ViewModels;
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -26,46 +25,19 @@ namespace FsLocalizationPlugin.Views
             viewModel = new IdDatabaseViewModel(LocalizedStringDatabase.Current as FsLocalizationStringDatabase);
             DataContext = viewModel;
 
-            viewModel.PropertyChanged += ViewModel_PropertyChanged;
-
             // FrostyAssetListView exposes no selection event of its own; the inner ListView's bubbles up.
             RefsList.AddHandler(Selector.SelectionChangedEvent, new SelectionChangedEventHandler(RefsList_SelectionChanged));
 
             // A ContextMenu lives outside the visual tree, so it never inherits the DataContext.
             RefsList.AssetContextMenu.DataContext = viewModel;
 
-            CommentColumn.Visibility = Visibility.Collapsed;
-            UpdateRefSourceMenuItem();
-
             Loaded += OnLoaded;
-        }
-
-        /// <summary>
-        /// The reference source line only means something for the cached database, where a scan
-        /// rewrites its own references. It is physically added/removed rather than collapsed:
-        /// a collapsed MenuItem in an already-shown ContextMenu leaves a blank, unclickable gap.
-        /// </summary>
-        private void UpdateRefSourceMenuItem()
-        {
-            ItemCollection items = RefsList.AssetContextMenu.Items;
-            bool present = items.Contains(RefSourceMenuItem);
-
-            if (viewModel.IsCachedView && !present)
-            {
-                items.Add(RefSourceSeparator);
-                items.Add(RefSourceMenuItem);
-            }
-            else if (!viewModel.IsCachedView && present)
-            {
-                items.Remove(RefSourceMenuItem);
-                items.Remove(RefSourceSeparator);
-            }
         }
 
         /// <summary>Called by IdDatabaseEditor when Frosty closes the tab.</summary>
         public void OnEditorClosed()
         {
-            viewModel.OnClosed();
+            viewModel.Dispose();
 
             if (refExplorerInitialized)
             {
@@ -79,16 +51,6 @@ namespace FsLocalizationPlugin.Views
         {
             Loaded -= OnLoaded;
             viewModel.OnFirstLoad();
-        }
-
-        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(IdDatabaseViewModel.IsProjectView))
-            {
-                // DataGrid columns are not part of the visual tree, so their visibility cannot bind.
-                CommentColumn.Visibility = viewModel.IsProjectView ? Visibility.Visible : Visibility.Collapsed;
-                UpdateRefSourceMenuItem();
-            }
         }
 
         private void FilterBox_KeyDown(object sender, KeyEventArgs e)
@@ -114,7 +76,7 @@ namespace FsLocalizationPlugin.Views
 
         private void RefsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            viewModel.SetSelectedReference(RefsList.SelectedItem as AssetEntry);
+            viewModel.HasRefSelection = RefsList.SelectedItem != null;
         }
 
         private void RefsList_SelectedAssetDoubleClick(object sender, RoutedEventArgs e)
@@ -137,8 +99,8 @@ namespace FsLocalizationPlugin.Views
 
         private void AddRefPopup_Opened(object sender, System.EventArgs e)
         {
-            // Same pattern as MeshSetPlugin's FrostySkeletonControl: a FrostyDataExplorer in a
-            // popup acts as the ebx picker; selecting an asset commits and closes the popup.
+            // Same pattern as MeshSetPlugin's FrostySkeletonControl. A FrostyDataExplorer inside a
+            // popup acts as the ebx picker, and selecting an asset commits and closes the popup.
             if (refExplorerInitialized)
                 return;
             refExplorerInitialized = true;

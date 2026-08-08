@@ -51,12 +51,18 @@ namespace FsLocalizationPlugin.Helpers
         //private const int MaxRecursionDepth = 16; // Guards against stack overflow on deeply nested structs.
         private const int TotalParts = 3; // EBX scan, SWF scan, Pattern expansion
 
+        /// <summary>What one scan did, for the caller to report.</summary>
         public sealed class ScanResult
         {
             public int AssetsScanned { get; set; }
             public int SwfScanned { get; set; }
             public int IdsFound { get; set; }
             public int RefsFound { get; set; }
+
+            /// <summary>Assets that could not be read or walked. Each one is in the debug log.</summary>
+            public int AssetsFailed { get; set; }
+
+            public double ElapsedSeconds { get; set; }
             public bool Cancelled { get; set; }
         }
 
@@ -132,7 +138,9 @@ namespace FsLocalizationPlugin.Helpers
                 }
                 catch (Exception ex)
                 {
-                    App.Logger.LogError("Read failed on {0}: {1}", entry.Name, ex.Message);
+                    // Per asset, so this stays out of the main log. The summary reports the count.
+                    ctx.Result.AssetsFailed++;
+                    DebugLogHelper.Log("IdScanner.Scan", "Read failed on {0}: {1}", entry.Name, ex.Message);
                     continue;
                 }
                 if (asset == null)
@@ -148,7 +156,8 @@ namespace FsLocalizationPlugin.Helpers
                 }
                 catch (Exception ex)
                 {
-                    App.Logger.LogError("Walk failed on {0}: {1}", entry.Name, ex.Message);
+                    ctx.Result.AssetsFailed++;
+                    DebugLogHelper.Log("IdScanner.Scan", "Walk failed on {0}: {1}", entry.Name, ex.Message);
                 }
             }
 
@@ -161,12 +170,16 @@ namespace FsLocalizationPlugin.Helpers
             LocalizationHelper.ReportProgress(ctx.Logger, 1, 1, TotalParts, TotalParts);
 
             foreach (KeyValuePair<uint, HashSet<string>> kvp in ctx.NewRefs)
-                idDb.SetScanReferences(kvp.Key, kvp.Value);
+                idDb.AddReferences(kvp.Key, kvp.Value);
             idDb.Save();
 
             stopwatch.Stop();
-            App.Logger.Log("Scanned {0} asset(s) and {1} swf(s) in {2}s: {3} new ID(s), {4} reference(s), cancelled: {5}",
-                ctx.Result.AssetsScanned, ctx.Result.SwfScanned, stopwatch.Elapsed.TotalSeconds.ToString("F1", CultureInfo.InvariantCulture), ctx.Result.IdsFound, ctx.NewRefs.Count, ctx.Result.Cancelled);
+            ctx.Result.ElapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+
+            // The caller writes the line the user reads, so this one only carries the detail.
+            DebugLogHelper.Log("IdScanner.Scan", "Finished in {0}s. {1} asset(s), {2} swf(s), {3} failed, {4} hash(es) referenced, cancelled: {5}",
+                ctx.Result.ElapsedSeconds.ToString("F1", CultureInfo.InvariantCulture), ctx.Result.AssetsScanned,
+                ctx.Result.SwfScanned, ctx.Result.AssetsFailed, ctx.NewRefs.Count, ctx.Result.Cancelled);
 
             return ctx.Result;
         }
@@ -220,7 +233,7 @@ namespace FsLocalizationPlugin.Helpers
             {
                 foreach (PropertyInfo pi in props.StringHashes)
                 {
-                    // Non-FsLoc style reference: the hash is stored directly, no ID text to learn.
+                    // Non-FsLoc style reference. The hash is stored directly, so there is no ID text to learn.
                     uint hash = (uint)pi.GetValue(obj);
                     if (ctx.ValidHashes.Contains(hash))
                         AddRef(ctx, hash, assetName);
@@ -256,7 +269,7 @@ namespace FsLocalizationPlugin.Helpers
             if (!ctx.ValidHashes.Contains(hash))
                 return;
 
-            if (ctx.Db.AddId(text))
+            if (ctx.Db.AddId(hash, text))
                 ctx.Result.IdsFound++;
             if (!string.IsNullOrEmpty(refAssetName))
                 AddRef(ctx, hash, refAssetName);
@@ -534,7 +547,7 @@ namespace FsLocalizationPlugin.Helpers
                 foreach (KeyValuePair<uint, string> kvp in ctx.Db.EnumerateIds())
                     seeds.Add(kvp.Value);
 
-                // Numeric families: strip trailing digits, regenerate the range in seen paddings.
+                // Numeric families. Strip trailing digits, then regenerate the range in seen paddings.
                 HashSet<string> numericBases = new HashSet<string>();
                 foreach (string seed in seeds)
                 {

@@ -172,11 +172,6 @@
                                      Highlight="{Binding DataContext.ActiveFilter, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
                                      TextWrapping="Wrap" Foreground="{StaticResource FontColor}"/>
       </DataTemplate>
-      <DataTemplate x:Key="CommentCellTemplate">
-        <controls:RevisedHighlightTextBlock SourceText="{Binding Comment, Mode=OneWay}"
-                                     Highlight="{Binding DataContext.ActiveFilter, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
-                                     TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Foreground="{StaticResource FontColor}"/>
-      </DataTemplate>
 
     </ResourceDictionary>
   </UserControl.Resources>
@@ -295,15 +290,6 @@
                                HorizontalScrollBarVisibility="Disabled"
                                FontFamily="Consolas, monospace"
                                d:Text="F1A88E22"/>
-                      <Button Padding="6, 3, 6, 3" Margin="2" Width="Auto" Command="{Binding AddIdGenerateHashCommand}">
-                        <Button.Content>
-                          <StackPanel Orientation="Horizontal">
-                            <Image Margin="0, 1, 5, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/shuffle_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png"
-                                   RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <AccessText Foreground="{StaticResource FontColor}" Text="_Generate Hash"/>
-                          </StackPanel>
-                        </Button.Content>
-                      </Button>
                     </WrapPanel>
 
                     <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="3">
@@ -402,7 +388,7 @@
 
               <Button Padding="6, 3, 6, 3" Width="Auto"
                       Command="{Binding RemoveIdCommand}"
-                      ToolTip="Forget the selected string: its ID, comment and references go together.">
+                      ToolTip="Forget the selected row.">
                 <StackPanel Orientation="Horizontal">
                   <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Remove.png"
                          RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -434,12 +420,11 @@
           <Border Background="{StaticResource ControlBackground}"
                   Margin="1, 1, 0, 0"
                   HorizontalAlignment="Left"
-                  VerticalAlignment="Center"
-                  Visibility="{Binding IsCachedView, Converter={StaticResource BoolToVis}}">
+                  VerticalAlignment="Center">
             <WrapPanel Orientation="Horizontal" Margin="2">
               <Button Padding="6, 3, 6, 3"
                       Command="{Binding ImportCommand}"
-                      ToolTip="Merge a shared ID database file into this one">
+                      ToolTip="Merge a ID database file into this one, auto detects Cached or Project.">
                 <StackPanel Orientation="Horizontal">
                   <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Import.png"
                      RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -447,11 +432,23 @@
                 </StackPanel>
               </Button>
               <Button Padding="6, 3, 6, 3"
-                      Command="{Binding OpenFolderCommand}">
+                      Command="{Binding LocateCacheCommand}"
+                      ToolTip="Locate the Cached ID database for sharing."
+                      Visibility="{Binding IsCachedView, Converter={StaticResource BoolToVis}}">
                 <StackPanel Orientation="Horizontal">
                   <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Open.png"
                    RenderOptions.BitmapScalingMode="HighQuality"/>
-                  <AccessText Foreground="{StaticResource FontColor}" Text="_Open Caches Folder"/>
+                  <AccessText Foreground="{StaticResource FontColor}" Text="_Locate Cache File"/>
+                </StackPanel>
+              </Button>
+              <Button Padding="6, 3, 6, 3"
+                      Command="{Binding ExportProjectCommand}"
+                      Visibility="{Binding IsProjectView, Converter={StaticResource BoolToVis}}"
+                      ToolTip="Export the Project ID database for sharing.">
+                <StackPanel Orientation="Horizontal">
+                  <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Export.png"
+                     RenderOptions.BitmapScalingMode="HighQuality"/>
+                  <AccessText Foreground="{StaticResource FontColor}" Text="E_xport Project IDs"/>
                 </StackPanel>
               </Button>
             </WrapPanel>
@@ -479,33 +476,6 @@
           <Border Background="{StaticResource ControlBackground}"
                   Margin="1, 1, 0, 0"
                   HorizontalAlignment="Left"
-                  VerticalAlignment="Center"
-                  Visibility="{Binding IsProjectView, Converter={StaticResource BoolToVis}}">
-            <WrapPanel Orientation="Horizontal" Margin="2">
-              <Button Padding="6, 3, 6, 3"
-                      Command="{Binding ImportProjectCommand}"
-                      ToolTip="Import a project ID database.">
-                <StackPanel Orientation="Horizontal">
-                  <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Import.png"
-                         RenderOptions.BitmapScalingMode="HighQuality"/>
-                  <AccessText Foreground="{StaticResource FontColor}" Text="_Import Project IDs"/>
-                </StackPanel>
-              </Button>
-              <Button Padding="6, 3, 6, 3"
-                      Command="{Binding ExportProjectCommand}"
-                      ToolTip="Export the project ID database for sharing.">
-                <StackPanel Orientation="Horizontal">
-                  <Image Margin="0, 1, 5, 0" Width="14" Source="/FrostyEditor;component/Images/Export.png"
-                     RenderOptions.BitmapScalingMode="HighQuality"/>
-                  <AccessText Foreground="{StaticResource FontColor}" Text="E_xport Project IDs"/>
-                </StackPanel>
-              </Button>
-            </WrapPanel>
-          </Border>
-
-          <Border Background="{StaticResource ControlBackground}"
-                  Margin="1, 1, 0, 0"
-                  HorizontalAlignment="Left"
                   VerticalAlignment="Center">
             <WrapPanel Orientation="Horizontal" Margin="2">
               <Label Padding="6, 3, 6, 3" Content="{Binding CountText}" d:Content="13000 of 21000 strings resolved"/>
@@ -523,18 +493,8 @@
                                        BorderThickness="0" SnapsToDevicePixels="False"
                                        HorizontalAlignment="Stretch" VerticalContentAlignment="Center"
                                        Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
-                                       KeyDown="FilterBox_KeyDown">
-            <ctrl:FrostyWatermarkTextBox.Style>
-              <Style TargetType="{x:Type ctrl:FrostyWatermarkTextBox}" BasedOn="{StaticResource {x:Type ctrl:FrostyWatermarkTextBox}}">
-                <Setter Property="WatermarkText" Value="Filter by Hash, ID, or Comment"/>
-                <Style.Triggers>
-                  <DataTrigger Binding="{Binding IsProjectView}" Value="False">
-                    <Setter Property="WatermarkText" Value="Filter by Hash or ID"/>
-                  </DataTrigger>
-                </Style.Triggers>
-              </Style>
-            </ctrl:FrostyWatermarkTextBox.Style>
-          </ctrl:FrostyWatermarkTextBox>
+                                       WatermarkText="Filter by Hash or ID"
+                                       KeyDown="FilterBox_KeyDown"/>
         </Border>
         <ProgressBar Margin="1, -1, 1, 0" HorizontalAlignment="Stretch" Height="1" IsIndeterminate="True"
                      Visibility="{Binding IsFiltering, Converter={StaticResource BoolToVis}}" d:Visibility="Visible"/>
@@ -587,17 +547,6 @@
                 <Image Margin="0, 1, 4, 0" Width="14" Source="/FsLocalizationPlugin;component/Images/label_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz24.png"
                        RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Foreground="{StaticResource FontColor}" Text="ID"/>
-              </StackPanel>
-            </DataGridTemplateColumn.Header>
-          </DataGridTemplateColumn>
-          <!-- Project database only. Collapsed for the cached view from code behind. -->
-          <DataGridTemplateColumn x:Name="CommentColumn" SortMemberPath="Comment" Width="4*" CellTemplate="{StaticResource CommentCellTemplate}">
-            <DataGridTemplateColumn.Header>
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="1, 1, 5, 0" Text="&#xE90A;"
-                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                           RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Foreground="{StaticResource FontColor}" Text="Comment"/>
               </StackPanel>
             </DataGridTemplateColumn.Header>
           </DataGridTemplateColumn>
@@ -677,31 +626,6 @@
                        HorizontalScrollBarVisibility="Disabled"
                        TextWrapping="Wrap"/>
               </WrapPanel>
-
-              <!-- Comment editor (Project Database only) -->
-              <Grid Grid.Row="2" Margin="3, 0, 3, 0" Visibility="{Binding IsProjectView, Converter={StaticResource BoolToVis}}">
-                <Grid.RowDefinitions>
-                  <RowDefinition Height="Auto"/>
-                  <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Label Grid.Row="0" Target="{Binding ElementName=DetailCommentBox}">
-                  <Label.Content>
-                    <StackPanel Orientation="Horizontal">
-                      <TextBlock Margin="0, 1, 5, 0" Text="&#xE90A;"
-                               FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
-                               RenderOptions.BitmapScalingMode="HighQuality"/>
-                      <TextBlock Foreground="{StaticResource FontColor}" Text="Comment: "/>
-                    </StackPanel>
-                  </Label.Content>
-                </Label>
-                <TextBox x:Name="DetailCommentBox" Grid.Row="1" Padding="2.5" Margin="5, 2, 5, 2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                       BorderThickness="1"
-                       Text="{Binding DetailComment, UpdateSourceTrigger=PropertyChanged}"
-                       VerticalScrollBarVisibility="Auto"
-                       HorizontalScrollBarVisibility="Auto"
-                       TextWrapping="Wrap"
-                       AcceptsReturn="True" AcceptsTab="True"/>
-              </Grid>
 
               <Grid Grid.Row="3" Margin="3, 0, 3, 3">
                 <Grid.ColumnDefinitions>
@@ -861,15 +785,6 @@
                             IsEnabled="{Binding HasRefSelection}">
                     <MenuItem.Icon>
                       <Image Source="/FrostyEditor;component/Images/Remove.png"
-                             RenderOptions.BitmapScalingMode="HighQuality" />
-                    </MenuItem.Icon>
-                  </MenuItem>
-                  <!-- Cached view only. Added/removed in code behind -->
-                  <Separator x:Name="RefSourceSeparator"/>
-                  <MenuItem x:Name="RefSourceMenuItem" Header="{Binding ReferenceSource}" IsEnabled="False"
-                            d:Header="Source: Added by Hand">
-                    <MenuItem.Icon>
-                      <Image Source="/FsLocalizationPlugin;component/Images/quick_reference_32dp_FFFFFF_FILL0_wght600_GRAD-25_opsz40.png"
                              RenderOptions.BitmapScalingMode="HighQuality" />
                     </MenuItem.Icon>
                   </MenuItem>

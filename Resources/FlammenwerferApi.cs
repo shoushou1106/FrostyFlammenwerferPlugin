@@ -14,28 +14,37 @@ namespace FsLocalizationPlugin.Resources
     /// <remarks>
     /// <para>
     /// Callers cannot name our types, so anything they need must cross the boundary as framework types (uint, string, List, IEnumerable, KeyValuePair)
-    /// or as JSON text (<see cref="IdDatabase.ExportJson"/>, <see cref="ProjectIdDatabase.ExportJson"/>).
-    /// The two <see cref="IdDatabase.EnumerateEntries"/> and <see cref="ProjectIdDatabase.EnumerateEntries"/> members yield our own entry types,
+    /// or as JSON text (<see cref="IdDatabase.ExportJson"/>, <see cref="ProjectIdDatabase.ExportJson"/>, <see cref="IdIndex.ImportJson"/>).
+    /// The two <see cref="IdDatabase.EnumerateEntries"/> and <see cref="ProjectIdDatabase.EnumerateEntries"/> members yield our own <see cref="IdEntry"/> type,
     /// they still work through plain reflection, but cannot be bound to a delegate,
-    /// so read a hash's parts individually (<see cref="ProjectIdDatabase.TryGet"/>, <see cref="ProjectIdDatabase.GetComment"/>, <see cref="ProjectIdDatabase.GetReferences"/>)
+    /// so read a hash's parts individually (<see cref="ProjectIdDatabase.TryGetId"/>, <see cref="ProjectIdDatabase.GetReferences"/>)
     /// or take the JSON instead.
+    /// </para>
+    /// <para>
+    /// Both databases speak the same document (see <see cref="IdDocument"/>):
+    /// A version, a note, the game, then entries keyed by hash in hex,
+    /// each holding an ID text and a list of asset paths, both of which can be empty.
+    /// </para>
+    /// <para>
+    /// この未来は好都合に光ってる<br/>
+    /// だから進むんだ
     /// </para>
     /// </remarks>
     public static class FlammenwerferApi
     {
         /// <summary>
         /// Bump on every change, for a caller to test version.
-        /// v1: 0.4.1, IdDatabase and ProjectIdDatabase as of the ID Database release.
+        /// v1: v0.4.1 ID Database release. Introduce IdIndex, IdDatabase, and ProjectIdDatabase.
         /// </summary>
         public const int Version = 1;
 
-        /// <summary>Both ID stores read as one, plus the routing the editor uses when strings change.</summary>
+        /// <summary>Both ID databases read as one, plus the routing and importing the editor uses.</summary>
         public static Type IdIndexType => typeof(IdIndex);
 
         /// <summary>The per-game cached database, shared through one JSON file in Frosty's Caches folder.</summary>
         public static Type IdDatabaseType => typeof(IdDatabase);
 
-        /// <summary>The project store, carried inside one added ebx asset.</summary>
+        /// <summary>The project database, carried inside one added ebx asset.</summary>
         public static Type ProjectIdDatabaseType => typeof(ProjectIdDatabase);
     }
 }

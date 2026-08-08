@@ -334,12 +334,10 @@ namespace FsLocalizationPlugin
         public HashSet<uint> GetStringsToRemove() => modified.stringsToRemove;
     }
 
-    /// <summary>Flammenwerfer's ILocalizedStringDatabase. How the editor (and other plugins) read/edit localized text.</summary>
+    /// <summary>Flammenwerfer's ILocalizedStringDatabase. How the editor and other plugins read/edit localized text.</summary>
     public class FsLocalizationStringDatabase : ILocalizedStringDatabase
     {
-        /// <summary>
-        /// Handshake anchor for other plugins, see <see cref="FlammenwerferApi"/>.
-        /// </summary>
+        /// <summary>Handshake anchor for other plugins, see <see cref="FlammenwerferApi"/>.</summary>
         public static int FlammenwerferApiVersion => FlammenwerferApi.Version;
 
         private Dictionary<uint, string> strings = new Dictionary<uint, string>();
@@ -469,6 +467,15 @@ namespace FsLocalizationPlugin
                 yield return key;
         }
 
+        public IEnumerable<uint> EnumerateOriginalStrings()
+        {
+            if (strings == null)
+                yield break;
+
+            foreach (uint key in strings.Keys)
+                yield return key;
+        }
+
         public string GetString(uint id)
         {
             if (TryGetString(id, out string value))
@@ -523,7 +530,10 @@ namespace FsLocalizationPlugin
         }
 
         #region -- Writing --
-// IdIndex is told what happened; it decides which ID store that belongs in.
+        // The overloads that take an ID text tell IdIndex about it,
+        // since this is the only place that text exists.
+        // IdIndex decides which database it belongs in.
+
         /// <summary>Adds a new string under a string ID (e.g. <c>ID_FLAME</c>) and returns its hash.</summary>
         public uint AddString(string id, string value)
         {
@@ -551,7 +561,7 @@ namespace FsLocalizationPlugin
 
         /// <summary>
         /// Marks a string for removal. Not supported by the original FsLocalizationPlugin.
-        /// A string the project added is reverted instead: the game never had it, so a removal
+        /// A string the project added is reverted instead. The game never had it, so a removal
         /// marker would only tell the mod to delete something that is not there.
         /// </summary>
         public void RemoveString(uint id)
@@ -576,7 +586,7 @@ namespace FsLocalizationPlugin
             EbxAssetEntry entry = App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid);
             if (loadedDatabase.GetStrings().Count == 0 && loadedDatabase.GetStringsToRemove().Count == 0)
             {
-                // Nothing left in the diff: revert the asset instead of leaving it marked modified.
+                // Nothing left in the diff, so revert the asset instead of leaving it marked modified.
                 App.AssetManager.RevertAsset(entry, dataOnly: false, suppressOnModify: false);
             }
             else
@@ -589,7 +599,7 @@ namespace FsLocalizationPlugin
 
         #endregion
 
-        #region -- Windows, opened from the Tools menu --
+        #region -- Windows --
         public void AddStringWindow()
         {
             new ModifyStringWindow(Application.Current.MainWindow).ShowDialog();

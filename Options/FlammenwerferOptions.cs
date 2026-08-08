@@ -15,7 +15,7 @@ namespace FsLocalizationPlugin.Options
         //public bool Language { get; set; } = false;
 
         [Category("Editor")]
-        [Description("Collects and manages strings added to a project. Saved in a added EBX Asset in your project and never exported to a mod file.")]
+        [Description("Collects and manages strings added to a project. Saved in a added EBX Asset in your project, stays alive even when Flammenwerfer is not installed, and never exported to a mod file. You have to manually revert Flammenwerfer\\ProjectIdDatabase after disabling this.")]
         [DisplayName("Project ID Database")]
         [EbxFieldMeta(FrostySdk.IO.EbxFieldType.Boolean)]
 
@@ -29,8 +29,8 @@ namespace FsLocalizationPlugin.Options
 
         public override void Load()
         {
-            // ProjectIdDatabase.Enabled reads this key on demand, so nothing to push here.
             ProjectIdDatabaseEnabled = Config.Get("Flammenwerfer_ProjectIdDatabaseEnabled", true, ConfigScope.Game);
+            ProjectIdDatabase.Enabled = ProjectIdDatabaseEnabled;
 
             DebugLogging = Config.Get("Flammenwerfer_DebugLogging", false, ConfigScope.Global);
             DebugLogHelper.Enabled = DebugLogging;
@@ -39,6 +39,7 @@ namespace FsLocalizationPlugin.Options
         public override void Save()
         {
             Config.Add("Flammenwerfer_ProjectIdDatabaseEnabled", ProjectIdDatabaseEnabled, ConfigScope.Game);
+            ProjectIdDatabase.Enabled = ProjectIdDatabaseEnabled;
 
             Config.Add("Flammenwerfer_DebugLogging", DebugLogging, ConfigScope.Global);
             DebugLogHelper.Enabled = DebugLogging;

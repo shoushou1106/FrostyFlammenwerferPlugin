@@ -9,12 +9,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
-using System.Windows.Threading;
 
 #if FROSTY_107
 using FrostySdk.Managers.Entries;
@@ -22,30 +23,23 @@ using FrostySdk.Managers.Entries;
 
 namespace FsLocalizationPlugin.ViewModels
 {
-    /// <summary>Backs the ID Database editor tab: browse, scan, add, import, comment, and fix string IDs.</summary>
-    public sealed class IdDatabaseViewModel : ViewModelBase
+    /// <summary>Backs the ID Database editor tab. Browse, scan, add, import and fix string IDs.</summary>
+    /// <remarks>The tab shows one database at a time, and every edit goes to the one on screen.</remarks>
+    public sealed class IdDatabaseViewModel : ViewModelBase, IDisposable
     {
-        private static readonly Random Rng = new Random();
-
-        /// <summary>Where an ID belongs. A game string goes to the shared cache, everything else to the project.</summary>
-        private enum IdTarget
-        {
-            Cached,
-            Project,
-        }
+        private const string DialogTitle = "ID Database - Flammenwerfer";
+        private const string ProjectDatabaseOffMessage = "The project ID database is off. Turn it on in Tools > Options > Flammenwerfer Options.";
 
         /// <summary>One list row. Mutable so detail edits show without rebuilding the list.</summary>
         public sealed class IdRow : ViewModelBase
         {
             private string id;
-            private string comment;
 
-            public IdRow(uint hash, string id, string comment)
+            public IdRow(uint hash, string id)
             {
                 Hash = hash;
-                HashHex = hash.ToString("X8");
+                HashHex = hash.ToString("X8", CultureInfo.InvariantCulture);
                 this.id = id ?? string.Empty;
-                this.comment = comment ?? string.Empty;
             }
 
             public uint Hash { get; }
@@ -56,34 +50,28 @@ namespace FsLocalizationPlugin.ViewModels
                 get => id;
                 set => SetProperty(ref id, value ?? string.Empty);
             }
-
-            public string Comment
-            {
-                get => comment;
-                set => SetProperty(ref comment, value ?? string.Empty);
-            }
         }
 
         private readonly List<IdRow> allRows = new List<IdRow>();
         private readonly List<IdRow> rows = new List<IdRow>();
+
         private string filterText = string.Empty;
         private string activeFilter = string.Empty;
         private bool isFiltering;
         private bool isProjectView;
+        private string countText = string.Empty;
+
         private IdRow selectedRow;
         private string detailId = string.Empty;
-        private string detailComment = string.Empty;
-        private string addIdHashText = string.Empty;
-        private string addIdIdText = string.Empty;
-        private bool syncingAddIdFields;
+
         private List<AssetEntry> selectedReferences = new List<AssetEntry>();
         private string referencesHeader = "References: ";
         private bool hasRefSelection;
-        private string referenceSource = string.Empty;
-        private string countText = string.Empty;
-        private readonly DispatcherTimer addIdRefresh;
-        private FileSystemWatcher watcher;
-        private System.Timers.Timer watcherDebounce;
+
+        private string addIdHashText = string.Empty;
+        private string addIdIdText = string.Empty;
+        private bool syncingAddIdFields;
+
         private bool closed;
 
         public IdDatabaseViewModel(FsLocalizationStringDatabase database)
@@ -91,49 +79,64 @@ namespace FsLocalizationPlugin.ViewModels
             Database = database;
             RowsView = new ListCollectionView(rows);
 
-            // Typing an ID recomputes several status properties; defer that off the keystroke.
-            addIdRefresh = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(200) };
-            addIdRefresh.Tick += (s, e) => { addIdRefresh.Stop(); RaiseAddIdState(); };
-
             ScanCommand = new RelayCommand(_ => Scan());
             RefreshCommand = new RelayCommand(_ => IdDatabase.Instance.Reload());
             ImportCommand = new RelayCommand(_ => Import());
-            OpenFolderCommand = new RelayCommand(_ => OpenCachesFolder());
-            AddIdGenerateHashCommand = new RelayCommand(_ => AddIdGenerateHash());
+            LocateCacheCommand = new RelayCommand(_ => LocateCacheFile());
+            ExportProjectCommand = new RelayCommand(_ => ExportProject());
             AddIdConfirmCommand = new RelayCommand(_ => AddIdConfirm(), _ => CanAddIdConfirm);
             RemoveIdCommand = new RelayCommand(_ => RemoveId(), _ => CanRemoveId);
             ConfirmDetailCommand = new RelayCommand(_ => ConfirmDetail(), _ => CanConfirmDetail);
-            ExportProjectCommand = new RelayCommand(_ => ExportProject());
-            ImportProjectCommand = new RelayCommand(_ => ImportProject());
             // Reserved: accelerated ID computing (GPU).
             ComputeCommand = new RelayCommand(_ => { }, _ => false);
         }
 
         private FsLocalizationStringDatabase Database { get; }
 
-        public ICollectionView RowsView { get; }
+        public RelayCommand ScanCommand { get; }
+        public RelayCommand RefreshCommand { get; }
+        public RelayCommand ImportCommand { get; }
+        public RelayCommand LocateCacheCommand { get; }
+        public RelayCommand ExportProjectCommand { get; }
+        public RelayCommand AddIdConfirmCommand { get; }
+        public RelayCommand RemoveIdCommand { get; }
+        public RelayCommand ConfirmDetailCommand { get; }
+        public RelayCommand ComputeCommand { get; }
 
-        /// <summary>What the user typed. The list refilters when Enter is pressed.</summary>
-        public string FilterText
+        #region -- Lifecycle --
+        /// <summary>Called once when the view loads. Nothing touches the files before this (Lazy).</summary>
+        public void OnFirstLoad()
         {
-            get => filterText;
-            set => SetProperty(ref filterText, value ?? string.Empty);
+            IdDatabase.Instance.EnsureLoaded();
+            IdDatabase.Instance.Changed += OnDatabaseChanged;
+            BuildRows();
         }
 
-        /// <summary>The filter the list currently shows. Drives the match highlight.</summary>
-        public string ActiveFilter
+        /// <summary>Called when the tab closes.</summary>
+        /// <remarks>
+        /// The event handler is the only thing holding this tab alive, since the database is a
+        /// singleton and the handler closes over the view model. Dropping it lets the whole tab go,
+        /// rows included. Clearing the lists by hand was measured and freed nothing extra.
+        /// </remarks>
+        public void Dispose()
         {
-            get => activeFilter;
-            private set => SetProperty(ref activeFilter, value);
+            closed = true;
+            IdDatabase.Instance.Changed -= OnDatabaseChanged;
         }
 
-        /// <summary>Drives the filter progress bar and the list cover.</summary>
-        public bool IsFiltering
+        private void OnDatabaseChanged()
         {
-            get => isFiltering;
-            private set => SetProperty(ref isFiltering, value);
+            // Changed can fire from a background save, such as the scan.
+            Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
+            {
+                if (!closed)
+                    BuildRows();
+            }));
         }
 
+        #endregion
+
+        #region -- Database Switch --
         public bool IsCachedView
         {
             get => !isProjectView;
@@ -157,16 +160,186 @@ namespace FsLocalizationPlugin.ViewModels
         /// <summary>The per-game option. Hides the view switch, leaving only the cached database.</summary>
         public bool IsProjectDatabaseEnabled => ProjectIdDatabase.Enabled;
 
-        /// <summary>
-        /// The toolbar counter: how much of the game is named in the cached view, how many entries
-        /// the project holds in the project view.
-        /// </summary>
+        /// <summary>The toolbar counter.</summary>
+        /// <remarks>
+        /// Counts how much of the game is named in the cached view,
+        /// and how many entries the project holds in the project view.
+        /// </remarks>
         public string CountText
         {
             get => countText;
             private set => SetProperty(ref countText, value);
         }
 
+        private void SwitchView(bool projectView)
+        {
+            isProjectView = projectView;
+            OnPropertiesChanged(nameof(IsProjectView), nameof(IsCachedView));
+            BuildRows();
+        }
+
+        #endregion
+
+        #region -- Rows and Filtering --
+        public ICollectionView RowsView { get; }
+
+        /// <summary>What the user typed. The list refilters when Enter is pressed.</summary>
+        public string FilterText
+        {
+            get => filterText;
+            set => SetProperty(ref filterText, value ?? string.Empty);
+        }
+
+        /// <summary>The filter the list currently shows. Drives the match highlight.</summary>
+        public string ActiveFilter
+        {
+            get => activeFilter;
+            private set => SetProperty(ref activeFilter, value);
+        }
+
+        /// <summary>Drives the filter progress bar and the list cover.</summary>
+        public bool IsFiltering
+        {
+            get => isFiltering;
+            private set => SetProperty(ref isFiltering, value);
+        }
+
+        /// <summary>Filters the list. Called when the user presses Enter.</summary>
+        public async void ApplyFilterNow()
+        {
+            if (IsFiltering || string.Equals(ActiveFilter, FilterText, StringComparison.Ordinal))
+                return;
+
+            string filter = FilterText;
+            IsFiltering = true;
+            try
+            {
+                // Off the UI thread so the progress bar and cover actually animate.
+                List<IdRow> source = new List<IdRow>(allRows);
+                List<IdRow> result = await Task.Run(() => ApplyFilter(source, filter));
+
+                if (closed)
+                    return;
+
+                ActiveFilter = filter;
+                ShowRows(result);
+            }
+            finally
+            {
+                IsFiltering = false;
+            }
+        }
+
+        private void BuildRows()
+        {
+            allRows.Clear();
+
+            // The option lives outside this tab and can be toggled while it is open.
+            OnPropertyChanged(nameof(IsProjectDatabaseEnabled));
+            if (isProjectView && !ProjectIdDatabase.Enabled)
+            {
+                isProjectView = false;
+                OnPropertiesChanged(nameof(IsProjectView), nameof(IsCachedView));
+            }
+
+            if (isProjectView)
+                BuildProjectRows();
+            else
+                BuildCachedRows();
+
+            allRows.Sort((a, b) => a.Hash.CompareTo(b.Hash));
+            DebugLogHelper.Log("IdDatabaseViewModel.BuildRows", "Built {0} row(s) for the {1} database", allRows.Count, isProjectView ? "project" : "cached");
+            ShowRows(ApplyFilter(allRows, ActiveFilter));
+        }
+
+        /// <summary>Every hash the cached database knows, named or only referenced.</summary>
+        private void BuildCachedRows()
+        {
+            HashSet<uint> named = new HashSet<uint>();
+            foreach (KeyValuePair<uint, IdEntry> kvp in IdDatabase.Instance.EnumerateEntries())
+            {
+                if (kvp.Value.Id.Length > 0)
+                    named.Add(kvp.Key);
+                allRows.Add(new IdRow(kvp.Key, kvp.Value.Id));
+            }
+
+            CountText = $"{named.Count} of {Database.EnumerateOriginalStrings().Count()} strings resolved";
+        }
+
+        /// <summary>
+        /// Every stored entry, plus every added string that has no entry yet,
+        /// so creators see what still needs an ID.
+        /// </summary>
+        private void BuildProjectRows()
+        {
+            HashSet<uint> listed = new HashSet<uint>();
+            foreach (KeyValuePair<uint, IdEntry> kvp in ProjectIdDatabase.EnumerateEntries())
+            {
+                listed.Add(kvp.Key);
+                allRows.Add(new IdRow(kvp.Key, kvp.Value.Id));
+            }
+
+            // The same hash can be added in several languages, so dedupe.
+            foreach (uint hash in EnumerateAddedStringHashes())
+            {
+                if (listed.Add(hash))
+                    allRows.Add(new IdRow(hash, string.Empty));
+            }
+
+            CountText = allRows.Count == 1 ? "1 string" : $"{allRows.Count} strings";
+        }
+
+        /// <summary>Hashes of user-added strings (not in the game chunks) across every modified language.</summary>
+        private IEnumerable<uint> EnumerateAddedStringHashes()
+        {
+            foreach (EbxAssetEntry entry in App.AssetManager.EnumerateEbx(type: "UITextDatabase", modifiedOnly: true))
+            {
+                if (entry.IsAdded)
+                    continue;
+                if (!(entry.ModifiedEntry?.DataObject is ModifiedFsLocalizationAsset diff))
+                    continue;
+
+                foreach (uint hash in diff.strings.Keys)
+                {
+                    if (!Database.TryGetOriginalString(hash, out string _))
+                        yield return hash;
+                }
+            }
+        }
+
+        private static List<IdRow> ApplyFilter(List<IdRow> source, string filter)
+        {
+            if (filter.Length == 0)
+                return source;
+
+            List<IdRow> result = new List<IdRow>();
+            foreach (IdRow row in source)
+            {
+                if (row.HashHex.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
+                    || row.Id.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    result.Add(row);
+                }
+            }
+            return result;
+        }
+
+        private void ShowRows(List<IdRow> source)
+        {
+            // A rebuild replaces the row objects, so the selection is held by hash instead.
+            // Saving a reference or an ID rebuilds the list, and losing the selected string
+            // every time would be maddening.
+            uint? previous = selectedRow?.Hash;
+
+            rows.Clear();
+            rows.AddRange(source);
+            RowsView.Refresh();
+            SelectedRow = previous.HasValue ? source.Find(r => r.Hash == previous.Value) : null;
+        }
+
+        #endregion
+
+        #region -- Selected String --
         public IdRow SelectedRow
         {
             get => selectedRow;
@@ -175,10 +348,9 @@ namespace FsLocalizationPlugin.ViewModels
                 if (SetProperty(ref selectedRow, value))
                 {
                     detailId = value?.Id ?? string.Empty;
-                    detailComment = value?.Comment ?? string.Empty;
                     UpdateSelectedReferences();
                     OnPropertiesChanged(nameof(HasSelection), nameof(StringPreview), nameof(IsSelectedStringModified),
-                        nameof(DetailId), nameof(DetailComment), nameof(DetailIsDirty), nameof(DetailStatus));
+                        nameof(DetailId), nameof(DetailIsDirty), nameof(DetailStatus));
                 }
             }
         }
@@ -209,7 +381,9 @@ namespace FsLocalizationPlugin.ViewModels
             return value.Replace("\r\n", " ").Replace('\r', ' ').Replace('\n', ' ');
         }
 
-        #region -- Detail editor (ID + comment, one Confirm) --
+        #endregion
+
+        #region -- Detail Editor --
         public string DetailId
         {
             get => detailId;
@@ -220,85 +394,38 @@ namespace FsLocalizationPlugin.ViewModels
             }
         }
 
-        public string DetailComment
-        {
-            get => detailComment;
-            set
-            {
-                if (SetProperty(ref detailComment, value ?? string.Empty))
-                    OnPropertiesChanged(nameof(DetailIsDirty), nameof(DetailStatus));
-            }
-        }
-
         /// <summary>True when the editor differs from the selected row. Shows the Confirm button.</summary>
-        public bool DetailIsDirty => selectedRow != null
-            && (!string.Equals(DetailId, selectedRow.Id, StringComparison.Ordinal)
-                || (isProjectView && !string.Equals(DetailComment, selectedRow.Comment, StringComparison.Ordinal)));
+        public bool DetailIsDirty => selectedRow != null && !string.Equals(DetailId, selectedRow.Id, StringComparison.Ordinal);
 
         public bool CanConfirmDetail => DetailIsDirty
-            && (DetailId.Length == 0
-                || string.Equals(DetailId, selectedRow.Id, StringComparison.Ordinal)
-                || LocalizationHelper.HashStringId(DetailId) == selectedRow.Hash);
+            && (DetailId.Length == 0 || LocalizationHelper.HashStringId(DetailId) == selectedRow.Hash);
 
         /// <summary>Why Confirm is disabled while there are unsaved edits, else empty.</summary>
-        public string DetailStatus
-        {
-            get
-            {
-                if (selectedRow == null || !DetailIsDirty)
-                    return string.Empty;
-                if (DetailId.Length > 0 && LocalizationHelper.HashStringId(DetailId) != selectedRow.Hash)
-                    return $"This ID hashes to {LocalizationHelper.HashStringId(DetailId):X8}, but this string is {selectedRow.HashHex}. An ID can only be attached to its own hash.";
-                return string.Empty;
-            }
-        }
+        public string DetailStatus => DetailIsDirty && !CanConfirmDetail
+            ? $"This ID hashes to {LocalizationHelper.HashStringId(DetailId):X8}, but this string is {selectedRow.HashHex}. An ID can only be attached to its own hash."
+            : string.Empty;
 
         private void ConfirmDetail()
         {
             IdRow row = selectedRow;
-            if (row == null)
+            if (row == null || !DetailIsDirty)
                 return;
 
-            if (!string.Equals(DetailId, row.Id, StringComparison.Ordinal))
+            if (DetailId.Length > 0 && LocalizationHelper.HashStringId(DetailId) != row.Hash)
             {
-                if (DetailId.Length > 0 && LocalizationHelper.HashStringId(DetailId) != row.Hash)
-                {
-                    FrostyMessageBox.Show($"This ID hashes to {LocalizationHelper.HashStringId(DetailId):X8}, not {row.HashHex}. An ID can only be attached to its own hash.",
-                        "ID Database - Flammenwerfer", MessageBoxButton.OK);
-                    return;
-                }
-
-                if (isProjectView)
-                {
-                    if (DetailId.Length == 0)
-                        ProjectIdDatabase.RemoveIdText(row.Hash);
-                    else
-                        ProjectIdDatabase.SetIdText(DetailId);
-                }
-                else
-                {
-                    IdDatabase.Instance.EnsureLoaded();
-                    IdDatabase.Instance.RemoveId(row.Hash);
-                    if (DetailId.Length > 0)
-                        IdDatabase.Instance.AddId(DetailId);
-                    IdDatabase.Instance.Save();
-                }
-
-                row.Id = DetailId;
-                App.Logger.Log("Flame named! ID for string {0} set to {1}", row.HashHex, DetailId.Length > 0 ? DetailId : "(none)");
+                FrostyMessageBox.Show($"This ID hashes to {LocalizationHelper.HashStringId(DetailId):X8}, not {row.HashHex}. An ID can only be attached to its own hash.",
+                    DialogTitle, MessageBoxButton.OK);
+                return;
             }
 
-            if (isProjectView && !string.Equals(DetailComment, row.Comment, StringComparison.Ordinal))
-            {
-                ProjectIdDatabase.SetComment(row.Hash, DetailComment);
-                row.Comment = DetailComment;
-            }
-
+            StoreId(row.Hash, DetailId);
+            row.Id = DetailId;
+            App.Logger.Log("Flame named! ID for string {0} set to {1}", row.HashHex, DetailId.Length > 0 ? DetailId : "(none)");
             OnPropertiesChanged(nameof(DetailIsDirty), nameof(DetailStatus));
         }
 
         /// <summary>
-        /// A project row only exists in the store once something was stored for it; rows that are
+        /// A project row only exists in the database once something was stored for it; rows that are
         /// merely "an added string with no entry yet" have nothing to remove. Cached rows always
         /// come from the database, so they always do.
         /// </summary>
@@ -306,8 +433,9 @@ namespace FsLocalizationPlugin.ViewModels
             && (!isProjectView || ProjectIdDatabase.Contains(selectedRow.Hash));
 
         /// <summary>
-        /// Forgets the selected row: its ID, comment and references go together. Clearing just the
-        /// ID text is what the detail editor's Confirm already does, so this is the stronger action.
+        /// Forgets the selected row.
+        /// Clearing just the ID text is what the detail editor's Confirm already does,
+        /// so this is the stronger action.
         /// </summary>
         private void RemoveId()
         {
@@ -322,8 +450,9 @@ namespace FsLocalizationPlugin.ViewModels
                     return;
 
                 ProjectIdDatabase.RemoveEntry(row.Hash);
-                // The project store raises no Changed event, so rebuild here. The row survives if
-                // the string itself is still in the project, which is correct: it just has no entry.
+                // The project database raises no Changed event, so rebuild here. The row survives
+                // if the string itself is still in the project, which is correct. It just has no
+                // entry any more.
                 BuildRows();
             }
             else
@@ -336,6 +465,26 @@ namespace FsLocalizationPlugin.ViewModels
             }
 
             App.Logger.Log("Flame doused! {0} removed from the {1} database", label, isProjectView ? "project" : "cached");
+        }
+
+        /// <summary>Writes an ID into the database the tab is showing.</summary>
+        /// <remarks>
+        /// Deliberately not the database the hash would route to.
+        /// An edit made in a view belongs to that view.
+        /// </remarks>
+        private void StoreId(uint hash, string id)
+        {
+            if (isProjectView)
+            {
+                ProjectIdDatabase.SetId(hash, id);
+                BuildRows();
+            }
+            else
+            {
+                IdDatabase.Instance.EnsureLoaded();
+                if (IdDatabase.Instance.SetId(hash, id))
+                    IdDatabase.Instance.Save();
+            }
         }
 
         #endregion
@@ -360,30 +509,6 @@ namespace FsLocalizationPlugin.ViewModels
             set => SetProperty(ref hasRefSelection, value);
         }
 
-        /// <summary>
-        /// Where the selected reference came from, for the cached view's context menu. A scanned
-        /// reference disappears on the next scan; a manual one does not, so the difference matters.
-        /// </summary>
-        public string ReferenceSource
-        {
-            get => referenceSource;
-            private set => SetProperty(ref referenceSource, value);
-        }
-
-        /// <summary>Called by the view when the reference list selection changes.</summary>
-        public void SetSelectedReference(AssetEntry entry)
-        {
-            HasRefSelection = entry != null;
-
-            string source = selectedRow != null && entry != null
-                ? IdDatabase.Instance.GetReferenceSource(selectedRow.Hash, entry.Name)
-                : null;
-
-            ReferenceSource = source == IdReference.ManualSource ? "Source: Added by Hand"
-                : source == IdReference.ScanSource ? "Source: Game File Scan"
-                : "Source: Unknown";
-        }
-
         private void UpdateSelectedReferences()
         {
             List<AssetEntry> entries = new List<AssetEntry>();
@@ -405,10 +530,7 @@ namespace FsLocalizationPlugin.ViewModels
             ReferencesHeader = total > 0 ? $"{total} References: " : "References: ";
         }
 
-        /// <summary>
-        /// Adds a reference to the selected row by hand. Called by the view's asset picker.
-        /// In the cached database these are marked manual, so a later scan never drops them.
-        /// </summary>
+        /// <summary>Adds a reference to the selected row by hand. Called by the view's asset picker.</summary>
         public void AddReference(EbxAssetEntry entry)
         {
             if (selectedRow == null || entry == null)
@@ -449,7 +571,7 @@ namespace FsLocalizationPlugin.ViewModels
         #endregion
 
         #region -- Add ID popup --
-        /// <summary>The 8-digit hex hash. Editing it looks the ID up in the ID database.</summary>
+        /// <summary>The 8-digit hex hash. Editing it looks the ID up in both databases.</summary>
         public string AddIdHashText
         {
             get => addIdHashText;
@@ -461,13 +583,12 @@ namespace FsLocalizationPlugin.ViewModels
                 if (!syncingAddIdFields)
                 {
                     syncingAddIdFields = true;
-                    if (LocalizationHelper.TryParseHexHash(addIdHashText, out uint hash) && IdIndex.TryGet(hash, out string knownId))
-                        AddIdIdText = knownId;
-                    else
-                        AddIdIdText = string.Empty;
+                    AddIdIdText = LocalizationHelper.TryParseHexHash(addIdHashText, out uint hash) && IdIndex.TryGet(hash, out string knownId)
+                        ? knownId
+                        : string.Empty;
                     syncingAddIdFields = false;
                 }
-                ScheduleAddIdRefresh();
+                RaiseAddIdState();
             }
         }
 
@@ -483,10 +604,10 @@ namespace FsLocalizationPlugin.ViewModels
                 if (!syncingAddIdFields)
                 {
                     syncingAddIdFields = true;
-                    AddIdHashText = addIdIdText.Length > 0 ? LocalizationHelper.HashStringId(addIdIdText).ToString("X8") : string.Empty;
+                    AddIdHashText = addIdIdText.Length > 0 ? LocalizationHelper.HashStringId(addIdIdText).ToString("X8", CultureInfo.InvariantCulture) : string.Empty;
                     syncingAddIdFields = false;
                 }
-                ScheduleAddIdRefresh();
+                RaiseAddIdState();
             }
         }
 
@@ -505,9 +626,9 @@ namespace FsLocalizationPlugin.ViewModels
         {
             get
             {
-                if (!AddIdParsedHash.HasValue)
+                if (!(AddIdParsedHash is uint hash))
                     return "Invalid Hash";
-                if (AddIdParsedHash is uint hash && Database.IsStringRemoved(hash))
+                if (Database.IsStringRemoved(hash))
                     return "String is Removed";
                 if (!AddIdHasStringValue)
                     return "No String Exists";
@@ -515,32 +636,24 @@ namespace FsLocalizationPlugin.ViewModels
             }
         }
 
-        /// <summary>Explains what Confirm will do: which database, or why nothing.</summary>
+        /// <summary>Explains what Confirm will do, or why it will do nothing.</summary>
         public string AddIdTargetMessage
         {
             get
             {
                 if (!(AddIdParsedHash is uint hash))
-                    return string.Empty;
-
-                if (AddIdIdText.Length > 0 && LocalizationHelper.HashStringId(AddIdIdText) != hash)
+                    return "Type a Hash or ID to get started.";
+                if (AddIdIdText.Length == 0)
+                    return "Type the ID this hash was made from.";
+                if (LocalizationHelper.HashStringId(AddIdIdText) != hash)
                     return $"This ID hashes to {LocalizationHelper.HashStringId(AddIdIdText):X8}, not the entered hash.";
 
-                if (AddIdIdText.Length == 0)
-                {
-                    if (!ProjectIdDatabase.Enabled)
-                        return ProjectDatabaseOffMessage;
-                    return ProjectIdDatabase.Contains(hash)
-                        ? "This hash is already in the project database."
-                        : "Registers this hash in the project database, so it can carry a comment.";
-                }
-
                 bool known = IdIndex.TryGet(hash, out string existing) && string.Equals(existing, AddIdIdText, StringComparison.Ordinal);
-                if (ClassifyHash(hash) == IdTarget.Cached)
-                    return known ? "This ID is already in the cached database." : "This ID matches a game string: it will be added to the cached database.";
+                if (IdIndex.IsGameString(hash))
+                    return known ? "This ID is already in the cached database." : "This ID matches a game string. It will be added to the cached database.";
                 if (!ProjectIdDatabase.Enabled)
                     return ProjectDatabaseOffMessage;
-                return known ? "This ID is already in the project database." : "This ID will be added to the project database.";
+                return known ? "This ID is already in the project database." : "This ID doesn't match a game string. It will be added to the project database.";
             }
         }
 
@@ -548,81 +661,44 @@ namespace FsLocalizationPlugin.ViewModels
         {
             get
             {
-                if (!(AddIdParsedHash is uint hash))
+                // An ID that hashes to the entered hash, and is not already the known ID for it.
+                if (!(AddIdParsedHash is uint hash) || AddIdIdText.Length == 0)
                     return false;
-
-                // A bare hash: register it so it can carry a comment. Queried live, since a
-                // string can be added elsewhere (Modify String, Loc Studio) while this tab is open.
-                if (AddIdIdText.Length == 0)
-                    return ProjectIdDatabase.Enabled && !ProjectIdDatabase.Contains(hash);
-
-                // An ID: it must hash to the entered hash, and not already be the same known ID.
                 if (LocalizationHelper.HashStringId(AddIdIdText) != hash)
                     return false;
-                // Nothing but the project store could hold this one, and it is switched off.
-                if (!ProjectIdDatabase.Enabled && ClassifyHash(hash) == IdTarget.Project)
+                // Nothing but the project database could hold this one, and it is switched off.
+                if (!ProjectIdDatabase.Enabled && !IdIndex.IsGameString(hash))
                     return false;
+
                 return !(IdIndex.TryGet(hash, out string existing) && string.Equals(existing, AddIdIdText, StringComparison.Ordinal));
             }
         }
 
-        private const string ProjectDatabaseOffMessage = "The project ID database is off. Turn it on in Tools > Options > Flammenwerfer Options.";
-
-        private void ScheduleAddIdRefresh()
-        {
-            addIdRefresh.Stop();
-            addIdRefresh.Start();
-        }
-
+        /// <summary>Refreshes everything the popup computes from the two text boxes.</summary>
+        /// <remarks>
+        /// Cheap enough to run on every keystroke.
+        /// The heaviest part is one dictionary lookup for the carrier asset,
+        /// and the project payload only reparses when its text actually changed.
+        /// </remarks>
         private void RaiseAddIdState()
         {
             OnPropertiesChanged(nameof(AddIdHasStringValue), nameof(AddIdStringValue), nameof(AddIdIsModified),
                 nameof(AddIdHasStatus), nameof(AddIdStatusMessage), nameof(AddIdTargetMessage));
         }
 
-        /// <summary>Picks a random hash no existing string, removal, or known ID uses. For comment-only entries.</summary>
-        private void AddIdGenerateHash()
-        {
-            byte[] buffer = new byte[4];
-            uint hash;
-            do
-            {
-                Rng.NextBytes(buffer);
-                hash = BitConverter.ToUInt32(buffer, 0);
-            }
-            while (hash == 0 || hash == 0xFFFFFFFF
-                || Database.TryGetString(hash, out string _)
-                || Database.IsStringRemoved(hash)
-                || IdIndex.TryGet(hash, out string _));
-
-            syncingAddIdFields = true;
-            AddIdHashText = hash.ToString("X8");
-            AddIdIdText = string.Empty;
-            syncingAddIdFields = false;
-            RaiseAddIdState();
-        }
-
         private void AddIdConfirm()
         {
-            if (!(AddIdParsedHash is uint hash))
+            if (!(AddIdParsedHash is uint hash) || AddIdIdText.Length == 0)
                 return;
 
-            if (AddIdIdText.Length == 0)
-            {
-                // A bare hash: register it with the project so it can carry a comment.
-                ProjectIdDatabase.RegisterHash(hash);
-                App.Logger.Log("Hash {0} registered in the project ID database", hash.ToString("X8"));
+            // Unlike the detail editor, this one routes by the hash. That is how a creator adds an
+            // ID for a game string the scan missed while looking at the project database, or the
+            // other way around.
+            bool game = IdIndex.IsGameString(hash);
+            IdIndex.Set(hash, AddIdIdText);
+            App.Logger.Log("Flame named! ID {0} added to the {1} database", AddIdIdText, game ? "cached" : "project");
+            if (!game)
                 BuildRows();
-            }
-            else
-            {
-                IdTarget target = StoreId(AddIdIdText);
-                App.Logger.Log("Flame named! ID {0} added to the {1} database", AddIdIdText, target == IdTarget.Cached ? "cached" : "project");
-                if (target == IdTarget.Cached)
-                    IdDatabase.Instance.Save();
-                else
-                    BuildRows();
-            }
 
             // The popup stays open so several IDs can be added in a row.
             syncingAddIdFields = true;
@@ -634,300 +710,39 @@ namespace FsLocalizationPlugin.ViewModels
 
         #endregion
 
-        #region -- Commands and lifecycle --
-        public RelayCommand ScanCommand { get; }
-        public RelayCommand RefreshCommand { get; }
-        public RelayCommand ImportCommand { get; }
-        public RelayCommand OpenFolderCommand { get; }
-        public RelayCommand AddIdGenerateHashCommand { get; }
-        public RelayCommand AddIdConfirmCommand { get; }
-        public RelayCommand RemoveIdCommand { get; }
-        public RelayCommand ConfirmDetailCommand { get; }
-        public RelayCommand ComputeCommand { get; }
-        public RelayCommand ExportProjectCommand { get; }
-        public RelayCommand ImportProjectCommand { get; }
-
-        /// <summary>Called once when the view loads. Lazy: nothing touches the files before this.</summary>
-        public void OnFirstLoad()
-        {
-            IdDatabase.Instance.EnsureLoaded();
-            IdDatabase.Instance.Changed += OnDatabaseChanged;
-            SetupWatcher();
-            BuildRows();
-        }
-
-        /// <summary>
-        /// Called when the tab closes. Drops every reference something outside this tab holds
-        /// (the database event, the dispatcher timer, the file watcher), then releases the rows.
-        /// Without this the whole tab, including tens of thousands of rows, would stay alive.
-        /// </summary>
-        public void OnClosed()
-        {
-            closed = true;
-            addIdRefresh.Stop();
-            IdDatabase.Instance.Changed -= OnDatabaseChanged;
-            watcherDebounce?.Dispose();
-            watcherDebounce = null;
-            watcher?.Dispose();
-            watcher = null;
-
-            SelectedRow = null;
-            allRows.Clear();
-            allRows.TrimExcess();
-            rows.Clear();
-            rows.TrimExcess();
-            SelectedReferences = new List<AssetEntry>();
-        }
-
-        /// <summary>Filters the list. Called when the user presses Enter.</summary>
-        public async void ApplyFilterNow()
-        {
-            if (IsFiltering || string.Equals(ActiveFilter, FilterText, StringComparison.Ordinal))
-                return;
-
-            string filter = FilterText;
-            IsFiltering = true;
-            try
-            {
-                // Off the UI thread so the progress bar and cover actually animate.
-                List<IdRow> source = new List<IdRow>(allRows);
-                List<IdRow> result = await Task.Run(() => ApplyFilter(source, filter));
-
-                if (closed)
-                    return;
-
-                ActiveFilter = filter;
-                ShowRows(result);
-            }
-            finally
-            {
-                IsFiltering = false;
-            }
-        }
-
-        private static List<IdRow> ApplyFilter(List<IdRow> source, string filter)
-        {
-            if (filter.Length == 0)
-                return source;
-
-            List<IdRow> result = new List<IdRow>();
-            foreach (IdRow row in source)
-            {
-                if (row.HashHex.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
-                    || row.Id.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
-                    || row.Comment.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    result.Add(row);
-                }
-            }
-            return result;
-        }
-
-        private void ShowRows(List<IdRow> source)
-        {
-            // A rebuild replaces the row objects, so hold the selection by hash: saving a reference
-            // or an ID rebuilds the list, and losing the selected string every time is maddening.
-            uint? previous = selectedRow?.Hash;
-
-            rows.Clear();
-            rows.AddRange(source);
-            RowsView.Refresh();
-            SelectedRow = previous.HasValue ? source.Find(r => r.Hash == previous.Value) : null;
-        }
-
-        private void SwitchView(bool projectView)
-        {
-            isProjectView = projectView;
-            OnPropertiesChanged(nameof(IsProjectView), nameof(IsCachedView));
-            BuildRows();
-        }
-
-        private void OnDatabaseChanged()
-        {
-            // Changed can fire from a background save (scan) or the watcher timer.
-            Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
-            {
-                if (!closed)
-                    BuildRows();
-            }));
-        }
-
-        /// <summary>Refreshes the cached view when the shared file is edited outside Frosty.</summary>
-        private void SetupWatcher()
-        {
-            try
-            {
-                string fullPath = Path.GetFullPath(IdDatabase.Instance.DatabaseFilePath);
-                string directory = Path.GetDirectoryName(fullPath);
-                if (directory == null || !Directory.Exists(directory))
-                    return;
-
-                watcherDebounce = new System.Timers.Timer(500) { AutoReset = false };
-                watcherDebounce.Elapsed += (s, e) => IdDatabase.Instance.Reload();
-
-                watcher = new FileSystemWatcher(directory, Path.GetFileName(fullPath));
-                watcher.Changed += OnIdsFileTouched;
-                watcher.Created += OnIdsFileTouched;
-                watcher.Deleted += OnIdsFileTouched;
-                watcher.Renamed += (s, e) => OnIdsFileTouched(s, null);
-                watcher.EnableRaisingEvents = true;
-            }
-            catch (Exception ex)
-            {
-                // Live update is a nicety. The Refresh button covers it.
-                DebugLogHelper.Log("IdDatabaseViewModel.SetupWatcher", "Watcher unavailable: {0}", ex.Message);
-            }
-        }
-
-        private void OnIdsFileTouched(object sender, FileSystemEventArgs e)
-        {
-            watcherDebounce?.Stop();
-            watcherDebounce?.Start();
-        }
-
-        #endregion
-
-        #region -- Rows --
-        private void BuildRows()
-        {
-            allRows.Clear();
-
-            // The option lives outside this tab and can be toggled while it is open.
-            OnPropertyChanged(nameof(IsProjectDatabaseEnabled));
-            if (isProjectView && !ProjectIdDatabase.Enabled)
-            {
-                isProjectView = false;
-                OnPropertiesChanged(nameof(IsProjectView), nameof(IsCachedView));
-            }
-
-            if (isProjectView)
-            {
-                BuildProjectRows();
-                CountText = allRows.Count == 1 ? "1 string" : $"{allRows.Count} strings";
-            }
-            else
-            {
-                BuildCachedRows();
-            }
-
-            allRows.Sort((a, b) => a.Hash.CompareTo(b.Hash));
-            ShowRows(ApplyFilter(allRows, ActiveFilter));
-        }
-
-        private void BuildCachedRows()
-        {
-            IdDatabase db = IdDatabase.Instance;
-            HashSet<uint> named = new HashSet<uint>();
-            foreach (KeyValuePair<uint, string> kvp in db.EnumerateIds())
-            {
-                named.Add(kvp.Key);
-                allRows.Add(new IdRow(kvp.Key, kvp.Value, string.Empty));
-            }
-            foreach (uint hash in db.EnumerateRefOnlyHashes())
-                allRows.Add(new IdRow(hash, string.Empty, string.Empty));
-
-            // Counted against the game's own strings: IDs of strings the creator added live in the
-            // project database, so counting those here would make the coverage look worse than it is.
-            int total = 0;
-            int resolved = 0;
-            foreach (uint hash in Database.EnumerateStrings())
-            {
-                if (!Database.TryGetOriginalString(hash, out string _))
-                    continue;
-
-                total++;
-                if (named.Contains(hash))
-                    resolved++;
-            }
-            CountText = $"{resolved} of {total} strings resolved";
-        }
-
-        private void BuildProjectRows()
-        {
-            // Every stored entry, plus every added string that has no entry yet,
-            // so creators see what still needs an ID.
-            HashSet<uint> listed = new HashSet<uint>();
-            foreach (KeyValuePair<uint, ProjectIdEntry> kvp in ProjectIdDatabase.EnumerateEntries())
-            {
-                listed.Add(kvp.Key);
-                allRows.Add(new IdRow(kvp.Key, kvp.Value.Id, kvp.Value.Comment));
-            }
-
-            // The same hash can be added in several languages, so dedupe.
-            foreach (uint hash in EnumerateAddedStringHashes())
-            {
-                if (listed.Add(hash))
-                    allRows.Add(new IdRow(hash, string.Empty, string.Empty));
-            }
-        }
-
-        /// <summary>Hashes of user-added strings (not in the game chunks) across every modified language.</summary>
-        private IEnumerable<uint> EnumerateAddedStringHashes()
-        {
-            foreach (EbxAssetEntry entry in App.AssetManager.EnumerateEbx(type: "UITextDatabase", modifiedOnly: true))
-            {
-                if (entry.IsAdded)
-                    continue;
-                if (!(entry.ModifiedEntry?.DataObject is ModifiedFsLocalizationAsset diff))
-                    continue;
-
-                foreach (uint hash in diff.strings.Keys)
-                {
-                    if (!Database.TryGetOriginalString(hash, out string _))
-                        yield return hash;
-                }
-            }
-        }
-
-        #endregion
-
-        #region -- ID routing --
-        /// <summary>A game string's ID belongs to the shared cache; any other ID saves with the project.</summary>
-        private IdTarget ClassifyHash(uint hash)
-        {
-            return Database.TryGetOriginalString(hash, out string _) ? IdTarget.Cached : IdTarget.Project;
-        }
-
-        /// <summary>Stores an ID into the right database. Returns its target.</summary>
-        private IdTarget StoreId(string id)
-        {
-            uint hash = LocalizationHelper.HashStringId(id);
-            IdTarget target = ClassifyHash(hash);
-
-            if (target == IdTarget.Cached)
-            {
-                IdDatabase.Instance.EnsureLoaded();
-                IdDatabase.Instance.RemoveId(hash);
-                IdDatabase.Instance.AddId(id);
-            }
-            else
-            {
-                ProjectIdDatabase.SetIdText(id);
-            }
-            return target;
-        }
-
-        #endregion
-
         #region -- Toolbar actions --
+        /// <summary>
+        /// Scans the game for IDs, into the cached database.
+        /// </summary>
+        /// <remarks>
+        /// The scan reads the pristine game to build a database meant for sharing,
+        /// so anything the project changed or added would pollute it.
+        /// Both of the asset manager's counts are checked, which together are what the editor's own
+        /// <c>FrostyProject.IsDirty</c> asks (<c>GetDirtyCount() != 0 || modSettings.IsDirty</c>).
+        /// Modified counts every asset that carries an edit, dirty counts the ones edited since the
+        /// last project save, and neither alone catches every case.
+        /// </remarks>
         private void Scan()
         {
-            // The scan reads the pristine game to build the shared cache. Any modification would
-            // pollute it (changed or added strings), so require a clean project.
-            if (App.AssetManager.GetModifiedCount() != 0)
+            uint modified = App.AssetManager.GetModifiedCount();
+            uint dirty = App.AssetManager.GetDirtyCount();
+            DebugLogHelper.Log("IdDatabaseViewModel.Scan", "Project holds {0} modified and {1} dirty asset(s)", modified, dirty);
+
+            if (modified != 0 || dirty != 0)
             {
                 FrostyMessageBox.Show("Please create a new project and make sure nothing is modified before scanning.",
-                    "ID Database - Flammenwerfer", MessageBoxButton.OK);
+                    DialogTitle, MessageBoxButton.OK);
                 return;
             }
 
-            CancellationTokenSource cancelToken = new CancellationTokenSource();
             IdScanner.ScanResult result = null;
-
-            FrostyTaskWindow.Show("Scanning Game Files for String IDs", "Loading", task =>
+            using (CancellationTokenSource cancelToken = new CancellationTokenSource())
             {
-                result = IdScanner.Scan(Database, IdDatabase.Instance, task, cancelToken.Token);
-            }, showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
+                FrostyTaskWindow.Show("Scanning Game Files for String IDs", "Loading", task =>
+                {
+                    result = IdScanner.Scan(Database, IdDatabase.Instance, task, cancelToken.Token);
+                }, showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
+            }
 
             if (result == null)
                 return;
@@ -935,12 +750,21 @@ namespace FsLocalizationPlugin.ViewModels
             if (result.Cancelled)
                 App.Logger.Log("Scan interrupted. Kept {0} new ID(s) found so far", result.IdsFound);
             else
-                App.Logger.Log("Blazing trail! Scanned {0} asset(s) and {1} swf(s): {2} new ID(s), {3} reference(s)",
-                    result.AssetsScanned, result.SwfScanned, result.IdsFound, result.RefsFound);
+                App.Logger.Log("Blazing trail! Scanned {0} asset(s) and {1} swf(s) in {2}s, found {3} new ID(s) and {4} reference(s)",
+                    result.AssetsScanned, result.SwfScanned, result.ElapsedSeconds.ToString("F1", CultureInfo.InvariantCulture),
+                    result.IdsFound, result.RefsFound);
+
+            if (result.AssetsFailed > 0)
+                App.Logger.LogWarning("{0} asset(s) could not be read and were skipped. Turn on Debug Logging in the options to see which.", result.AssetsFailed);
+
             // IdDatabase.Save inside the scan raises Changed, which rebuilds the rows.
         }
 
-        /// <summary>Merges a shared ID database file into the cached database. Only game-string hashes apply.</summary>
+        /// <summary>Merges a shared ID file into both databases.</summary>
+        /// <remarks>
+        /// One file feeds both. A hash the game has a string for goes to the cached database,
+        /// and everything else goes to the project database.
+        /// </remarks>
         private void Import()
         {
             FrostyOpenFileDialog dialog = new FrostyOpenFileDialog("Import ID Database",
@@ -950,23 +774,25 @@ namespace FsLocalizationPlugin.ViewModels
 
             try
             {
-                // Anything that is not a string of this game does not belong in the shared database.
-                IdDatabase.Instance.ImportFile(dialog.FileName, hash => Database.TryGetOriginalString(hash, out string _));
+                IdIndex.ImportFile(dialog.FileName);
             }
             catch (Exception ex)
             {
-                FrostyMessageBox.Show($"Import failed: {ex.Message}", "ID Database - Flammenwerfer", MessageBoxButton.OK);
+                FrostyMessageBox.Show($"Import failed: {ex.Message}", DialogTitle, MessageBoxButton.OK);
+                return;
             }
+
+            // Only the cached database raises Changed.
+            BuildRows();
         }
 
-        /// <summary>Writes the project ID database, comments and references included, to a shareable file.</summary>
-        private void ExportProject()
+        /// <summary>Writes the project ID database, references included, to a shareable file.</summary>
+        private static void ExportProject()
         {
             string json = ProjectIdDatabase.ExportJson();
             if (json.Length == 0)
             {
-                FrostyMessageBox.Show("There is nothing in the project ID database yet.",
-                    "ID Database - Flammenwerfer", MessageBoxButton.OK);
+                FrostyMessageBox.Show("There is nothing in the project ID database yet.", DialogTitle, MessageBoxButton.OK);
                 return;
             }
 
@@ -981,40 +807,19 @@ namespace FsLocalizationPlugin.ViewModels
             }
             catch (Exception ex)
             {
-                FrostyMessageBox.Show($"Export failed: {ex.Message}", "ID Database - Flammenwerfer", MessageBoxButton.OK);
+                FrostyMessageBox.Show($"Export failed: {ex.Message}", DialogTitle, MessageBoxButton.OK);
                 return;
             }
 
             App.Logger.Log("Exported the project ID database to {0}", dialog.FileName);
         }
 
-        /// <summary>Merges an exported project ID file. What the project already holds is kept.</summary>
-        private void ImportProject()
-        {
-            FrostyOpenFileDialog dialog = new FrostyOpenFileDialog("Import Project ID Database",
-                "JSON file (*.json)|*.json|All files (*.*)|*.*", "FlammenwerferProjectIdDatabase");
-            if (!dialog.ShowDialog())
-                return;
-
-            try
-            {
-                ProjectIdDatabase.ImportJson(File.ReadAllText(dialog.FileName));
-            }
-            catch (Exception ex)
-            {
-                FrostyMessageBox.Show($"Import failed: {ex.Message}", "ID Database - Flammenwerfer", MessageBoxButton.OK);
-                return;
-            }
-
-            // The project store raises no Changed event.
-            BuildRows();
-        }
-
-        private void OpenCachesFolder()
+        /// <summary>Shows the cached database file in Explorer, so it can be shared as it is.</summary>
+        private static void LocateCacheFile()
         {
             try
             {
-                string fullPath = Path.GetFullPath(IdDatabase.Instance.DatabaseFilePath);
+                string fullPath = Path.GetFullPath(IdDatabase.FilePath);
                 if (File.Exists(fullPath))
                     Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
                 else
@@ -1022,7 +827,7 @@ namespace FsLocalizationPlugin.ViewModels
             }
             catch (Exception ex)
             {
-                App.Logger.LogError("Could not open the Caches folder: {0}", ex.Message);
+                App.Logger.LogError("Could not locate the cached ID database: {0}", ex.Message);
             }
         }
 
