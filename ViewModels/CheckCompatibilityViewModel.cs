@@ -209,14 +209,14 @@ namespace FsLocalizationPlugin.ViewModels
             languages.AddRange(LocalizationHelper.GetLocalizedLanguages());
             Languages = languages;
 
-            UnsupportedCharsTest = new CompatibilityTest("Checking for unsupported characters");
             ApplyTest = new CompatibilityTest("Running apply test");
+            UnsupportedCharsTest = new CompatibilityTest("Checking for unsupported characters");
             UnchangedTest = new CompatibilityTest("Checking for unchanged edits");
             HistogramTest = new CompatibilityTest("Checking for characters not existing in histogram");
             ExtendedFeatureTest = new CompatibilityTest("Checking for extended feature");
             Overall = new CompatibilityTest(string.Empty);
 
-            FlammenwerferGroup = new CompatibilityTestGroup(UnsupportedCharsTest, ApplyTest, UnchangedTest);
+            FlammenwerferGroup = new CompatibilityTestGroup(ApplyTest, UnsupportedCharsTest, UnchangedTest);
             FsLocGroup = new CompatibilityTestGroup(HistogramTest, ExtendedFeatureTest);
 
             RefreshOrCancelCommand = new RelayCommand(_ => { if (IsRefreshing) CancelRefresh(); else RefreshAsync(); });
@@ -265,8 +265,8 @@ namespace FsLocalizationPlugin.ViewModels
             private set => SetProperty(ref taskbarState, value);
         }
 
-        public CompatibilityTest UnsupportedCharsTest { get; }
         public CompatibilityTest ApplyTest { get; }
+        public CompatibilityTest UnsupportedCharsTest { get; }
         public CompatibilityTest UnchangedTest { get; }
         public CompatibilityTest HistogramTest { get; }
         public CompatibilityTest ExtendedFeatureTest { get; }
@@ -286,8 +286,8 @@ namespace FsLocalizationPlugin.ViewModels
         {
             get
             {
-                yield return UnsupportedCharsTest;
                 yield return ApplyTest;
+                yield return UnsupportedCharsTest;
                 yield return UnchangedTest;
                 yield return HistogramTest;
                 yield return ExtendedFeatureTest;
@@ -439,43 +439,7 @@ namespace FsLocalizationPlugin.ViewModels
 
             try
             {
-                // --- Test 1: characters above 0xFFFF (surrogate pairs, e.g. emojis).
-                Thread.Sleep(1);
-                List<CompatibilityItemGroup> unsupportedGroups = new List<CompatibilityItemGroup>();
-                int unsupportedTotal = 0;
-                for (int li = 0; li < targetLanguages.Count; li++)
-                {
-                    token.ThrowIfCancellationRequested();
-                    EnsureLanguage(targetLanguages[li]);
-
-                    List<uint> modIds = Database.EnumerateModifiedStrings().ToList();
-                    modifiedCount += modIds.Count;
-                    totalDecisions += Database.EnumerateStrings().Count();
-
-                    HashSet<string> langChars = new HashSet<string>();
-                    for (int i = 0; i < modIds.Count; i++)
-                    {
-                        token.ThrowIfCancellationRequested();
-                        AddSurrogates(Database.GetString(modIds[i]), langChars);
-
-                        double pct = LocalizationHelper.ComputeProgress(i + 1, modIds.Count, li + 1, targetLanguages.Count);
-                        UnsupportedCharsTest.SetProgress(pct);
-                        UpdateOverall(1, pct);
-                    }
-                    if (langChars.Count > 0)
-                    {
-                        unsupportedGroups.Add(new CompatibilityItemGroup(targetLanguages[li], langChars.OrderBy(c => c, StringComparer.Ordinal).ToList()));
-                        unsupportedTotal += langChars.Count;
-                    }
-                }
-                Greeting = BuildGreeting(modifiedCount, totalDecisions);
-                UnsupportedCharsTest.SetResult(
-                    unsupportedTotal > 0 ? CompatibilityTestState.Error : CompatibilityTestState.Passed,
-                    unsupportedTotal > 0 ? $"{unsupportedTotal} unsupported character(s)" : "No unsupported characters",
-                    unsupportedGroups);
-                UpdateOverall(1, 100);
-
-                // --- Test 2 (part 2): full Flammen.WriteAll dry run.
+                // --- Test 1: Flammen.WriteAll dry run.
                 Thread.Sleep(1);
                 ApplyTest.SetLoading(indeterminate: true);
                 TaskbarState = TaskbarItemProgressState.Indeterminate;
@@ -518,6 +482,42 @@ namespace FsLocalizationPlugin.ViewModels
                     applyErrorCount > 0 ? "Apply test failed" : "Apply test passed",
                     applyGroups);
                 TaskbarState = TaskbarItemProgressState.Normal;
+                UpdateOverall(1, 100);
+
+                // --- Test 2: Characters above 0xFFFF (surrogate pairs, e.g. emojis).
+                Thread.Sleep(1);
+                List<CompatibilityItemGroup> unsupportedGroups = new List<CompatibilityItemGroup>();
+                int unsupportedTotal = 0;
+                for (int li = 0; li < targetLanguages.Count; li++)
+                {
+                    token.ThrowIfCancellationRequested();
+                    EnsureLanguage(targetLanguages[li]);
+
+                    List<uint> modIds = Database.EnumerateModifiedStrings().ToList();
+                    modifiedCount += modIds.Count;
+                    totalDecisions += Database.EnumerateStrings().Count();
+
+                    HashSet<string> langChars = new HashSet<string>();
+                    for (int i = 0; i < modIds.Count; i++)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        AddSurrogates(Database.GetString(modIds[i]), langChars);
+
+                        double pct = LocalizationHelper.ComputeProgress(i + 1, modIds.Count, li + 1, targetLanguages.Count);
+                        UnsupportedCharsTest.SetProgress(pct);
+                        UpdateOverall(2, pct);
+                    }
+                    if (langChars.Count > 0)
+                    {
+                        unsupportedGroups.Add(new CompatibilityItemGroup(targetLanguages[li], langChars.OrderBy(c => c, StringComparer.Ordinal).ToList()));
+                        unsupportedTotal += langChars.Count;
+                    }
+                }
+                Greeting = BuildGreeting(modifiedCount, totalDecisions);
+                UnsupportedCharsTest.SetResult(
+                    unsupportedTotal > 0 ? CompatibilityTestState.Error : CompatibilityTestState.Passed,
+                    unsupportedTotal > 0 ? $"{unsupportedTotal} unsupported character(s)" : "No unsupported characters",
+                    unsupportedGroups);
                 UpdateOverall(2, 100);
 
                 // --- Test 3 (part 3): edits whose value is identical to the game's original string.

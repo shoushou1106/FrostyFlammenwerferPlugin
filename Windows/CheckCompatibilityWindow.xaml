@@ -349,31 +349,7 @@
                 </Label.Content>
               </Label>
             </Grid>
-            <!-- Test 1: characters bigger than 0xFFFF, for example emojis. Error if found. -->
-            <Grid>
-              <ProgressBar Style="{StaticResource TestProgressBar}" DataContext="{Binding UnsupportedCharsTest}"/>
-              <Expander HorizontalContentAlignment="Stretch" Background="Transparent">
-                <Expander.Header>
-                  <Label>
-                    <StackPanel Orientation="Horizontal">
-                      <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding UnsupportedCharsTest.State}"/>
-                      <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding UnsupportedCharsTest.Summary}"/>
-                    </StackPanel>
-                  </Label>
-                </Expander.Header>
-                <Expander.Content>
-                  <StackPanel>
-                    <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
-                               Visibility="{Binding UnsupportedCharsTest.HasItems, Converter={StaticResource BoolToVis}}"
-                               Text="These character(s) are bigger than 0xFFFF, not supported by Frostbite FsLocalization format."/>
-                    <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
-                               Visibility="{Binding UnsupportedCharsTest.HasItems, Converter={StaticResource BoolToVis}}"/>
-                    <ItemsControl ItemsSource="{Binding UnsupportedCharsTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
-                  </StackPanel>
-                </Expander.Content>
-              </Expander>
-            </Grid>
-            <!-- Test 2: Flammen.WriteAll dry run. Error if exception thrown. -->
+            <!-- Test 1: Flammen.WriteAll dry run. Error if exception thrown. -->
             <Grid>
               <ProgressBar Style="{StaticResource TestProgressBar}" DataContext="{Binding ApplyTest}"/>
               <Expander HorizontalContentAlignment="Stretch" Background="Transparent">
@@ -381,7 +357,7 @@
                   <Label>
                     <StackPanel Orientation="Horizontal">
                       <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding ApplyTest.State}"/>
-                      <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding ApplyTest.Summary}"/>
+                      <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding ApplyTest.Summary}" d:Text="Running apply test"/>
                     </StackPanel>
                   </Label>
                 </Expander.Header>
@@ -393,6 +369,30 @@
                     <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
                                Visibility="{Binding ApplyTest.HasItems, Converter={StaticResource BoolToVis}}"/>
                     <ItemsControl ItemsSource="{Binding ApplyTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
+                  </StackPanel>
+                </Expander.Content>
+              </Expander>
+            </Grid>
+            <!-- Test 2: characters bigger than 0xFFFF, for example emojis. Error if found. -->
+            <Grid>
+              <ProgressBar Style="{StaticResource TestProgressBar}" DataContext="{Binding UnsupportedCharsTest}"/>
+              <Expander HorizontalContentAlignment="Stretch" Background="Transparent">
+                <Expander.Header>
+                  <Label>
+                    <StackPanel Orientation="Horizontal">
+                      <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding UnsupportedCharsTest.State}"/>
+                      <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding UnsupportedCharsTest.Summary}" d:Text="Checking for unsupported characters"/>
+                    </StackPanel>
+                  </Label>
+                </Expander.Header>
+                <Expander.Content>
+                  <StackPanel>
+                    <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
+                               Visibility="{Binding UnsupportedCharsTest.HasItems, Converter={StaticResource BoolToVis}}"
+                               Text="These character(s) are bigger than 0xFFFF, not supported by Frostbite FsLocalization format. Flammenwerfer will save them for you, but the game won't display them."/>
+                    <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
+                               Visibility="{Binding UnsupportedCharsTest.HasItems, Converter={StaticResource BoolToVis}}"/>
+                    <ItemsControl ItemsSource="{Binding UnsupportedCharsTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
                   </StackPanel>
                 </Expander.Content>
               </Expander>
@@ -410,7 +410,7 @@
                     <Label>
                       <StackPanel Orientation="Horizontal">
                         <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding UnchangedTest.State}"/>
-                        <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding UnchangedTest.Summary}"/>
+                        <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding UnchangedTest.Summary}" d:Text="Checking for unchanged edits"/>
                       </StackPanel>
                     </Label>
                     <Button Grid.Column="1" Padding="6, 3, 6, 3" Margin="3"
@@ -462,13 +462,12 @@
                   <Label>
                     <StackPanel Orientation="Horizontal">
                       <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding HistogramTest.State}"/>
-                      <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding HistogramTest.Summary}"/>
+                      <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding HistogramTest.Summary}" d:Text="Checking for characters not existing in histogram"/>
                     </StackPanel>
                   </Label>
                 </Expander.Header>
                 <Expander.Content>
                   <StackPanel>
-
                     <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
                                Visibility="{Binding HistogramTest.HasItems, Converter={StaticResource BoolToVis}}"
                                Text="These character(s) does not exist in histogram. Your user need to install Flammenwerfer Plugin in order to display these characters."/>
@@ -479,7 +478,7 @@
                 </Expander.Content>
               </Expander>
             </Grid>
-            <!-- Test 5: Flammenwerfer extended features, only Remove String at this point. Warning if found. -->
+            <!-- Test 5: String removal. Warning if found -->
             <Grid>
               <ProgressBar Style="{StaticResource TestProgressBar}" DataContext="{Binding ExtendedFeatureTest}"/>
               <Expander HorizontalContentAlignment="Stretch" Background="Transparent">
@@ -487,7 +486,7 @@
                   <Label>
                     <StackPanel Orientation="Horizontal">
                       <ContentControl Style="{StaticResource StateIcon}" Tag="{Binding ExtendedFeatureTest.State}"/>
-                      <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding ExtendedFeatureTest.Summary}"/>
+                      <TextBlock Foreground="{StaticResource FontColor}" Text="{Binding ExtendedFeatureTest.Summary}" d:Text="Checking for removed strings"/>
                     </StackPanel>
                   </Label>
                 </Expander.Header>
@@ -495,11 +494,10 @@
                   <StackPanel>
                     <TextBlock Margin="2" Foreground="{StaticResource FontColor}" TextWrapping="Wrap"
                                Visibility="{Binding ExtendedFeatureTest.HasItems, Converter={StaticResource BoolToVis}}"
-                               Text="These string(s) are removed. Your user need to install Flammenwerfer Plugin v0.4.0 or later, otherwise these string(s) will not be removed and displaying their original value."/>
+                               Text="These string(s) are removed. Your user need to install Flammenwerfer Plugin, otherwise these string(s) will not be removed and displaying their original value."/>
                     <Separator Margin="0, 2, 0, 2" Foreground="{StaticResource ControlBackground}"
                                Visibility="{Binding ExtendedFeatureTest.HasItems, Converter={StaticResource BoolToVis}}"/>
                     <ItemsControl ItemsSource="{Binding ExtendedFeatureTest.Groups}" ItemTemplate="{StaticResource ItemGroupTemplate}"/>
-                    <!-- For newer format versions in the future, add another explanation + list here. -->
                   </StackPanel>
                 </Expander.Content>
               </Expander>
@@ -523,6 +521,7 @@
           </Label.Content>
         </Label>
         <TextBox Padding="2.5" Margin="6, 0, 6, 0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                 FontFamily="MS Reference Sans Serif, Global User Interface" FontSize="11"
                  BorderThickness="1"
                  VerticalScrollBarVisibility="Auto"
                  HorizontalScrollBarVisibility="Auto"
