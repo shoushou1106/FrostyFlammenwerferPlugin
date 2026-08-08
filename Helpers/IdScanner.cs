@@ -544,8 +544,11 @@ namespace FsLocalizationPlugin.Helpers
                 int before = ctx.Result.IdsFound;
 
                 List<string> seeds = new List<string>();
-                foreach (KeyValuePair<uint, string> kvp in ctx.Db.EnumerateIds())
-                    seeds.Add(kvp.Value);
+                foreach (KeyValuePair<uint, IdEntry> kvp in ctx.Db.EnumerateEntries())
+                {
+                    if (kvp.Value.Id.Length > 0)
+                        seeds.Add(kvp.Value.Id);
+                }
 
                 // Numeric families. Strip trailing digits, then regenerate the range in seen paddings.
                 HashSet<string> numericBases = new HashSet<string>();

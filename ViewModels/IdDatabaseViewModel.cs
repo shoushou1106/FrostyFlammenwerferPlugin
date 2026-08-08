@@ -255,15 +255,15 @@ namespace FsLocalizationPlugin.ViewModels
         /// <summary>Every hash the cached database knows, named or only referenced.</summary>
         private void BuildCachedRows()
         {
-            HashSet<uint> named = new HashSet<uint>();
+            int named = 0;
             foreach (KeyValuePair<uint, IdEntry> kvp in IdDatabase.Instance.EnumerateEntries())
             {
                 if (kvp.Value.Id.Length > 0)
-                    named.Add(kvp.Key);
+                    named++;
                 allRows.Add(new IdRow(kvp.Key, kvp.Value.Id));
             }
 
-            CountText = $"{named.Count} of {Database.EnumerateOriginalStrings().Count()} strings resolved";
+            CountText = $"{named} of {Database.EnumerateOriginalStrings().Count()} strings resolved";
         }
 
         /// <summary>

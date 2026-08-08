@@ -45,7 +45,8 @@ namespace FsLocalizationPlugin.Resources
             return this;
         }
 
-        /// <summary>Takes what this entry is missing from another. Returns whether it gained anything.</summary>
+        /// <summary>Takes what this entry is missing from another.</summary>
+        /// <returns>Whether it gained anything.</returns>
         internal bool FillFrom(IdEntry other)
         {
             bool changed = false;
@@ -55,9 +56,26 @@ namespace FsLocalizationPlugin.Resources
                 Id = other.Id;
                 changed = true;
             }
-            foreach (string path in other.References)
+            if (other.References.Count > 0)
+                changed |= AddReferences(other.References);
+
+            return changed;
+        }
+
+        /// <summary>Adds every path this entry does not carry yet.</summary>
+        /// <returns>Whether it gained anything.</returns>
+        /// <remarks>
+        /// The scan hands this hundreds of paths for a widely used string, so the existing ones go
+        /// into a set first. A plain <c>List.Contains</c> per path would be quadratic.
+        /// </remarks>
+        internal bool AddReferences(IEnumerable<string> paths)
+        {
+            HashSet<string> known = new HashSet<string>(References, StringComparer.Ordinal);
+            bool changed = false;
+
+            foreach (string path in paths)
             {
-                if (!References.Contains(path))
+                if (!string.IsNullOrEmpty(path) && known.Add(path))
                 {
                     References.Add(path);
                     changed = true;
@@ -181,12 +199,6 @@ namespace FsLocalizationPlugin.Resources
     public static class IdIndex
     {
         #region -- Reading --
-        /// <summary>Whether either database knows this hash.</summary>
-        public static bool Contains(uint hash)
-        {
-            return TryGet(hash, out string _);
-        }
-
         /// <summary>Resolves a hash to its ID text, project database first.</summary>
         public static bool TryGet(uint hash, out string id)
         {
@@ -195,36 +207,6 @@ namespace FsLocalizationPlugin.Resources
 
             IdDatabase.Instance.EnsureLoaded();
             return IdDatabase.Instance.TryGetId(hash, out id);
-        }
-
-        /// <summary>
-        /// Every known hash-to-ID pair, each hash yielded once.
-        /// </summary>
-        /// <remarks>
-        /// Writing routes a hash to exactly one database,
-        /// so the two normally do not overlap and the dedupe set is never even allocated.
-        /// It is still needed because two paths get around the routing:
-        /// <list type="bullet">
-        /// <item>Importing a file that names a hash both databases already hold</item>
-        /// <item>A hash that is an original string in one language but not in another,
-        /// which routes differently depending on the language loaded at the time</item>
-        /// </list>
-        /// </remarks>
-        public static IEnumerable<KeyValuePair<uint, string>> Enumerate()
-        {
-            HashSet<uint> fromProject = null;
-            foreach (KeyValuePair<uint, string> kvp in ProjectIdDatabase.EnumerateIds())
-            {
-                (fromProject ?? (fromProject = new HashSet<uint>())).Add(kvp.Key);
-                yield return kvp;
-            }
-
-            IdDatabase.Instance.EnsureLoaded();
-            foreach (KeyValuePair<uint, string> kvp in IdDatabase.Instance.EnumerateIds())
-            {
-                if (fromProject == null || !fromProject.Contains(kvp.Key))
-                    yield return kvp;
-            }
         }
 
         #endregion
@@ -338,6 +320,10 @@ namespace FsLocalizationPlugin.Resources
 
             foreach (KeyValuePair<uint, IdEntry> kvp in entries)
             {
+                // An entry with neither an ID nor a reference says nothing worth storing.
+                if (kvp.Value.IsEmpty)
+                    continue;
+
                 if (IsGameString(kvp.Key))
                     cached += IdDatabase.Instance.Merge(kvp.Key, kvp.Value) ? 1 : 0;
                 else if (ProjectIdDatabase.Enabled)
@@ -350,7 +336,7 @@ namespace FsLocalizationPlugin.Resources
                 IdDatabase.Instance.Save();
             int project = ProjectIdDatabase.Merge(forProject);
 
-            App.Logger.Log("Import complete: {0} into the cached database, {1} into the project database, {2} skipped", cached, project, skipped);
+            App.Logger.Log("Import complete. {0} into the cached database, {1} into the project database, {2} skipped", cached, project, skipped);
             if (skipped > 0)
                 App.Logger.Log("Skipped entries are strings this game does not have. Turn on the project ID database to keep them.");
         }
@@ -410,16 +396,6 @@ namespace FsLocalizationPlugin.Resources
 
         /// <summary>The shareable file, inside Frosty's Caches folder.</summary>
         public static string FilePath => CachePrefix + "_Flammenwerfer_CachedIdDatabase.json";
-
-        /// <summary>How many hashes the database knows anything about.</summary>
-        public int Count
-        {
-            get
-            {
-                lock (sync)
-                    return entries.Count;
-            }
-        }
 
         #region -- Lifecycle --
         /// <summary>Loads the file once per profile. A missing or corrupt file leaves an empty database.</summary>
@@ -484,12 +460,6 @@ namespace FsLocalizationPlugin.Resources
         #endregion
 
         #region -- Reading --
-        public bool Contains(uint hash)
-        {
-            lock (sync)
-                return entries.ContainsKey(hash);
-        }
-
         public bool TryGetId(uint hash, out string id)
         {
             lock (sync)
@@ -509,21 +479,6 @@ namespace FsLocalizationPlugin.Resources
             }
         }
 
-        /// <summary>Hash-to-ID pairs, skipping hashes that are only known by reference.</summary>
-        public IEnumerable<KeyValuePair<uint, string>> EnumerateIds()
-        {
-            lock (sync)
-            {
-                List<KeyValuePair<uint, string>> result = new List<KeyValuePair<uint, string>>(entries.Count);
-                foreach (KeyValuePair<uint, IdEntry> kvp in entries)
-                {
-                    if (kvp.Value.Id.Length > 0)
-                        result.Add(new KeyValuePair<uint, string>(kvp.Key, kvp.Value.Id));
-                }
-                return result;
-            }
-        }
-
         /// <summary>Every entry, ID and references together.</summary>
         /// <returns>A snapshot, so it stays safe to walk while the database is edited.</returns>
         public IEnumerable<KeyValuePair<uint, IdEntry>> EnumerateEntries()
@@ -535,11 +490,9 @@ namespace FsLocalizationPlugin.Resources
         #endregion
 
         #region -- Writing --
-        /// <summary>
-        /// Sets the ID text for a hash, empty clears it.
-        /// Returns whether anything changed.
-        /// Callers decide when to <see cref="Save"/>.
-        /// </summary>
+        /// <summary>Sets the ID text for a hash. An empty text clears it.</summary>
+        /// <returns>Whether anything changed.</returns>
+        /// <remarks>Callers batch their edits and decide when to <see cref="Save"/>.</remarks>
         public bool SetId(uint hash, string id)
         {
             id = id ?? string.Empty;
@@ -564,11 +517,12 @@ namespace FsLocalizationPlugin.Resources
             }
         }
 
-        /// <summary>
-        /// Fills in an ID text only when the hash has none.
+        /// <summary>Fills in an ID text only when the hash has none.</summary>
+        /// <returns>Whether the hash gained an ID.</returns>
+        /// <remarks>
         /// The scan uses this, so the first text it finds for a hash wins
         /// and a later text that happens to hash the same cannot replace it.
-        /// </summary>
+        /// </remarks>
         public bool AddId(uint hash, string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -585,7 +539,8 @@ namespace FsLocalizationPlugin.Resources
             }
         }
 
-        /// <summary>Records a reference. Returns false when the hash already carries that path.</summary>
+        /// <summary>Records one reference.</summary>
+        /// <returns>False when the hash already carries that path.</returns>
         public bool AddReference(uint hash, string assetPath)
         {
             if (string.IsNullOrEmpty(assetPath))
@@ -602,32 +557,24 @@ namespace FsLocalizationPlugin.Resources
             }
         }
 
-        /// <summary>
-        /// Adds every reference the scan found for a hash.
-        /// References are only ever added, never replaced.
-        /// </summary>
+        /// <summary>Records every reference the scan found for a hash.</summary>
+        /// <remarks>
+        /// References are only ever added, never replaced,
+        /// so a rescan cannot drop the ones a creator added by hand.
+        /// </remarks>
         public void AddReferences(uint hash, IEnumerable<string> assetPaths)
         {
             lock (sync)
-            {
-                IdEntry entry = GetOrAdd(hash);
-                foreach (string path in assetPaths)
-                {
-                    if (!string.IsNullOrEmpty(path) && !entry.References.Contains(path))
-                        entry.References.Add(path);
-                }
-            }
+                GetOrAdd(hash).AddReferences(assetPaths);
         }
 
         public bool RemoveReference(uint hash, string assetPath)
         {
             lock (sync)
             {
-                if (!entries.TryGetValue(hash, out IdEntry entry))
+                if (!entries.TryGetValue(hash, out IdEntry entry) || !entry.References.Remove(assetPath))
                     return false;
 
-                if (entry.References.RemoveAll(r => r == assetPath) == 0)
-                    return false;
                 if (entry.IsEmpty)
                     entries.Remove(hash);
                 return true;
@@ -662,13 +609,6 @@ namespace FsLocalizationPlugin.Resources
         {
             lock (sync)
                 return entries.Remove(hash);
-        }
-
-        /// <summary>Empties the database. The file is only rewritten when the caller saves.</summary>
-        public void Clear()
-        {
-            lock (sync)
-                entries.Clear();
         }
 
         private IdEntry GetOrAdd(uint hash)
@@ -790,14 +730,9 @@ namespace FsLocalizationPlugin.Resources
             }
         }
 
-        /// <summary>How many hashes the project stores anything for.</summary>
-        public static int Count => Read().Count;
-
         #region -- Reading --
-        /// <summary>
-        /// Whether the database holds this hash.
-        /// Reads the asset manager every call to always get newest data.
-        /// </summary>
+        /// <summary>Whether the database holds this hash.</summary>
+        /// <remarks>Reads the asset manager every call, so it always sees the newest data.</remarks>
         public static bool Contains(uint hash) => Read().ContainsKey(hash);
 
         public static bool TryGetId(uint hash, out string id)
@@ -816,17 +751,8 @@ namespace FsLocalizationPlugin.Resources
             return Read().TryGetValue(hash, out IdEntry entry) ? entry.References : (IReadOnlyList<string>)Array.Empty<string>();
         }
 
-        /// <summary>Hash-to-ID pairs, skipping entries that carry no ID text.</summary>
-        public static IEnumerable<KeyValuePair<uint, string>> EnumerateIds()
-        {
-            foreach (KeyValuePair<uint, IdEntry> kvp in Read())
-            {
-                if (kvp.Value.Id.Length > 0)
-                    yield return new KeyValuePair<uint, string>(kvp.Key, kvp.Value.Id);
-            }
-        }
-
-        /// <summary>Every entry, ID and references together. Safe to walk while editing.</summary>
+        /// <summary>Every entry, ID and references together.</summary>
+        /// <returns>A snapshot, so it stays safe to walk while the database is edited.</returns>
         public static IEnumerable<KeyValuePair<uint, IdEntry>> EnumerateEntries()
         {
             return new List<KeyValuePair<uint, IdEntry>>(Read());
@@ -835,10 +761,8 @@ namespace FsLocalizationPlugin.Resources
         #endregion
 
         #region -- Writing --
-        /// <summary>
-        /// Sets the ID text for a hash.
-        /// Never creates the asset just to clear.
-        /// </summary>
+        /// <summary>Sets the ID text for a hash. An empty text clears it.</summary>
+        /// <remarks>Clearing never creates the carrier asset, only storing does.</remarks>
         public static void SetId(uint hash, string id)
         {
             id = id ?? string.Empty;
@@ -848,9 +772,14 @@ namespace FsLocalizationPlugin.Resources
             Mutate(create: id.Length > 0, ids =>
             {
                 if (id.Length > 0)
+                {
                     GetOrAdd(ids, hash).Id = id;
+                }
                 else if (ids.TryGetValue(hash, out IdEntry entry))
-                    Drop(ids, hash, entry, () => entry.Id = string.Empty);
+                {
+                    entry.Id = string.Empty;
+                    DropIfEmpty(ids, hash, entry);
+                }
             });
         }
 
@@ -871,15 +800,13 @@ namespace FsLocalizationPlugin.Resources
         {
             Mutate(create: false, ids =>
             {
-                if (ids.TryGetValue(hash, out IdEntry entry))
-                    Drop(ids, hash, entry, () => entry.References.Remove(assetPath));
+                if (ids.TryGetValue(hash, out IdEntry entry) && entry.References.Remove(assetPath))
+                    DropIfEmpty(ids, hash, entry);
             });
         }
 
-        /// <summary>
-        /// Takes what an imported document knows that the project does not, in one write.
-        /// Returns how many entries were added or filled in.
-        /// </summary>
+        /// <summary>Takes what an imported document knows that the project does not, in one write.</summary>
+        /// <returns>How many entries were added or filled in.</returns>
         public static int Merge(Dictionary<uint, IdEntry> incoming)
         {
             if (!Enabled || incoming == null || incoming.Count == 0)
@@ -937,12 +864,6 @@ namespace FsLocalizationPlugin.Resources
             RemoveEntry(hash);
         }
 
-        /// <summary>Empties the database, which reverts the asset out of the project.</summary>
-        public static void Clear()
-        {
-            Mutate(create: false, ids => ids.Clear());
-        }
-
         private static IdEntry GetOrAdd(Dictionary<uint, IdEntry> ids, uint hash)
         {
             if (!ids.TryGetValue(hash, out IdEntry entry))
@@ -953,10 +874,9 @@ namespace FsLocalizationPlugin.Resources
             return entry;
         }
 
-        /// <summary>Applies a change that can empty an entry, and drops the entry when it does.</summary>
-        private static void Drop(Dictionary<uint, IdEntry> ids, uint hash, IdEntry entry, Action change)
+        /// <summary>Drops an entry that has nothing left to store.</summary>
+        private static void DropIfEmpty(Dictionary<uint, IdEntry> ids, uint hash, IdEntry entry)
         {
-            change();
             if (entry.IsEmpty)
                 ids.Remove(hash);
         }
@@ -970,7 +890,7 @@ namespace FsLocalizationPlugin.Resources
         private static Dictionary<uint, IdEntry> Read(EbxAssetEntry entry)
         {
             string json = entry?.ModifiedEntry?.UserData ?? string.Empty;
-            if (parsedIds != null && parsedFrom == json)
+            if (parsedIds != null && ReferenceEquals(parsedFrom, json))
                 return parsedIds;
 
             Dictionary<uint, IdEntry> ids = new Dictionary<uint, IdEntry>();

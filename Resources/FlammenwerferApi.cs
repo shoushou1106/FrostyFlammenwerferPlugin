@@ -21,9 +21,9 @@ namespace FsLocalizationPlugin.Resources
     /// or take the JSON instead.
     /// </para>
     /// <para>
-    /// Both databases speak the same document (see <see cref="IdDocument"/>):
-    /// A version, a note, the game, then entries keyed by hash in hex,
-    /// each holding an ID text and a list of asset paths, both of which can be empty.
+    /// Both databases speak the same document, <see cref="IdDocument"/>.
+    /// It carries a version, a note, the game, and entries keyed by hash in hex.
+    /// Each entry holds an ID text and a list of asset paths, and both of those can be empty.
     /// </para>
     /// <para>
     /// この未来は好都合に光ってる<br/>
