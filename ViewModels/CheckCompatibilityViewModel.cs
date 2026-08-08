@@ -1,5 +1,6 @@
 using Frosty.Controls;
 using Frosty.Core;
+using Frosty.Core.Controls;
 using Frosty.Core.Windows;
 using FrostySdk.Ebx;
 using FrostySdk.Managers;
@@ -102,7 +103,7 @@ namespace FsLocalizationPlugin.ViewModels
             get => isCompleted;
             private set => SetProperty(ref isCompleted, value);
         }
-        
+
         public void SetLoading(bool indeterminate = false)
         {
             IsCompleted = false;
@@ -145,7 +146,7 @@ namespace FsLocalizationPlugin.ViewModels
             lastPercent = -1;
         }
     }
-    
+
     /// <summary>Aggregates child tests into one state/progress for a group header row.</summary>
     public sealed class CompatibilityTestGroup : ViewModelBase
     {
@@ -383,6 +384,11 @@ namespace FsLocalizationPlugin.ViewModels
                     test.Reset();
                 Overall.Reset();
                 HasResults = false;
+            }
+            catch (Exception ex)
+            {
+                App.Logger.LogError("Compatibility check failed: {0}", ex.Message);
+                FrostyExceptionBox.Show(ex, "Check Compatibility - Flammenwerfer");
             }
             finally
             {

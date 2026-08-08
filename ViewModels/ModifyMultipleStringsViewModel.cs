@@ -1,5 +1,6 @@
 using Frosty.Controls;
 using Frosty.Core;
+using Frosty.Core.Controls;
 using Frosty.Core.Windows;
 using FsLocalizationPlugin.Helpers;
 using System;
@@ -11,9 +12,12 @@ using System.Windows;
 
 namespace FsLocalizationPlugin.ViewModels
 {
-    /// <summary>Backs the Modify Multiple Strings window: finds strings by plain text or regex, then bulk-replaces, reverts, or removes them.</summary>
+    /// <summary>Backs the Modify Multiple Strings window</summary>
+    /// <remarks>Finds strings by plain text or regex, then bulk-replaces, reverts, or removes them.</remarks>
     public sealed class ModifyMultipleStringsViewModel : LanguageAwareViewModelBase
     {
+        private const string DialogTitle = "Modify Multiple Strings - Flammenwerfer";
+
         private enum BulkAction
         {
             Replace,
@@ -185,6 +189,7 @@ namespace FsLocalizationPlugin.ViewModels
             int processed = 0;
             int affected = 0;
             bool cancelled = false;
+            Exception failure = null;
 
             string taskTitle;
             switch (action)
@@ -241,12 +246,23 @@ namespace FsLocalizationPlugin.ViewModels
                 {
                     cancelled = true;
                 }
+                catch (Exception ex)
+                {
+                    failure = ex;
+                    cancelled = true;
+                }
             }
 
             using (CancellationTokenSource cancelToken = new CancellationTokenSource())
             {
                 FrostyTaskWindow.Show(owner, taskTitle, "", task => RunTask(task, cancelToken.Token),
                     showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
+            }
+
+            if (failure != null)
+            {
+                App.Logger.LogError("{0} failed: {1}", taskTitle, failure.Message);
+                FrostyExceptionBox.Show(failure, DialogTitle);
             }
 
             if (cancelled)
@@ -257,7 +273,7 @@ namespace FsLocalizationPlugin.ViewModels
                 {
                     App.Logger.Log("Mass cast interrupted! Nothing touched yet.");
                 }
-                else if (FrostyMessageBox.Show($"Temporal Ward Activated! The mass cast was interrupted, but {touchedCount} string(s) were already altered. Restore them to how they were before?", "Modify Multiple Strings - Flammenwerfer", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                else if (FrostyMessageBox.Show($"Temporal Ward Activated! The mass cast was interrupted, but {touchedCount} string(s) were already altered. Restore them to how they were before?", DialogTitle, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     DebugLogHelper.Log("ModifyMultipleStringsViewModel.Process", "Restoring {0} prior value(s), {1} original revert(s), {2} re-removal(s)", priorModifiedValues.Count, priorUnmodifiedIds.Count, priorRemovedIds.Count);
 

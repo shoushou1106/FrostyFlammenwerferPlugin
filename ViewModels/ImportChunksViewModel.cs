@@ -12,9 +12,12 @@ using System.Windows;
 
 namespace FsLocalizationPlugin.ViewModels
 {
-    /// <summary>Backs the Import Chunks from Files window: reads a histogram/strings-binary chunk pair and merges it into the selected language.</summary>
+    /// <summary>Backs the Import Chunks from Files window</summary>
+    /// <remarks>Reads a histogram and strings-binary chunk pair, then merges it into the selected language.</remarks>
     public sealed class ImportChunksViewModel : LanguageAwareViewModelBase
     {
+        private const string DialogTitle = "Import Chunks from Files - Flammenwerfer";
+
         private string binaryFilePath = string.Empty;
         private string histogramFilePath = string.Empty;
         private bool noImportEmptyOrNull;
@@ -95,23 +98,24 @@ namespace FsLocalizationPlugin.ViewModels
         {
             if (!File.Exists(HistogramFilePath) && !File.Exists(BinaryFilePath))
             {
-                FrostyMessageBox.Show("Materials missing! Histogram file and Binary Strings file not found", "Import Chunks from Files - Flammenwerfer", MessageBoxButton.OK);
+                FrostyMessageBox.Show("Materials missing! Histogram file and Binary Strings file not found", DialogTitle, MessageBoxButton.OK);
                 return;
             }
             if (!File.Exists(HistogramFilePath))
             {
-                FrostyMessageBox.Show("Material missing! Histogram file not found", "Import Chunks from Files - Flammenwerfer", MessageBoxButton.OK);
+                FrostyMessageBox.Show("Material missing! Histogram file not found", DialogTitle, MessageBoxButton.OK);
                 return;
             }
             if (!File.Exists(BinaryFilePath))
             {
-                FrostyMessageBox.Show("Material missing! Binary Strings file not found", "Import Chunks from Files - Flammenwerfer", MessageBoxButton.OK);
+                FrostyMessageBox.Show("Material missing! Binary Strings file not found", DialogTitle, MessageBoxButton.OK);
                 return;
             }
 
             int deletedCount = 0;
             int importedCount = 0;
             bool cancelled = false;
+            Exception failure = null;
 
             // Tracks every id this run touches, so a cancel can put the database back exactly how it was
             HashSet<uint> touchedIds = new HashSet<uint>();
@@ -203,7 +207,7 @@ namespace FsLocalizationPlugin.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    FrostyExceptionBox.Show(ex, "Import Chunks from Files - Flammenwerfer");
+                    failure = ex;
                     cancelled = true;
                 }
             }
@@ -214,13 +218,19 @@ namespace FsLocalizationPlugin.ViewModels
                     showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
             }
 
+            if (failure != null)
+            {
+                App.Logger.LogError("Import chunks from files failed: {0}", failure.Message);
+                FrostyExceptionBox.Show(failure, DialogTitle);
+            }
+
             if (cancelled)
             {
                 if (touchedIds.Count == 0)
                 {
                     App.Logger.Log("Imbuition interrupted! Import chunks from files canceled. Nothing touched yet");
                 }
-                else if (FrostyMessageBox.Show($"Temporal Ward Activated! The cast was interrupted, but {touchedIds.Count} string(s) were already altered. Restore them to how they were before?", "Import Chunks from Files - Flammenwerfer", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                else if (FrostyMessageBox.Show($"Temporal Ward Activated! The cast was interrupted, but {touchedIds.Count} string(s) were already altered. Restore them to how they were before?", DialogTitle, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     DebugLogHelper.Log("ImportChunksViewModel.Import", "Restoring {0} prior value(s), {1} database revert(s), {2} re-removal(s)", priorModifiedValues.Count, priorUnmodifiedIds.Count, priorRemovedIds.Count);
 

@@ -22,6 +22,8 @@ namespace FsLocalizationPlugin.ViewModels
     /// <summary>Backs the Export Chunks to Files window: re-encodes a language's chunks and writes them to files, without a full mod build.</summary>
     public sealed class ExportChunksViewModel : ViewModelBase
     {
+        private const string DialogTitle = "Export Chunks to Files - Flammenwerfer";
+
         private LanguageExportOptions selectedLanguageOption;
 
         public ExportChunksViewModel(FsLocalizationStringDatabase database)
@@ -118,6 +120,7 @@ namespace FsLocalizationPlugin.ViewModels
         {
             Dictionary<string, LanguageExportOptions> languageLookup = LanguageOptions.ToDictionary(l => l.Language);
             bool cancelled = false;
+            Exception failure = null;
 
             void RunTask(FrostyTaskWindow task, CancellationToken token)
             {
@@ -222,7 +225,7 @@ namespace FsLocalizationPlugin.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    FrostyExceptionBox.Show(ex, "Export Chunks to Files - Flammenwerfer");
+                    failure = ex;
                 }
                 finally
                 {
@@ -239,7 +242,14 @@ namespace FsLocalizationPlugin.ViewModels
                     showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
             }
 
-            // Show() blocks until the callback returns, so cancelled is safe to read here.
+
+            if (failure != null)
+            {
+                App.Logger.LogError("Export to chunk files failed: {0}", failure.Message);
+                FrostyExceptionBox.Show(failure, DialogTitle);
+                return;
+            }
+
             CloseRequested?.Invoke(!cancelled);
         }
     }
