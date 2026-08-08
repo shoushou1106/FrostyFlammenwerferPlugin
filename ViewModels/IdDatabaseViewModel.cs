@@ -420,7 +420,7 @@ namespace FsLocalizationPlugin.ViewModels
 
             StoreId(row.Hash, DetailId);
             row.Id = DetailId;
-            App.Logger.Log("Flame named! ID for string {0} set to {1}", row.HashHex, DetailId.Length > 0 ? DetailId : "(none)");
+            App.Logger.Log("Rune identified! ID for string {0} set to {1}", row.HashHex, DetailId.Length > 0 ? DetailId : "(none)");
             OnPropertiesChanged(nameof(DetailIsDirty), nameof(DetailStatus));
         }
 
@@ -464,7 +464,7 @@ namespace FsLocalizationPlugin.ViewModels
                 IdDatabase.Instance.Save();
             }
 
-            App.Logger.Log("Flame doused! {0} removed from the {1} database", label, isProjectView ? "project" : "cached");
+            App.Logger.Log("Trace erased! {0} removed from the {1} database", label, isProjectView ? "project" : "cached");
         }
 
         /// <summary>Writes an ID into the database the tab is showing.</summary>
@@ -696,7 +696,7 @@ namespace FsLocalizationPlugin.ViewModels
             // other way around.
             bool game = IdIndex.IsGameString(hash);
             IdIndex.Set(hash, AddIdIdText);
-            App.Logger.Log("Flame named! ID {0} added to the {1} database", AddIdIdText, game ? "cached" : "project");
+            App.Logger.Log("New spark! ID {0} added to the {1} database", AddIdIdText, game ? "cached" : "project");
             if (!game)
                 BuildRows();
 
@@ -738,7 +738,7 @@ namespace FsLocalizationPlugin.ViewModels
             IdScanner.ScanResult result = null;
             using (CancellationTokenSource cancelToken = new CancellationTokenSource())
             {
-                FrostyTaskWindow.Show("Scanning Game Files for String IDs", "Loading", task =>
+                FrostyTaskWindow.Show("Scanning Game Files", "Loading", task =>
                 {
                     result = IdScanner.Scan(Database, IdDatabase.Instance, task, cancelToken.Token);
                 }, showCancelButton: true, cancelCallback: task => cancelToken.Cancel());
@@ -748,9 +748,9 @@ namespace FsLocalizationPlugin.ViewModels
                 return;
 
             if (result.Cancelled)
-                App.Logger.Log("Scan interrupted. Kept {0} new ID(s) found so far", result.IdsFound);
+                App.Logger.Log("Divination interrupted! Kept {0} new ID(s) found so far", result.IdsFound);
             else
-                App.Logger.Log("Blazing trail! Scanned {0} asset(s) and {1} swf(s) in {2}s, found {3} new ID(s) and {4} reference(s)",
+                App.Logger.Log("The flame reveals! Scanned {0} asset(s) and {1} swf(s) in {2}s, found {3} new ID(s) and {4} reference(s)",
                     result.AssetsScanned, result.SwfScanned, result.ElapsedSeconds.ToString("F1", CultureInfo.InvariantCulture),
                     result.IdsFound, result.RefsFound);
 
@@ -768,7 +768,7 @@ namespace FsLocalizationPlugin.ViewModels
         private void Import()
         {
             FrostyOpenFileDialog dialog = new FrostyOpenFileDialog("Import ID Database",
-                "ID database (*.json;*.txt)|*.json;*.txt|All files (*.*)|*.*", "FlammenwerferIdDatabase");
+                "ID database (*.json;*.txt)|*.json;*.txt|All files (*.*)|*.*", "Flammenwerfer_IdDatabase");
             if (!dialog.ShowDialog())
                 return;
 
@@ -778,7 +778,8 @@ namespace FsLocalizationPlugin.ViewModels
             }
             catch (Exception ex)
             {
-                FrostyMessageBox.Show($"Import failed: {ex.Message}", DialogTitle, MessageBoxButton.OK);
+                App.Logger.LogError("Import failed: {0}", ex.Message);
+                FrostyExceptionBox.Show(ex, DialogTitle);
                 return;
             }
 
@@ -797,7 +798,7 @@ namespace FsLocalizationPlugin.ViewModels
             }
 
             FrostySaveFileDialog dialog = new FrostySaveFileDialog("Export Project ID Database",
-                "JSON file (*.json)|*.json", "FlammenwerferProjectIdDatabase", "ProjectIdDatabase.json");
+                "JSON file (*.json)|*.json", "Flammenwerfer_ProjectIdDatabase", "ProjectIdDatabase.json");
             if (!dialog.ShowDialog())
                 return;
 
@@ -807,11 +808,12 @@ namespace FsLocalizationPlugin.ViewModels
             }
             catch (Exception ex)
             {
-                FrostyMessageBox.Show($"Export failed: {ex.Message}", DialogTitle, MessageBoxButton.OK);
+                App.Logger.LogError("Export failed: {0}", ex.Message);
+                FrostyExceptionBox.Show(ex, DialogTitle);
                 return;
             }
 
-            App.Logger.Log("Exported the project ID database to {0}", dialog.FileName);
+            App.Logger.Log("Grimoire crystallized! Exported the project ID database to {0}", dialog.FileName);
         }
 
         /// <summary>Shows the cached database file in Explorer, so it can be shared as it is.</summary>
@@ -827,7 +829,8 @@ namespace FsLocalizationPlugin.ViewModels
             }
             catch (Exception ex)
             {
-                App.Logger.LogError("Could not locate the cached ID database: {0}", ex.Message);
+                App.Logger.LogError("Hearth not found! Failed to locate the cached ID database: {0}", ex.Message);
+                FrostyExceptionBox.Show(ex, DialogTitle);
             }
         }
 

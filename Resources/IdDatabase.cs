@@ -280,7 +280,7 @@ namespace FsLocalizationPlugin.Resources
             IdDocument document = IdDocument.Parse(json, "the imported document");
             if (document.Game.Length > 0 && document.Game != ProfilesLibrary.ProfileName)
             {
-                App.Logger.LogWarning("This file was made for {0}, not {1}. Anything it names that is not a string of this game lands in the project database.",
+                App.Logger.LogWarning("Foreign embers detected! This file was made for {0}, not {1}. Anything strings this game does not have will lands in the project database.",
                     document.Game, ProfilesLibrary.ProfileName);
             }
 
@@ -314,9 +314,9 @@ namespace FsLocalizationPlugin.Resources
                 IdDatabase.Instance.Save();
             int project = ProjectIdDatabase.Merge(forProject);
 
-            App.Logger.Log("Import complete. {0} into the cached database, {1} into the project database, {2} skipped", cached, project, skipped);
+            App.Logger.Log("Ritual complete. {0} into the cached database, {1} into the project database, {2} skipped", cached, project, skipped);
             if (skipped > 0)
-                App.Logger.Log("Skipped entries are strings this game does not have. Turn on the project ID database to keep them.");
+                App.Logger.Log("Skipped IDs are strings this game does not have. Turn on the project ID database to keep them.");
         }
 
         /// <summary>Reads the plain format. One ID per line, '#' comments out a line.</summary>
@@ -625,7 +625,7 @@ namespace FsLocalizationPlugin.Resources
             catch (Exception ex)
             {
                 entries.Clear();
-                App.Logger.LogError("The ID database could not be read, starting empty: {0}", ex.Message);
+                App.Logger.LogError("Grimoire corrupted! The ID database could not be read, starting empty: {0}", ex.Message);
             }
         }
 
@@ -639,7 +639,7 @@ namespace FsLocalizationPlugin.Resources
             }
             catch (Exception ex)
             {
-                App.Logger.LogError("Failed to save the ID database: {0}", ex.Message);
+                App.Logger.LogError("Sealing Grimoire failed! Failed to save the ID database: {0}", ex.Message);
             }
         }
 
@@ -876,7 +876,7 @@ namespace FsLocalizationPlugin.Resources
                 }
                 catch (Exception ex)
                 {
-                    App.Logger.LogError("The project ID database could not be read: {0}", ex.Message);
+                    App.Logger.LogError("The EBX resists scrying! Project ID database could not be read: {0}", ex.Message);
                 }
             }
 
@@ -964,12 +964,12 @@ namespace FsLocalizationPlugin.Resources
                 MarkDirty(entry);
                 RefreshExplorer();
 
-                App.Logger.Log("Created {0} to hold this project's string IDs. It is never exported into a mod, and reverting it deletes whole project ID database.", AssetName);
+                App.Logger.Log("Manifest successful! Created {0} to hold this project's string IDs. It is never exported into a mod, and reverting it deletes whole project ID database.", AssetName);
                 return entry;
             }
             catch (Exception ex)
             {
-                App.Logger.LogError("Failed to create the project ID database asset: {0}", ex.Message);
+                App.Logger.LogError("Unable to Manifest! Failed to create the project ID database asset: {0}", ex.Message);
                 return null;
             }
         }

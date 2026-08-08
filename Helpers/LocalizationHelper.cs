@@ -120,7 +120,7 @@ namespace FsLocalizationPlugin.Helpers
             {
                 cachedLanguages = result;
                 cachedProfileName = ProfilesLibrary.ProfileName;
-                DebugLogHelper.Log("LocalizationHelper.GetLocalizedLanguages", "Found {0} languages for profile: {1}, cache performed", result.Count, cachedProfileName);
+                DebugLogHelper.Log("LocalizationHelper.GetLocalizedLanguages", "Cache performed, found {0} languages for profile: {1}", result.Count, cachedProfileName);
             }
 
             if (modifiedOnly)
