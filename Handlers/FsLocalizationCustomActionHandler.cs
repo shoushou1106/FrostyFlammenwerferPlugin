@@ -186,7 +186,7 @@ namespace FsLocalizationPlugin
                 sb.AppendLine(ex.Source);
                 sb.AppendLine("StackTrace:");
                 sb.AppendLine(ex.StackTrace);
-                sb.AppendLine("Returning a placeholder object. Your game may crash. But Frosty survive for you to read this message.");
+                sb.AppendLine("Returning a placeholder object. Your game may crash. But Frosty survive for you to read this message. If this happens with all mods touching FsLocalization, then your 1.0.7 fork does not support this plugin.");
                 App.Logger.LogError("{0}", sb.ToString());
 
                 // Return placeholder data instead of null, so Mod Manager doesn't crash and the
