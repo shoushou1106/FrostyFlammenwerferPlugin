@@ -24,7 +24,7 @@ namespace FsLocalizationPlugin.Helpers
     /// <summary>
     /// Scans the game for string IDs. Any text whose hash matches an existing string is an ID.
     /// </summary>
-    /// 
+    ///
     /// <remarks>
     /// <para>IDs are NOT always "ID_" prefixed, so every candidate is hash-tested.</para>
     /// Sources: <br/>

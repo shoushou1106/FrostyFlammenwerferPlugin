@@ -542,7 +542,7 @@ namespace FsLocalizationPlugin
             loadedDatabase.AddString(hash, value);
             App.AssetManager.ModifyEbx(App.AssetManager.GetEbxEntry(loadedDatabase.FileGuid).Name, loadedDatabase);
 
-            IdIndex.Record(id, hash);
+            IdIndex.Set(hash, id);
             return hash;
         }
 
@@ -556,7 +556,7 @@ namespace FsLocalizationPlugin
         {
             uint hash = LocalizationHelper.HashStringId(id);
             SetString(hash, value);
-            IdIndex.Record(id, hash);
+            IdIndex.Set(hash, id);
         }
 
         /// <summary>

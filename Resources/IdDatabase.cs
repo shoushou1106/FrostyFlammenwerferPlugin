@@ -216,16 +216,14 @@ namespace FsLocalizationPlugin.Resources
         // - A game string's ID is game knowledge and belongs in the shared cached database
         // - Anything else belongs to the project database
 
-        /// <summary>
-        /// Whether the hash is one of the game's own strings rather than one the project added.
-        /// </summary>
-        public static bool IsGameString(uint hash)
+        /// <summary>Whether the hash is one of the game's own strings rather than one the project added.</summary>
+        internal static bool IsGameString(uint hash)
         {
             return LocalizedStringDatabase.Current is FsLocalizationStringDatabase db
                 && db.TryGetOriginalString(hash, out string _);
         }
 
-        /// <summary>Stores an ID text under its hash, in whichever database owns it. Empty text clears it.</summary>
+        /// <summary>Stores an ID text under its hash, in whichever database owns it. An empty text clears the ID.</summary>
         public static void Set(uint hash, string id)
         {
             if (IsGameString(hash))
@@ -238,26 +236,6 @@ namespace FsLocalizationPlugin.Resources
             {
                 ProjectIdDatabase.SetId(hash, id);
             }
-        }
-
-        /// <summary>
-        /// Records the ID text a string was just added or changed under.
-        /// </summary>
-        /// <remarks>
-        /// Called with the ID as typed, the only moment it exists.
-        /// Everywhere else in the pipeline a string is just a hash.
-        /// <para>
-        /// An ID can be any text at all. The cached database records whatever the game uses,
-        /// and the project database records whatever the creator chose,
-        /// so nothing here judges the shape of the text.
-        /// </para>
-        /// </remarks>
-        public static void Record(string idText, uint hash)
-        {
-            if (string.IsNullOrEmpty(idText))
-                return;
-
-            Set(hash, idText);
         }
 
         /// <summary>
@@ -422,7 +400,7 @@ namespace FsLocalizationPlugin.Resources
             }
         }
 
-        /// <summary>Re-reads the file, discarding anything unsaved. For the editor tab's file watcher.</summary>
+        /// <summary>Re-reads the file, discarding anything unsaved.</summary>
         public void Reload()
         {
             lock (sync)
@@ -436,7 +414,7 @@ namespace FsLocalizationPlugin.Resources
             Changed?.Invoke();
         }
 
-        /// <summary>Writes the file and raises Changed. Callers batch their edits and save once.</summary>
+        /// <summary>Writes the file and raises Changed. Callers may batch edit and save once.</summary>
         public void Save()
         {
             lock (sync)
@@ -604,7 +582,7 @@ namespace FsLocalizationPlugin.Resources
             }
         }
 
-        /// <summary>Forgets a hash completely, references included. A later scan can find it again.</summary>
+        /// <summary>Forgets a hash completely, references included.</summary>
         public bool RemoveEntry(uint hash)
         {
             lock (sync)
@@ -676,7 +654,7 @@ namespace FsLocalizationPlugin.Resources
     /// Frosty saves UserData with the project and vanilla FsLocalizationPlugin never looks at it,
     /// so projects stay loadable there.
     /// IsTransientModified keeps the asset in the project file but out of exported mods.
-    /// </summary> 
+    /// </summary>
     public static class ProjectIdDatabase
     {
         /// <summary>
@@ -704,11 +682,6 @@ namespace FsLocalizationPlugin.Resources
         /// The "Project ID Database" option, per game.
         /// Creators may prefer tracking IDs the traditional way
         /// rather than have an extra asset appear in their project.
-        /// <para>
-        /// Cached, and set from FlammenwerferOptions.
-        /// The profile it was read for is remembered too,
-        /// the option is per game while the cache may not.
-        /// </para>
         /// Only writes are gated. Reads stay live, so IDs already in a project keep resolving.
         /// </summary>
         public static bool Enabled
