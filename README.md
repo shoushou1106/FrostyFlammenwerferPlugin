@@ -37,17 +37,18 @@ Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by Gal
 
 ### Extended Features
 
+- **Flammenwerfer API:** A side-channel that allow other plugins to access Flammenwerfer extended features, like ID Database.
 - **String removal:** Because why not. Removing a string makes the game display the original `ID_`.
-- **Unicode support (planned to release in 0.4.1):** Frosty and FsLocalization format do not support characters bigger than `0xFFFF` (That means no **emojis**, no some **rare CJK characters**, **historical characters**, and **ancient scripts**). When you save project/mod, Frosty will write a oversized character as garbled code. Flammenwerfer will support these characters by saving them as UTF-8 and overwrite later. So your strings/comments won't be garbled. But due to FsLocalization format limits, oversized characters cannot be applied into game.
-- **ID Database (planned to release in 0.4.1):** String ID database with a visual interface to make your mod development experience better.
-   - **Project ID Database:** A database lives in your project. Saving all your added IDs as a seperate modified EBX directly in your project file. Perfect whether used by oneself or in collaboration. Also can manually add comments and record references for each ID.
-   - **Cached ID Database:** A database lives in your Frosty's `Caches` folder. Cache IDs for all strings included in a game. And a reference section to see files referencing a string ID.
-      - **Search game files:** A enhanced searching feature derived from Localized String Editor's "Export String Usage List" feature. It can resolve ~20% more string IDs by trying all possible properties, search inside Swf files, guessing EBX filename as ID. (In PvZGW2, original resolved: 12585 of 23426 total hashes, flammenwerfer resolved: ~16000 of 23426 total hashes)
-      - **Manual observation:** Remove all strings and the game will directly display string IDs, you can manually add IDs into ID database.
-         > [!TIP]
-         > You can remove all strings by using Modify **Multiple Strings Window**, check the `Use regular expressions` and type in `.*`
-      - **Accelerated computing:** Use GPU to guess string IDs. This is a planned feature.
-      - **Sharing:** The Cached ID Database is a txt file. You can share your carefully crafted ID database with others, who can then use it directly or merge two database.
+- **Unicode support:** Frosty and FsLocalization format do not support characters bigger than `0xFFFF` (That means no **emojis**, no some **rare CJK characters**, **historical characters**, and **ancient scripts**). When you save project/mod, Frosty will write a oversized character as garbled code. Flammenwerfer will support these characters by saving them as UTF-8 and overwrite later. So your strings/comments won't be garbled. But due to FsLocalization format limits, oversized characters cannot be applied into game.
+- **ID Database:** String ID database with a editor tab to make your mod development experience better.
+   - **Cached ID Database:** A database living in your Frosty's `Caches` folder. It caches IDs for all strings included in a game, and provides a reference section to track which files reference a string ID.
+      - **Search game files:** A enhanced scanning feature derived from Localized String Editor's "Export String Usage List". It resolves ~15% more string IDs by trying more property names, parse inside Swf files, guessing EBX filename as ID, and expanding known patterns. (e.g. In PvZGW2, vanilla resolves 12,585 of 23,426 hashes; Flammenwerfer unveils 15,615.)
+      - **Manual observation:** Remove all strings, and the game will fallback display strings as their IDs. You can then manually add these IDs into the database.
+> [!TIP]
+> You can remove all strings using **Modify Multiple Strings Window**. Check `Use regular expressions`, type in `.*`, and click Remove.
+      - **Accelerated computing:** Use GPU to guess string IDs. *(Planned for a future update)*
+   - **Project ID Database:** Another database living in your project. It saves all your added IDs as a separate EBX directly in your project file (Located in `Flammenwerfer/ProjectIdDatabase`). You will never lose it even the project is touched by `FsLocalizationPlugin` later. All perfect for solo or team collaboration. You can manually record references for each ID, and disable this entirely in `Tools > Options > Flammenwerfer Options`. *(A comment feature is planned)*
+   - **Sharing:** Both databases share the same human-readable JSON format and utilize a unified Import button. The Cached Database itself is a JSON, and the Project Database can export into JSON. You can easily share, merge, and use Git (or other version control) to track changes. Other creators can import and use your carefully crafted Cached Database, or you can sync Project Database with your collaborators.
 
 ## Compatibility
 
@@ -65,7 +66,7 @@ A few things worth knowing:
 - Auto-grown histograms are a Flammenwerfer-only feature. `FsLocalizationPlugin` won't crash but will log an error, and the game shows a blank when a character isn't in the histogram.
 - This plugin isn't valid for every game, some Frostbite games use another format, like Dragon Age: Inquisition, Mass Effect Andromeda, Anthem, FIFA series, or Dead Space.
 - Open a Flammenwerfer project with extended features using `FsLocalizationPlugin`, those extended features will get ignored. If you save at this point, you will **lose** all saved extended features. Be careful!
-- FsLocalization format have limits, it can't fit characters bigger than `0xFFFF`. That means no **emojis**, also no some **rare CJK characters**, **historical characters**, and **ancient scripts**.
+- FsLocalization format have limits, it can't fit characters bigger than `0xFFFF`. See **Unicode support** above.
 
 ## Install
 
