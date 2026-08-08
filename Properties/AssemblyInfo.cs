@@ -46,7 +46,7 @@ using System.Windows;
 [assembly: PluginNotValidForProfile((int)ProfileVersion.Fifa20)]
 
 // Not every 1.0.7 fork have specific ProfileVersion. Use hard-coded integer instead.
-// If you have another profile to add here, please be sure to tell me..
+// If you have another profile to add here, please be sure to tell me.
 [assembly: PluginNotValidForProfile(20230127)] // Dead Space from HarGabt
 
 [assembly: RegisterCustomHandler(CustomHandlerType.Ebx, typeof(FsLocalizationCustomActionHandler), ebxType: "UITextDatabase")]
