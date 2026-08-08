@@ -328,7 +328,7 @@ namespace FsLocalizationPlugin
                 throw new ArgumentNullException(nameof(stringsBinaryChunk));
 
             DebugLogHelper.Log("Flammen.ReadStrings", "Read histogram and strings from {0}(Histogram) and {1}(String Binary)", histogramChunk.Id, stringsBinaryChunk.Id);
-            
+
             List<ushort> histogramSection;
             // Read histogram chunk
             using (var stream = App.AssetManager.GetChunk(histogramChunk))
@@ -617,10 +617,10 @@ namespace FsLocalizationPlugin
                 // A per-char linear scan here used to dominate handler apply time.
                 Dictionary<char, int> charIndex = BuildCharIndex(histogramSection);
 
-                // Write hash pairs and encode strings
+                // Write hash pairs and encode strings.
                 using (NativeWriter stringBuffer = new NativeWriter(new MemoryStream()))
                 {
-                    foreach (KeyValuePair<uint, string> keyValuePair in stringList)
+                    foreach (KeyValuePair<uint, string> keyValuePair in stringList.OrderBy(kvp => kvp.Key))
                     {
                         writer.Write(keyValuePair.Key);
                         writer.Write((uint)stringBuffer.Position);
