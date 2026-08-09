@@ -91,11 +91,9 @@ QQ: `2420308592`
 
 1. 从 [GitHub 发行版](https://github.com/shoushou1106/FrostyFlammenwerferPlugin/releases) 下载插件。
 
-   - 如果需要调试，请一同下载 `.pdb` 文件，并将 dll 文件和 pdb 文件都重命名为 `FsLocalizationPlugin`。
-
 2. 删除或禁用 **Frosty** 的 `Plugins` 文件夹中的 `FsLocalizationPlugin.dll`。
 
-   - 禁用比删除更安全：可以将其重命名为任何不是 `.dll` 的**后缀**，例如 `FsLocalizationPlugin.dll.disable`。
+   - 禁用比删除更安全。您可以通过将其重命名为任何不是 `.dll` 的**后缀**，例如 `FsLocalizationPlugin.dll.disable`。
 
 3. 将下载的文件放入 `Plugins` 文件夹。
 
