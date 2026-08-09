@@ -95,7 +95,7 @@ namespace FsLocalizationPlugin.Resources
     /// </remarks>
     public sealed class IdDocument
     {
-        public const int CurrentVersion = 1;
+        public const int CurrentVersion = 2;
 
         private const string DocumentNote = "Flammenwerfer ID Database. Share and merge freely.";
 
@@ -139,7 +139,7 @@ namespace FsLocalizationPlugin.Resources
         {
             IdDocument document = new IdDocument { Game = ProfilesLibrary.ProfileName };
             foreach (KeyValuePair<uint, IdEntry> kvp in entries.OrderBy(kvp => kvp.Value.Id, StringComparer.Ordinal).ThenBy(kvp => kvp.Key))
-                document.Entries.Add(kvp.Key.ToString("x8", CultureInfo.InvariantCulture), kvp.Value);
+                document.Entries.Add(kvp.Key.ToString("X8", CultureInfo.InvariantCulture), kvp.Value);
             return document;
         }
 
