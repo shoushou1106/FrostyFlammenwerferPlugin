@@ -190,7 +190,7 @@ namespace FsLocalizationPlugin
                 //   at FsLocalizationPlugin.FsLocalizationCustomActionHandler.Modify(AssetEntry origEntry, AssetManager am, RuntimeResources runtimeResources, Object data, Byte[] & outData) in D:\a\FrostyFlammenwerferPlugin\FrostyFlammenwerferPlugin\FrostyFlammenwerferPlugin\Handlers\FsLocalizationCustomActionHandler.cs:line 115
 
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine("Unyielding Seal encountered! An unhandled exception has occurred.");
+                sb.AppendLine("Unyielding Seal encountered! An exception has occurred.");
                 sb.AppendLine("Flammenwerfer returned a empty object to Frosty, which will make your game crash. But Frosty itself will survive for you to read this message.");
                 sb.AppendLine("This error is likely identified as ERR001, learn more at: https://github.com/shoushou1106/FrostyFlammenwerferPlugin/wiki/Known-Issues#ERR001");
                 sb.AppendLine("The exception:");
@@ -207,12 +207,10 @@ namespace FsLocalizationPlugin
                 App.Logger.LogError("{0}", sb.ToString());
 
                 StringBuilder message = new StringBuilder();
-                message.AppendLine("Unyielding Seal encountered! An unhandled exception has occurred.");
-                message.AppendLine("Your current version of Frosty 1.0.7 fork does not support Flammenwerfer on this game (");
-                message.Append(ProfilesLibrary.DisplayName);
-                message.AppendLine(").");
+                message.AppendLine("Unyielding Seal encountered! An exception has occurred.");
                 message.AppendLine("Flammenwerfer returned a empty object to Frosty, which will make your game crash. But Frosty itself will survive for you to read this message.");
-                message.AppendLine("This fatal error is likely identified as ERR001. More details are documented in GitHub Wiki. This exception, other details, and the wiki link will be in your Logs.");
+                message.AppendLine("Your current version of Frosty 1.0.7 fork does not support Flammenwerfer on this game. This fatal error is likely identified as ERR001. More details are documented in GitHub Wiki. This exception and the wiki link will be in your Logs.");
+                message.AppendLine();
                 message.AppendLine("By clicking OK, you will be bring to: https://github.com/shoushou1106/FrostyFlammenwerferPlugin/wiki/Known-Issues#ERR001");
 
                 if (FrostyMessageBox.Show(message.ToString(), "Error ERR001 - Flammenwerfer", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
