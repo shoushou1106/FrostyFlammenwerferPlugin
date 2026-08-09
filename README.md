@@ -34,6 +34,7 @@ Flammenwerfer Plugin is a drop-in replacement for `FsLocalizationPlugin` (by Gal
 - **Bulk find & replace:** Now featuring regular-expression matching.
 - **Export/import chunks to and from files:** You can hand off modified assets as static binary files. Like the original flammenwerfer does.
 - **Check compatibility:** Check is there any issues before release a mod, get a compatibility report with `FsLocalizationPlugin`
+- **Auto clear:** When there is nothing modified, Flammenwerfer will clean the modified resource automatically instead of leaving a language modified.
 
 ### Extended Features
 
