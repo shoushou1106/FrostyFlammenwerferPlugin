@@ -1,3 +1,4 @@
+using Frosty.Controls;
 using Frosty.Core;
 using Frosty.Core.IO;
 using Frosty.Core.Mod;
@@ -12,6 +13,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Windows;
 
 #if FROSTY_107
 using FrostySdk.Managers.Entries;
@@ -172,10 +174,26 @@ namespace FsLocalizationPlugin
                 origEntry.Size = outData.Length;
                 origEntry.Sha1 = Utils.GenerateSha1(outData);
             }
-            catch (Exception ex)
+//#if FROSTY_107
+            catch (System.IO.InvalidDataException ex) when (ex.Source.Contains("Sdk") && ex.Message.Contains("Not valid REFL chunk"))
             {
+                // Example exception on 1.0.7 Mod Manager + NFS Unbound without key fix.
+                //Inferno Out of Control! An unhandled exception has occurred.
+                //Type = System.IO.InvalidDataException
+                //HResult = 0x80131501
+                //Message = Not valid REFL chunk.
+                //Source = FrostySdk
+                //StackTrace:
+                //   at FrostySdk.IO.EbxReaderRiff..ctor(Stream InStream, FileSystemManager fs, Boolean inPatched)
+                //   at FrostySdk.IO.EbxReader.CreateReader(Stream inStream, FileSystemManager fs, Boolean patched)
+                //   at FrostySdk.Managers.AssetManager.GetEbx(EbxAssetEntry entry, Boolean getUnmodifiedData)
+                //   at FsLocalizationPlugin.FsLocalizationCustomActionHandler.Modify(AssetEntry origEntry, AssetManager am, RuntimeResources runtimeResources, Object data, Byte[] & outData) in D:\a\FrostyFlammenwerferPlugin\FrostyFlammenwerferPlugin\FrostyFlammenwerferPlugin\Handlers\FsLocalizationCustomActionHandler.cs:line 115
+
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine("Inferno Out of Control! An unhandled exception has occurred.");
+                sb.AppendLine("Unyielding Seal encountered! An unhandled exception has occurred.");
+                sb.AppendLine("Flammenwerfer returned a empty object to Frosty, which will make your game crash. But Frosty itself will survive for you to read this message.");
+                sb.AppendLine("This error is likely identified as ERR001, learn more at: https://github.com/shoushou1106/FrostyFlammenwerferPlugin/wiki/Known-Issues#ERR001");
+                sb.AppendLine("The exception:");
                 sb.Append("Type=");
                 sb.AppendLine(ex.GetType().ToString());
                 sb.Append("HResult=");
@@ -186,19 +204,41 @@ namespace FsLocalizationPlugin
                 sb.AppendLine(ex.Source);
                 sb.AppendLine("StackTrace:");
                 sb.AppendLine(ex.StackTrace);
-                sb.AppendLine("Returning a placeholder object. Your game may crash. But Frosty survive for you to read this message. If this happens with all mods touching FsLocalization, then your 1.0.7 fork does not support this plugin.");
                 App.Logger.LogError("{0}", sb.ToString());
 
-                // Return placeholder data instead of null, so Mod Manager doesn't crash and the
-                // user can read the log above. The mod is already broken at this point.
-                using (EbxBaseWriter writer = EbxBaseWriter.CreateWriter(new MemoryStream()))
-                {
-                    // Create a new EbxAsset without calling AssetManager. So it works on some 1.0.7 Mod Manager.
-                    EbxAsset ebxAsset = new EbxAsset(TypeLibrary.CreateObject(origEntry.Type));
-                    writer.WriteAsset(ebxAsset);
-                    origEntry.OriginalSize = writer.Length;
-                    outData = Utils.CompressFile(writer.ToByteArray());
-                }
+                StringBuilder message = new StringBuilder();
+                message.AppendLine("Unyielding Seal encountered! An unhandled exception has occurred.");
+                message.AppendLine("Your current version of Frosty 1.0.7 fork does not support Flammenwerfer on this game (");
+                message.Append(ProfilesLibrary.DisplayName);
+                message.AppendLine(").");
+                message.AppendLine("Flammenwerfer returned a empty object to Frosty, which will make your game crash. But Frosty itself will survive for you to read this message.");
+                message.AppendLine("This fatal error is likely identified as ERR001. More details are documented in GitHub Wiki. This exception, other details, and the wiki link will be in your Logs.");
+                message.AppendLine("By clicking OK, you will be bring to: https://github.com/shoushou1106/FrostyFlammenwerferPlugin/wiki/Known-Issues#ERR001");
+
+                if (FrostyMessageBox.Show(message.ToString(), "Error ERR001 - Flammenwerfer", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                    System.Diagnostics.Process.Start("https://github.com/shoushou1106/FrostyFlammenwerferPlugin/wiki/Known-Issues#ERR001");
+
+                outData = new byte[] { 0xF1, 0xA8, 0x8E, 0x22 };
+            }
+//#endif
+            catch (Exception ex)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("Inferno Out of Control! An unhandled exception has occurred:");
+                sb.AppendLine("Flammenwerfer returned a empty object to Frosty, which will make your game crash. But Frosty itself will survive for you to read this message.");
+                sb.Append("Type=");
+                sb.AppendLine(ex.GetType().ToString());
+                sb.Append("HResult=");
+                sb.AppendLine("0x" + ex.HResult.ToString("X", CultureInfo.InvariantCulture));
+                sb.Append("Message=");
+                sb.AppendLine(ex.Message);
+                sb.Append("Source=");
+                sb.AppendLine(ex.Source);
+                sb.AppendLine("StackTrace:");
+                sb.AppendLine(ex.StackTrace);
+                App.Logger.LogError("{0}", sb.ToString());
+
+                outData = new byte[] { 0xF1, 0xA8, 0x8E, 0x22 };
             }
             DebugLogHelper.Log("ActionHandler.Modify", "End applying handler");
         }
