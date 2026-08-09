@@ -9,3 +9,9 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+
+# dotnet-sdk diabled for Frosty v1
+#  - package-ecosystem: "dotnet-sdk" # See documentation for possible values
+#    directory: "/" # Location of package manifests
+#    schedule:
+#      interval: "weekly"
