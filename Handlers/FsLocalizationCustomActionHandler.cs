@@ -174,7 +174,7 @@ namespace FsLocalizationPlugin
                 origEntry.Size = outData.Length;
                 origEntry.Sha1 = Utils.GenerateSha1(outData);
             }
-//#if FROSTY_107
+#if FROSTY_107
             catch (System.IO.InvalidDataException ex) when (ex.Source.Contains("Sdk") && ex.Message.Contains("Not valid REFL chunk"))
             {
                 // Example exception on 1.0.7 Mod Manager + NFS Unbound without key fix.
@@ -218,7 +218,7 @@ namespace FsLocalizationPlugin
 
                 outData = new byte[] { 0xF1, 0xA8, 0x8E, 0x22 };
             }
-//#endif
+#endif
             catch (Exception ex)
             {
                 StringBuilder sb = new StringBuilder();
