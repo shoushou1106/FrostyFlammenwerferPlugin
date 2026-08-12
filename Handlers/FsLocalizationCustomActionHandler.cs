@@ -213,7 +213,7 @@ namespace FsLocalizationPlugin
                 message.AppendLine();
                 message.AppendLine("By clicking OK, you will be bring to: https://github.com/shoushou1106/FrostyFlammenwerferPlugin/wiki/Known-Issues#ERR001");
 
-                if (FrostyMessageBox.Show(message.ToString(), "Error ERR001 - Flammenwerfer", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                if (FrostyMessageBox.Show(message.ToString(), "Error ERR001 - ActionHandler.Modify - Flammenwerfer", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                     System.Diagnostics.Process.Start("https://github.com/shoushou1106/FrostyFlammenwerferPlugin/wiki/Known-Issues#ERR001");
 
                 outData = new byte[] { 0xF1, 0xA8, 0x8E, 0x22 };
@@ -235,6 +235,11 @@ namespace FsLocalizationPlugin
                 sb.AppendLine("StackTrace:");
                 sb.AppendLine(ex.StackTrace);
                 App.Logger.LogError("{0}", sb.ToString());
+
+                sb.AppendLine();
+                sb.AppendLine("This exception will also be in your Logs.");
+
+                FrostyMessageBox.Show(sb.ToString(), "Unhandled Exception - ActionHandler.Modify - Flammenwerfer", MessageBoxButton.OK);
 
                 outData = new byte[] { 0xF1, 0xA8, 0x8E, 0x22 };
             }
