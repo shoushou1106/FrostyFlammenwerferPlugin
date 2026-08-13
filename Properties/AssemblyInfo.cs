@@ -2,6 +2,7 @@ using Frosty.Core;
 using Frosty.Core.Attributes;
 using FrostySdk;
 using FsLocalizationPlugin;
+using FsLocalizationPlugin.Actions;
 using FsLocalizationPlugin.Extensions;
 using FsLocalizationPlugin.Options;
 using System.Runtime.InteropServices;
@@ -14,10 +15,10 @@ using System.Windows;
 
 [assembly: ThemeInfo(
     ResourceDictionaryLocation.None, //where theme specific resource dictionaries are located
-                                     //(used if a resource is not found in the page, 
+                                     //(used if a resource is not found in the page,
                                      // or application resource dictionaries)
     ResourceDictionaryLocation.SourceAssembly //where the generic resource dictionary is located
-                                              //(used if a resource is not found in the page, 
+                                              //(used if a resource is not found in the page,
                                               // app, or any theme specific resource dictionaries)
 )]
 
@@ -49,6 +50,9 @@ using System.Windows;
 // If you have another profile to add here, please be sure to tell me.
 [assembly: PluginNotValidForProfile(20230127)] // Dead Space from HarGabt
 
+// Runs once as Frosty starts, on a worker thread. See the class for what that means.
+[assembly: RegisterStartupAction(typeof(OnboardingStartupAction))]
+
 [assembly: RegisterCustomHandler(CustomHandlerType.Ebx, typeof(FsLocalizationCustomActionHandler), ebxType: "UITextDatabase")]
 [assembly: RegisterLocalizedStringDatabase(typeof(FsLocalizationStringDatabase))]
 
@@ -64,6 +68,7 @@ using System.Windows;
 [assembly: RegisterMenuExtension(typeof(ExportChunksMenuExtension), PluginManagerType.Editor)]
 [assembly: RegisterMenuExtension(typeof(CheckCompatibilityMenuExtension), PluginManagerType.Editor)]
 [assembly: RegisterMenuExtension(typeof(IdDatabaseMenuExtension), PluginManagerType.Editor)]
+[assembly: RegisterMenuExtension(typeof(WelcomeMenuExtension), PluginManagerType.Editor)]
 #else
 [assembly: RegisterMenuExtension(typeof(ModifyStringMenuExtension))]
 [assembly: RegisterMenuExtension(typeof(ModifyMultipleStringsMenuExtension))]
@@ -71,4 +76,5 @@ using System.Windows;
 [assembly: RegisterMenuExtension(typeof(ExportChunksMenuExtension))]
 [assembly: RegisterMenuExtension(typeof(CheckCompatibilityMenuExtension))]
 [assembly: RegisterMenuExtension(typeof(IdDatabaseMenuExtension))]
+[assembly: RegisterMenuExtension(typeof(WelcomeMenuExtension))]
 #endif
