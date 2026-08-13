@@ -5,6 +5,18 @@ using FsLocalizationPlugin.Resources;
 
 namespace FsLocalizationPlugin.Options
 {
+    /// <summary>The plugin's page in Tools > Options.</summary>
+    /// <remarks>
+    /// Frosty only constructs this and calls <see cref="Load"/> when the Options window opens
+    /// and <see cref="Save"/> when it is accepted.
+    /// Neither runs at startup, so anything that has to be right before
+    /// the user visits Options reads <see cref="Config"/> for itself and treats these as a push.
+    /// See <see cref="ProjectIdDatabase.Enabled"/> and <see cref="DebugLogHelper.Enabled"/>.
+    /// <para>
+    /// Keys are shared with those readers, so they live here as constants rather than as literals
+    /// repeated across four call sites.
+    /// </para>
+    /// </remarks>
     [DisplayName("Flammenwerfer Options")]
     public class FlammenwerferOptions : OptionsExtension
     {
@@ -27,21 +39,27 @@ namespace FsLocalizationPlugin.Options
         [EbxFieldMeta(FrostySdk.IO.EbxFieldType.Boolean)]
         public bool DebugLogging { get; set; }
 
+        /// <summary>Per game, because a creator may want the extra asset in one project and not another.</summary>
+        internal const string ProjectIdDatabaseKey = "Flammenwerfer_ProjectIdDatabaseEnabled";
+
+        /// <summary>Global, because it is about how the tool talks rather than about a game.</summary>
+        internal const string DebugLoggingKey = "Flammenwerfer_DebugLogging";
+
         public override void Load()
         {
-            ProjectIdDatabaseEnabled = Config.Get("Flammenwerfer_ProjectIdDatabaseEnabled", true, ConfigScope.Game);
+            ProjectIdDatabaseEnabled = Config.Get(ProjectIdDatabaseKey, true, ConfigScope.Game);
             ProjectIdDatabase.Enabled = ProjectIdDatabaseEnabled;
 
-            DebugLogging = Config.Get("Flammenwerfer_DebugLogging", false, ConfigScope.Global);
+            DebugLogging = Config.Get(DebugLoggingKey, false, ConfigScope.Global);
             DebugLogHelper.Enabled = DebugLogging;
         }
 
         public override void Save()
         {
-            Config.Add("Flammenwerfer_ProjectIdDatabaseEnabled", ProjectIdDatabaseEnabled, ConfigScope.Game);
+            Config.Add(ProjectIdDatabaseKey, ProjectIdDatabaseEnabled, ConfigScope.Game);
             ProjectIdDatabase.Enabled = ProjectIdDatabaseEnabled;
 
-            Config.Add("Flammenwerfer_DebugLogging", DebugLogging, ConfigScope.Global);
+            Config.Add(DebugLoggingKey, DebugLogging, ConfigScope.Global);
             DebugLogHelper.Enabled = DebugLogging;
         }
 

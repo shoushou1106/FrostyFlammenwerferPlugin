@@ -666,7 +666,7 @@ namespace FsLocalizationPlugin.Resources
         /// <summary>The asset's Name field, the one thing someone opening it in the editor sees.</summary>
         private const string AssetNote = "Flammenwerfer Project ID Database. Stays alive even when Flammenwerfer is not installed, and never exported to a mod file. To prevent Flammenwerfer creating this, disable in Tools > Options > Flammenwerfer Options";
 
-        private const string EnabledOption = "Flammenwerfer_ProjectIdDatabaseEnabled";
+        private const string EnabledOption = Options.FlammenwerferOptions.ProjectIdDatabaseKey;
 
         /// <summary>Root object type for the carrier asset, the first one the game has wins.</summary>
         private static readonly string[] RootTypes = { "Asset", "DataContainer" };

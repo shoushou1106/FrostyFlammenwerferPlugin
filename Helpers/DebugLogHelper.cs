@@ -14,7 +14,7 @@ namespace FsLocalizationPlugin.Helpers
             get
             {
                 if (!enabledCache.HasValue)
-                    enabledCache = Config.Get("Flammenwerfer_DebugLogging", false, ConfigScope.Global);
+                    enabledCache = Config.Get(Options.FlammenwerferOptions.DebugLoggingKey, false, ConfigScope.Global);
                 return enabledCache.Value;
             }
             set => enabledCache = value;
