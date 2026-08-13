@@ -1,6 +1,8 @@
 using Frosty.Core;
 using System;
 using System.Reflection;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace FsLocalizationPlugin.Helpers
 {
@@ -76,8 +78,21 @@ namespace FsLocalizationPlugin.Helpers
         /// Records that this version has been seen. Never lowers the stored value, so an older
         /// plugin sharing the settings file cannot make a newer one introduce itself again.
         /// </summary>
+        /// <remarks>
+        /// Marshals to the UI thread first. Startup actions run on a worker while Frosty's own
+        /// startup is still pumping the dispatcher, and <see cref="Config"/> is a shared static
+        /// backed by a single file, so writing it from a worker risks a torn read or a lost write
+        /// in whatever else touches config at that moment.
+        /// </remarks>
         public static void MarkSeen()
         {
+            Dispatcher dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher != null && !dispatcher.CheckAccess())
+            {
+                dispatcher.Invoke((Action)MarkSeen);
+                return;
+            }
+
             Version seen = LastSeen;
             if (seen != null && seen >= Current)
                 return;

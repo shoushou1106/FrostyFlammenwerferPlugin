@@ -133,7 +133,14 @@ namespace FsLocalizationPlugin.ViewModels
                 return;
             }
 
-            index += forward ? 1 : -1;
+            // Clamped rather than trusted. The window guards against overlapping transitions, but
+            // this class owns the invariant that index always addresses a real page, and Current
+            // throwing would take the whole editor down from a double click.
+            int target = index + (forward ? 1 : -1);
+            if (target < 0 || target >= pages.Count)
+                return;
+
+            index = target;
             OnMoved(forward);
         }
 

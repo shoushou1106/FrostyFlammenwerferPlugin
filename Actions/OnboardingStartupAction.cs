@@ -49,9 +49,11 @@ namespace FsLocalizationPlugin.Actions
             }
             catch (Exception ex)
             {
-                // Never let a welcome screen stop Frosty from starting.
+                // Never let a welcome screen stop Frosty from starting. Deliberately does NOT mark
+                // the version seen: failing to work out whether to show the tour is transient, and
+                // suppressing it forever would be the wrong answer to a one-off error. The window's
+                // own failure path below does mark it, because that one repeats every launch.
                 App.Logger.LogError("Flammenwerfer could not show its welcome screen: {0}", ex.Message);
-                PluginVersion.MarkSeen();
             }
         };
 

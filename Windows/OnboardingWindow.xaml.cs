@@ -36,6 +36,13 @@ namespace FsLocalizationPlugin.Windows
 
         private Storyboard running;
 
+        /// <summary>
+        /// True while a page is fading out. Measured, not assumed: a <c>DoubleAnimation</c> replaced
+        /// by <c>BeginAnimation</c> still raises <c>Completed</c>, so without this a held arrow key
+        /// or a double click queued one commit per keystroke and walked the page index off the end.
+        /// </summary>
+        private bool isTransitioning;
+
         public OnboardingWindow(OnboardingReason reason, bool modManager)
         {
             viewModel = new OnboardingViewModel(reason, modManager);
@@ -145,11 +152,16 @@ namespace FsLocalizationPlugin.Windows
 
         private void OnNavigationRequested(bool forward)
         {
+            if (isTransitioning)
+                return;
+
             if (!Animate)
             {
                 Commit(forward);
                 return;
             }
+
+            isTransitioning = true;
 
             DoubleAnimation fade = new DoubleAnimation(0, OutDuration);
             DoubleAnimation slide = new DoubleAnimation(forward ? -Shift : Shift, OutDuration)
@@ -165,6 +177,7 @@ namespace FsLocalizationPlugin.Windows
 
         private void Commit(bool forward)
         {
+            isTransitioning = false;
             viewModel.Commit(forward);
             ShowScene();
             Title = viewModel.WindowTitle;
